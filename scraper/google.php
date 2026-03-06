@@ -522,7 +522,7 @@ class google{
 			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
 				"User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 26_0_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/406.0.862495628 Mobile/15E148 Safari/604.1",
 				"Accept: text/html, application/xml;q=0.9, */*;q=0.8",
-				"Accept-Language: nl,en;q=0.8",
+				"Accept-Language: en-US,en;q=0.8",
 				"Accept-Encoding: gzip, deflate",
 				"Connection: Keep-Alive",
 				"Cache-Control: no-cache"
@@ -770,31 +770,17 @@ class google{
 			$this->fuckhtml->load($container);
 			
 			// probe for search result
-			$sprobe =
+			$title =
 				$this->fuckhtml
 				->getElementsByAttributeValue(
 					"role",
-					"presentation",
-					"a"
+					"link",
+					"div"
 				);
 			
-			if(count($sprobe) !== 0){
+			if(count($title) !== 0){
 				
 				// we found a search result
-				
-				$title =
-					$this->fuckhtml
-					->getElementsByAttributeValue(
-						"role",
-						"link",
-						"div"
-					);
-				
-				if(count($title) === 0){
-					
-					// should not happen
-					continue;
-				}
 				
 				$title =
 					$this->titledots(
@@ -803,6 +789,41 @@ class google{
 							$title[0]
 						)
 					);
+				
+				// get url
+				$sprobe =
+					$this->fuckhtml
+					->getElementsByTagName(
+						"a"
+					);
+				
+				$link = null;
+				
+				foreach($sprobe as $possible_link){
+					
+					if(
+						isset($possible_link["attributes"]["href"]) &&
+						preg_match(
+							'/^\/url\?q=/',
+							$possible_link["attributes"]["href"]
+						)
+					){
+						
+						$link =
+							$this->fuckhtml
+							->getTextContent(
+								$possible_link["attributes"]["href"]
+							);
+						
+						break;
+					}
+				}
+				
+				if($link === null){
+					
+					// should not happen
+					continue;
+				}
 				
 				// get description
 				// as usual, theres a thousand fucking possible divs for this one
@@ -968,7 +989,7 @@ class google{
 				$out["web"][] = [
 					"title" => $title,
 					"description" => $description,
-					"url" => $this->unshiturl($sprobe[0]["attributes"]["href"]),
+					"url" => $this->unshiturl($link),
 					"date" => $time,
 					"type" => "web",
 					"thumb" => $thumb,
