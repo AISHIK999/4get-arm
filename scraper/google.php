@@ -1,6 +1,7 @@
 <?php
 
-// @TODO check for consent.google.com page, if need be
+// noJS but requires login/cookie token
+// https://www.google.com/search?q=asmr&tbm=isch&asearch=arc&async=arc_id:srp_a,ffilt:all,ve_name:MoreResultsContainer,use_ac:false,inf:0,_id:arc-srp_a,_pms:s,_fmt:pc
 
 class google{
 	
@@ -629,7 +630,7 @@ class google{
 				"q" => $search,
 				"tbm" => "isch",
 				"asearch" => "isch",
-				"async" => "_fmt:json,p:1,ijn:{$page}", // ijn:0 = page 1
+				"async" => "_fmt:json,p:0,ijn:{$page}", // ijn:0 = page 1
 			];
 			
 			// country (image search uses cr instead of gl)
