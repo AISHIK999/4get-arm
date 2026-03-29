@@ -905,6 +905,17 @@ class qwant{
 			
 			throw new Exception("Qwant returned an API error");
 		}
+		
+		if(
+			isset($json["url"]) &&
+			preg_match(
+				'/captcha/i',
+				$json["url"]
+			)
+		){
+			
+			throw new Exception("Qwant returned a captcha redirect");
+		}
 	}
 	
 	private function limitstrlen($text){
