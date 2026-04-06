@@ -268,6 +268,10 @@ $settings = [
 						"text" => "500px"
 					],
 					[
+						"value" => "pixabay",
+						"text" => "Pixabay"
+					],
+					[
 						"value" => "vsco",
 						"text" => "VSCO"
 					],
