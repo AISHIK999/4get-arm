@@ -118,7 +118,10 @@ class config{
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0";
+	
+	// User agent to use with 4get-friendly APIs
+	const USER_AGENT_FRIENDLY = "4get-scrapist";
 	
 	// Proxy pool assignments for each scraper
 	// false = Use server's raw IP
@@ -156,6 +159,7 @@ class config{
 	const PROXY_PINTEREST = false;
 	const PROXY_SANKAKUCOMPLEX = false;
 	const PROXY_FLICKR = false;
+	const PROXY_PIXABAY = false;
 	const PROXY_FIVEHPX = false;
 	const PROXY_VSCO = false;
 	const PROXY_SEZNAM = false;
