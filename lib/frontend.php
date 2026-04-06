@@ -994,6 +994,7 @@ class frontend{
 						"pinterest" => "Pinterest",
 						"cara" => "Cara",
 						"flickr" => "Flickr",
+						"pixabay" => "Pixabay",
 						"fivehpx" => "500px",
 						"vsco" => "VSCO",
 						"imgur" => "Imgur",
