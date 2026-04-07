@@ -264,12 +264,20 @@ $settings = [
 						"text" => "Flickr"
 					],
 					[
-						"value" => "fivehpx",
-						"text" => "500px"
+						"value" => "pexels",
+						"text" => "Pexels"
 					],
 					[
 						"value" => "pixabay",
 						"text" => "Pixabay"
+					],
+					[
+						"value" => "unsplash",
+						"text" => "Unsplash"
+					],
+					[
+						"value" => "fivehpx",
+						"text" => "500px"
 					],
 					[
 						"value" => "vsco",

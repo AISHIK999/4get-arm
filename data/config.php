@@ -135,8 +135,6 @@ class config{
 	const PROXY_GOOGLE = false;
 	const PROXY_GOOGLE_API = false;
 	const PROXY_GOOGLE_CSE = false;
-	const PROXY_MULLVAD_GOOGLE = false;
-	const PROXY_MULLVAD_BRAVE = false;
 	const PROXY_STARTPAGE = false;
 	const PROXY_QWANT = false;
 	const PROXY_BAIDU = false;
@@ -160,6 +158,8 @@ class config{
 	const PROXY_SANKAKUCOMPLEX = false;
 	const PROXY_FLICKR = false;
 	const PROXY_PIXABAY = false;
+	const PROXY_UNSPLASH = false;
+	const PROXY_PEXELS = false;
 	const PROXY_FIVEHPX = false;
 	const PROXY_VSCO = false;
 	const PROXY_SEZNAM = false;
