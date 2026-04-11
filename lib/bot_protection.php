@@ -133,6 +133,9 @@ class bot_protection{
 			$answers[] = $regex;
 		}
 		
+		// dedup
+		$answers = array_unique($answers);
+		
 		if(
 			!$invalid &&
 			$key !== false // has captcha been gen'd?
