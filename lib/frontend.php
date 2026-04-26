@@ -646,16 +646,13 @@ class frontend{
 						"qwant" => "Qwant",
 						"ghostery" => "Ghostery",
 						"yep" => "Yep",
-						"greppr" => "Greppr",
-						"crowdview" => "Crowdview",
 						"mwmbl" => "Mwmbl",
 						"mojeek" => "Mojeek",
 						"baidu" => "Baidu",
 						"coccoc" => "Cốc Cốc",
 						"solofield" => "Solofield",
 						"marginalia" => "Marginalia",
-						"wiby" => "wiby",
-						"curlie" => "Curlie"
+						"wiby" => "wiby"
 					]
 				];
 				break;
