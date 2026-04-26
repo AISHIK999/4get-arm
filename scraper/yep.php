@@ -14,227 +14,202 @@ class yep{
 	public function getfilters($page){
 		
 		return [
-			"country" => [
-				"display" => "Country",
+			"lang" => [
+				"display" => "Language",
 				"option" => [
-					"all" => "All regions",
-					"af" => "Afghanistan",
-					"al" => "Albania",
-					"dz" => "Algeria",
-					"as" => "American Samoa",
-					"ad" => "Andorra",
-					"ao" => "Angola",
-					"ai" => "Anguilla",
-					"ag" => "Antigua and Barbuda",
-					"ar" => "Argentina",
-					"am" => "Armenia",
-					"aw" => "Aruba",
-					"au" => "Australia",
-					"at" => "Austria",
-					"az" => "Azerbaijan",
-					"bs" => "Bahamas",
-					"bh" => "Bahrain",
-					"bd" => "Bangladesh",
-					"bb" => "Barbados",
-					"by" => "Belarus",
-					"be" => "Belgium",
-					"bz" => "Belize",
-					"bj" => "Benin",
-					"bt" => "Bhutan",
-					"bo" => "Bolivia",
-					"ba" => "Bosnia and Herzegovina",
-					"bw" => "Botswana",
-					"br" => "Brazil",
-					"bn" => "Brunei Darussalam",
-					"bg" => "Bulgaria",
-					"bf" => "Burkina Faso",
-					"bi" => "Burundi",
-					"cv" => "Cabo Verde",
-					"kh" => "Cambodia",
-					"cm" => "Cameroon",
-					"ca" => "Canada",
-					"ky" => "Cayman Islands",
-					"cf" => "Central African Republic",
-					"td" => "Chad",
-					"cl" => "Chile",
-					"cn" => "China",
-					"co" => "Colombia",
-					"cg" => "Congo",
-					"cd" => "Congo, Democratic Republic",
-					"ck" => "Cook Islands",
-					"cr" => "Costa Rica",
-					"hr" => "Croatia",
-					"cu" => "Cuba",
-					"cy" => "Cyprus",
-					"cz" => "Czechia",
-					"ci" => "Côte d'Ivoire",
-					"dk" => "Denmark",
-					"dj" => "Djibouti",
-					"dm" => "Dominica",
-					"do" => "Dominican Republic",
-					"ec" => "Ecuador",
-					"eg" => "Egypt",
-					"sv" => "El Salvador",
-					"gq" => "Equatorial Guinea",
-					"ee" => "Estonia",
-					"et" => "Ethiopia",
-					"fo" => "Faroe Islands",
-					"fj" => "Fiji",
-					"fi" => "Finland",
-					"fr" => "France",
-					"gf" => "French Guiana",
-					"pf" => "French Polynesia",
-					"ga" => "Gabon",
-					"gm" => "Gambia",
-					"ge" => "Georgia",
-					"de" => "Germany",
-					"gh" => "Ghana",
-					"gi" => "Gibraltar",
-					"gr" => "Greece",
-					"gl" => "Greenland",
-					"gd" => "Grenada",
-					"gp" => "Guadeloupe",
-					"gu" => "Guam",
-					"gt" => "Guatemala",
-					"gg" => "Guernsey",
-					"gn" => "Guinea",
-					"gy" => "Guyana",
-					"ht" => "Haiti",
-					"hn" => "Honduras",
-					"hk" => "Hong Kong",
-					"hu" => "Hungary",
-					"is" => "Iceland",
-					"in" => "India",
-					"id" => "Indonesia",
-					"iq" => "Iraq",
-					"ie" => "Ireland",
-					"im" => "Isle of Man",
-					"il" => "Israel",
-					"it" => "Italy",
-					"jm" => "Jamaica",
-					"jp" => "Japan",
-					"je" => "Jersey",
-					"jo" => "Jordan",
-					"kz" => "Kazakhstan",
-					"ke" => "Kenya",
-					"ki" => "Kiribati",
-					"kw" => "Kuwait",
-					"kg" => "Kyrgyzstan",
-					"la" => "Lao People's Democratic Republic",
-					"lv" => "Latvia",
-					"lb" => "Lebanon",
-					"ls" => "Lesotho",
-					"ly" => "Libya",
-					"li" => "Liechtenstein",
-					"lt" => "Lithuania",
-					"lu" => "Luxembourg",
-					"mk" => "Macedonia",
-					"mg" => "Madagascar",
-					"mw" => "Malawi",
-					"my" => "Malaysia",
-					"mv" => "Maldives",
-					"ml" => "Mali",
-					"mt" => "Malta",
-					"mq" => "Martinique",
-					"mr" => "Mauritania",
-					"mu" => "Mauritius",
-					"yt" => "Mayotte",
-					"mx" => "Mexico",
-					"fm" => "Micronesia, Federated States of",
-					"md" => "Moldova",
-					"mc" => "Monaco",
-					"mn" => "Mongolia",
-					"me" => "Montenegro",
-					"ms" => "Montserrat",
-					"ma" => "Morocco",
-					"mz" => "Mozambique",
-					"mm" => "Myanmar",
-					"na" => "Namibia",
-					"nr" => "Nauru",
-					"np" => "Nepal",
-					"nl" => "Netherlands",
-					"nc" => "New Caledonia",
-					"nz" => "New Zealand",
-					"ni" => "Nicaragua",
-					"ne" => "Niger",
-					"ng" => "Nigeria",
-					"nu" => "Niue",
-					"no" => "Norway",
-					"om" => "Oman",
-					"pk" => "Pakistan",
-					"ps" => "Palestine, State of",
-					"pa" => "Panama",
-					"pg" => "Papua New Guinea",
-					"py" => "Paraguay",
-					"pe" => "Peru",
-					"ph" => "Philippines",
-					"pn" => "Pitcairn",
-					"pl" => "Poland",
-					"pt" => "Portugal",
-					"pr" => "Puerto Rico",
-					"qa" => "Qatar",
-					"ro" => "Romania",
-					"ru" => "Russian Federation",
-					"rw" => "Rwanda",
-					"re" => "Réunion",
-					"sh" => "Saint Helena",
-					"kn" => "Saint Kitts and Nevis",
-					"lc" => "Saint Lucia",
-					"vc" => "Saint Vincent and the Grenadines",
-					"ws" => "Samoa",
-					"sm" => "San Marino",
-					"st" => "Sao Tome and Principe",
-					"sa" => "Saudi Arabia",
-					"sn" => "Senegal",
-					"rs" => "Serbia",
-					"sc" => "Seychelles",
-					"sl" => "Sierra Leone",
-					"sg" => "Singapore",
-					"sk" => "Slovakia",
-					"si" => "Slovenia",
-					"sb" => "Solomon Islands",
-					"so" => "Somalia",
-					"kr" => "Sourth Korea",
-					"za" => "South Africa",
-					"es" => "Spain",
-					"lk" => "Sri Lanka",
-					"sr" => "Suriname",
-					"se" => "Sweden",
-					"ch" => "Switzerland",
-					"tw" => "Taiwan",
-					"tj" => "Tajikistan",
-					"tz" => "Tanzania",
-					"th" => "Thailand",
-					"tl" => "Timor-Leste",
-					"tg" => "Togo",
-					"tk" => "Tokelau",
+					"any" => "Any language",
+					"aa" => "Afar",
+					"ab" => "Abkhazian",
+					"ae" => "Avestan",
+					"af" => "Afrikaans",
+					"ak" => "Akan",
+					"am" => "Amharic",
+					"an" => "Aragonese",
+					"ar" => "Arabic",
+					"as" => "Assamese",
+					"av" => "Avaric",
+					"ay" => "Aymara",
+					"az" => "Azerbaijani",
+					"ba" => "Bashkir",
+					"be" => "Belarusian",
+					"bg" => "Bulgarian",
+					"bh" => "Bihari",
+					"bi" => "Bislama",
+					"bm" => "Bambara",
+					"bn" => "Bengali",
+					"bo" => "Tibetan",
+					"br" => "Breton",
+					"bs" => "Bosnian",
+					"ca" => "Catalan",
+					"ce" => "Chechen",
+					"ch" => "Chamorro",
+					"co" => "Corsican",
+					"cr" => "Cree",
+					"cs" => "Czech",
+					"cu" => "Church Slavic",
+					"cv" => "Chuvash",
+					"cy" => "Welsh",
+					"da" => "Danish",
+					"de" => "German",
+					"dv" => "Divehi",
+					"dz" => "Dzongkha",
+					"ee" => "Ewe",
+					"el" => "Greek",
+					"en" => "English",
+					"eo" => "Esperanto",
+					"es" => "Spanish",
+					"et" => "Estonian",
+					"eu" => "Basque",
+					"fa" => "Persian",
+					"ff" => "Fulah",
+					"fi" => "Finnish",
+					"fj" => "Fijian",
+					"fo" => "Faroese",
+					"fr" => "French",
+					"fy" => "Western Frisian",
+					"ga" => "Irish",
+					"gd" => "Scottish Gaelic",
+					"gl" => "Galician",
+					"gn" => "Guarani",
+					"gu" => "Gujarati",
+					"gv" => "Manx",
+					"ha" => "Hausa",
+					"he" => "Hebrew",
+					"hi" => "Hindi",
+					"ho" => "Hiri Motu",
+					"hr" => "Croatian",
+					"ht" => "Haitian",
+					"hu" => "Hungarian",
+					"hy" => "Armenian",
+					"hz" => "Herero",
+					"ia" => "Interlingua",
+					"id" => "Indonesian",
+					"ie" => "Interlingue",
+					"ig" => "Igbo",
+					"ii" => "Sichuan Yi",
+					"ik" => "Inupiaq",
+					"io" => "Ido",
+					"is" => "Icelandic",
+					"it" => "Italian",
+					"iu" => "Inuktitut",
+					"ja" => "Japanese",
+					"jv" => "Javanese",
+					"ka" => "Georgian",
+					"kg" => "Kongo",
+					"ki" => "Kikuyu",
+					"kj" => "Kuanyama",
+					"kk" => "Kazakh",
+					"kl" => "Kalaallisut",
+					"km" => "Central Khmer",
+					"kn" => "Kannada",
+					"ko" => "Korean",
+					"kr" => "Kanuri",
+					"ks" => "Kashmiri",
+					"ku" => "Kurdish",
+					"kv" => "Komi",
+					"kw" => "Cornish",
+					"ky" => "Kyrgyz",
+					"la" => "Latin",
+					"lb" => "Luxembourgish",
+					"lg" => "Ganda",
+					"li" => "Limburgish",
+					"ln" => "Lingala",
+					"lo" => "Lao",
+					"lt" => "Lithuanian",
+					"lu" => "Luba-Katanga",
+					"lv" => "Latvian",
+					"mg" => "Malagasy",
+					"mh" => "Marshallese",
+					"mi" => "Maori",
+					"mk" => "Macedonian",
+					"ml" => "Malayalam",
+					"mn" => "Mongolian",
+					"mr" => "Marathi",
+					"ms" => "Malay",
+					"mt" => "Maltese",
+					"my" => "Burmese",
+					"na" => "Nauru",
+					"nb" => "Norwegian Bokmål",
+					"nd" => "North Ndebele",
+					"ne" => "Nepali",
+					"ng" => "Ndonga",
+					"nl" => "Dutch",
+					"nn" => "Norwegian Nynorsk",
+					"no" => "Norwegian",
+					"nr" => "South Ndebele",
+					"nv" => "Navajo",
+					"ny" => "Chichewa",
+					"oc" => "Occitan",
+					"oj" => "Ojibwa",
+					"om" => "Oromo",
+					"or" => "Oriya",
+					"os" => "Ossetian",
+					"pa" => "Punjabi",
+					"pi" => "Pali",
+					"pl" => "Polish",
+					"ps" => "Pashto",
+					"pt" => "Portuguese",
+					"qu" => "Quechua",
+					"rm" => "Romansh",
+					"rn" => "Rundi",
+					"ro" => "Romanian",
+					"ru" => "Russian",
+					"rw" => "Kinyarwanda",
+					"sa" => "Sanskrit",
+					"sc" => "Sardinian",
+					"sd" => "Sindhi",
+					"se" => "Northern Sami",
+					"sg" => "Sango",
+					"si" => "Sinhala",
+					"sk" => "Slovak",
+					"sl" => "Slovenian",
+					"sm" => "Samoan",
+					"sn" => "Shona",
+					"so" => "Somali",
+					"sq" => "Albanian",
+					"sr" => "Serbian",
+					"ss" => "Swati",
+					"st" => "Southern Sotho",
+					"su" => "Sundanese",
+					"sv" => "Swedish",
+					"sw" => "Swahili",
+					"ta" => "Tamil",
+					"te" => "Telugu",
+					"tg" => "Tajik",
+					"th" => "Thai",
+					"ti" => "Tigrinya",
+					"tk" => "Turkmen",
+					"tl" => "Tagalog",
+					"tn" => "Tswana",
 					"to" => "Tonga",
-					"tt" => "Trinidad and Tobago",
-					"tn" => "Tunisia",
-					"tr" => "Turkey",
-					"tm" => "Turkmenistan",
-					"ug" => "Uganda",
-					"ua" => "Ukraine",
-					"ae" => "United Arab Emirates",
-					"gb" => "United Kingdom",
-					"us" => "United States",
-					"uy" => "Uruguay",
-					"uz" => "Uzbekistan",
-					"vu" => "Vanuatu",
-					"ve" => "Venezuela",
-					"vn" => "Vietnam",
-					"vg" => "Virgin Islands, British",
-					"vi" => "Virgin Islands, U.S.",
-					"ye" => "Yemen",
-					"zm" => "Zambia",
-					"zw" => "Zimbabwe"
+					"tr" => "Turkish",
+					"ts" => "Tsonga",
+					"tt" => "Tatar",
+					"tw" => "Twi",
+					"ty" => "Tahitian",
+					"ug" => "Uyghur",
+					"uk" => "Ukrainian",
+					"ur" => "Urdu",
+					"uz" => "Uzbek",
+					"ve" => "Venda",
+					"vi" => "Vietnamese",
+					"vo" => "Volapük",
+					"wa" => "Walloon",
+					"wo" => "Wolof",
+					"xh" => "Xhosa",
+					"yi" => "Yiddish",
+					"yo" => "Yoruba",
+					"za" => "Zhuang",
+					"zh" => "Chinese",
+					"zh-cn" => "Chinese (Simplified)",
+					"zh-tw" => "Chinese (Traditional)",
+					"zu" => "Zulu"
 				]
 			],
 			"nsfw" => [
 				"display" => "NSFW",
 				"option" => [
 					"yes" => "Yes",
-					"maybe" => "Maybe",
 					"no" => "No"
 				]
 			]
@@ -301,16 +276,6 @@ class yep{
 			throw new Exception("Search term is empty!");
 		}
 		
-		$country = $get["country"];
-		$nsfw = $get["nsfw"];
-		
-		switch($nsfw){
-			
-			case "yes": $nsfw = "off"; break;
-			case "maybe": $nsfw = "moderate"; break;
-			case "no": $nsfw = "strict"; break;
-		}
-		
 		$out = [
 			"status" => "ok",
 			"spelling" => [
@@ -327,22 +292,23 @@ class yep{
 			"related" => []
 		];
 		
+		// parse filters
+		$filters = [
+			"limit" => 100, // wwwwwwwwwwwwwww
+			"query" => $search,
+		];
+		
+		if($get["nsfw"] == "no"){ $filters["safeSearch"] = "moderate"; }
+		if($get["lang"] != "any"){ $filters["hl"] = $get["lang"]; }
+		
 		try{
 			
-			// https://api.yep.com/fs/2/search?client=web&gl=CA&no_correct=false&q=undefined+variable+javascript&safeSearch=off&type=web
+			// https://api.yep.com/fs/2/search?limit=20&query=asmr
 			$json =
 				$this->get(
 					$this->backend->get_ip(),
 					"https://api.yep.com/fs/2/search",
-					[
-						"client" => "web",
-						"gl" => $country == "all" ? $country : strtoupper($country),
-						"limit" => "99999",
-						"no_correct" => "false",
-						"q" => $search,
-						"safeSearch" => $nsfw,
-						"type" => "web"
-					]
+					$filters
 				);
 			
 		}catch(Exception $error){
@@ -408,7 +374,7 @@ class yep{
 									)
 								),
 							"url" => $item["url"],
-							"date" => strtotime($item["first_seen"]),
+							"date" => null,
 							"type" => "web",
 							"thumb" => [
 								"url" => null,
@@ -419,265 +385,6 @@ class yep{
 						];
 						break;
 				}
-			}
-		}
-		
-		if(isset($json[1]["featured_news"])){
-			
-			foreach($json[1]["featured_news"] as $news){
-				
-				$out["news"][] = [
-					"title" => $news["title"],
-					"description" =>
-						$this->titledots(
-							strip_tags(
-								html_entity_decode(
-									$news["snippet"]
-								)
-							)
-						),
-					"date" => strtotime($news["first_seen"]),
-					"thumb" =>
-						isset($news["img"]) ?
-						[
-							"url" => $this->unshiturl($news["img"]),
-							"ratio" => "16:9"
-						] :
-						[
-							"url" => null,
-							"ratio" => null
-						],
-					"url" => $news["url"]
-				];
-			}
-		}
-		
-		if(isset($json[1]["featured_images"])){
-			
-			foreach($json[1]["featured_images"] as $image){
-				
-				if(
-					$image["width"] !== 0 &&
-					$image["height"] !== 0
-				){
-					
-					$thumb_width = $image["width"] >= 260 ? 260 : $image["width"];
-					$thumb_height = ceil($image["height"] * ($thumb_width / $image["width"]));
-					
-					$width = $image["width"];
-					$height = $image["height"];
-				}else{
-					
-					$thumb_width = null;
-					$thumb_height = null;
-					$width = null;
-					$height = null;
-				}
-				
-				$out["image"][] = [
-					"title" => $image["title"],
-					"source" => [
-						[
-							"url" => $image["image_id"],
-							"width" => $width,
-							"height" => $height
-						],
-						[
-							"url" => $image["src"],
-							"width" => $thumb_width,
-							"height" => $thumb_height
-						]
-					],
-					"url" => $image["host_page"]
-				];
-			}
-		}
-		
-		return $out;
-	}
-	
-	
-	
-	public function image($get){
-		
-		$search = $get["s"];
-		if(strlen($search) === 0){
-			
-			throw new Exception("Search term is empty!");
-		}
-		
-		$country = $get["country"];
-		$nsfw = $get["nsfw"];
-		
-		switch($nsfw){
-			
-			case "yes": $nsfw = "off"; break;
-			case "maybe": $nsfw = "moderate"; break;
-			case "no": $nsfw = "strict"; break;
-		}
-		
-		$out = [
-			"status" => "ok",
-			"npt" => null,
-			"image" => []
-		];
-		
-		try{
-			
-			$json =
-				$this->get(
-					$this->backend->get_ip(), // no nextpage!
-					"https://api.yep.com/fs/2/search",
-					[
-						"client" => "web",
-						"gl" => $country == "all" ? $country : strtoupper($country),
-						"no_correct" => "false",
-						"q" => $search,
-						"safeSearch" => $nsfw,
-						"type" => "images"
-					]
-				);
-		}catch(Exception $error){
-			
-			throw new Exception("Failed to fetch JSON");
-		}
-		
-		$this->detect_cf($json);
-		
-		$json = json_decode($json, true);
-		
-		if($json === null){
-			
-			throw new Exception("Failed to decode JSON");
-		}
-		
-		if(isset($json[1]["results"])){
-			foreach($json[1]["results"] as $item){
-				
-				if(
-					$item["width"] !== 0 &&
-					$item["height"] !== 0
-				){
-					
-					$thumb_width = $item["width"] >= 260 ? 260 : $item["width"];
-					$thumb_height = ceil($item["height"] * ($thumb_width / $item["width"]));
-					
-					$width = $item["width"];
-					$height = $item["height"];
-				}else{
-					
-					$thumb_width = null;
-					$thumb_height = null;
-					$width = null;
-					$height = null;
-				}
-				
-				$out["image"][] = [
-					"title" => $item["title"],
-					"source" => [
-						[
-							"url" => $item["image_id"],
-							"width" => $width,
-							"height" => $height
-						],
-						[
-							"url" => $item["src"],
-							"width" => $thumb_width,
-							"height" => $thumb_height
-						]
-					],
-					"url" => $item["host_page"]
-				];
-			}
-		}
-		
-		return $out;
-	}
-	
-	
-	public function news($get){
-		
-		$search = $get["s"];
-		if(strlen($search) === 0){
-			
-			throw new Exception("Search term is empty!");
-		}
-		
-		$country = $get["country"];
-		$nsfw = $get["nsfw"];
-		
-		switch($nsfw){
-			
-			case "yes": $nsfw = "off"; break;
-			case "maybe": $nsfw = "moderate"; break;
-			case "no": $nsfw = "strict"; break;
-		}
-		
-		$out = [
-			"status" => "ok",
-			"npt" => null,
-			"news" => []
-		];
-		
-		try{
-			
-			// https://api.yep.com/fs/2/search?client=web&gl=CA&no_correct=false&q=undefined+variable+javascript&safeSearch=off&type=web
-			$json =
-				$this->get(
-					$this->backend->get_ip(),
-					"https://api.yep.com/fs/2/search",
-					[
-						"client" => "web",
-						"gl" => $country == "all" ? $country : strtoupper($country),
-						"limit" => "99999",
-						"no_correct" => "false",
-						"q" => $search,
-						"safeSearch" => $nsfw,
-						"type" => "news"
-					]
-				);
-		}catch(Exception $error){
-			
-			throw new Exception("Failed to fetch JSON");
-		}
-		
-		$this->detect_cf($json);
-		
-		$json = json_decode($json, true);
-		//$json = json_decode(file_get_contents("scraper/yep.json"), true);
-		
-		if($json === null){
-			
-			throw new Exception("Failed to decode JSON");
-		}
-		
-		if(isset($json[1]["results"])){
-			foreach($json[1]["results"] as $item){
-				
-				$out["news"][] = [
-					"title" => $item["title"],
-					"author" => null,
-					"description" =>
-						$this->titledots(
-							strip_tags(
-								html_entity_decode(
-									$item["snippet"]
-								)
-							)
-						),
-					"date" => strtotime($item["first_seen"]),
-					"thumb" =>
-						isset($item["img"]) ?
-						[
-							"url" => $this->unshiturl($item["img"]),
-							"ratio" => "16:9"
-						] :
-						[
-							"url" => null,
-							"ratio" => null
-						],
-					"url" => $item["url"]
-				];
 			}
 		}
 		

@@ -244,10 +244,6 @@ $settings = [
 						"text" => "Qwant"
 					],
 					[
-						"value" => "yep",
-						"text" => "Yep"
-					],
-					[
 						"value" => "baidu",
 						"text" => "Baidu"
 					],
@@ -382,10 +378,6 @@ $settings = [
 					[
 						"value" => "qwant",
 						"text" => "Qwant"
-					],
-					[
-						"value" => "yep",
-						"text" => "Yep"
 					],
 					[
 						"value" => "mojeek",

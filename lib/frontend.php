@@ -673,7 +673,6 @@ class frontend{
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
-						"yep" => "Yep",
 						"baidu" => "Baidu",
 						"solofield" => "Solofield",
 						"pinterest" => "Pinterest",
@@ -724,7 +723,6 @@ class frontend{
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
-						"yep" => "Yep",
 						"mojeek" => "Mojeek",
 						"baidu" => "Baidu"
 					]
