@@ -2,6 +2,52 @@
 
 class frontend{
 	
+	public function validateurl($url, $net_validate = false){
+		
+		$url_parts = parse_url($url);
+		
+		// check if required parts are there
+		if(
+			!isset($url_parts["scheme"]) ||
+			!(
+				$url_parts["scheme"] == "http" ||
+				$url_parts["scheme"] == "https"
+			) ||
+			!isset($url_parts["host"])
+		){
+			return false;
+		}
+		
+		if($net_validate){
+			$ip = 
+				str_replace(
+					["[", "]"], // handle ipv6
+					"",
+					$url_parts["host"]
+				);
+			
+			// if its not an IP
+			if(!filter_var($ip, FILTER_VALIDATE_IP)){
+				
+				// resolve domain's IP
+				$ip = gethostbyname($url_parts["host"] . ".");
+			}
+			
+			// check if its localhost
+			if(
+				filter_var(
+					$ip,
+					FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+				) === false
+			){
+				
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	public function load($template, $replacements = []){
 		
 		$replacements["server_name"] = htmlspecialchars(config::SERVER_NAME);
@@ -622,6 +668,7 @@ class frontend{
 						"yandex" => "Yandex",
 						"brave" => "Brave",
 						"google" => "Google",
+						"google_api" => "Google API",
 						"google_cse" => "Google CSE",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
@@ -638,8 +685,7 @@ class frontend{
 						"fivehpx" => "500px",
 						"vsco" => "VSCO",
 						"imgur" => "Imgur",
-						"ftm" => "FindThatMeme",
-						//"sankakucomplex" => "SankakuComplex"
+						"ftm" => "FindThatMeme"
 					]
 				];
 				break;
@@ -692,6 +738,22 @@ class frontend{
 						"sc" => "SoundCloud",
 						"swisscows" => "Swisscows (SoundCloud)"
 						//"spotify" => "Spotify"
+					]
+				];
+				break;
+			
+			case "booru":
+				$filters["scraper"] = [
+					"display" => "Scraper",
+					"option" => [
+						"safebooru" => "Safebooru",
+						"konachan" => "Konachan",
+						"tbib" => "The Big Imageboard",
+						"gelbooru" => "Gelbooru",
+						"yandere" => "Yande.re",
+						"tbib" => "The Big Imageboard",
+						"sankakucomplex" => "SankakuComplex",
+						"soybooru" => "SoyBooru"
 					]
 				];
 				break;
@@ -871,6 +933,7 @@ class frontend{
 		
 		$html = null;
 		
+		//foreach(["web", "images", "videos", "news", "music", "booru"] as $type){
 		foreach(["web", "images", "videos", "news", "music"] as $type){
 			
 			$html .= '<a href="/' . $type . '?s=' . urlencode($query);

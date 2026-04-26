@@ -264,6 +264,25 @@ class google_api{
 					"yes" => "Yes", // safe=active
 					"no" => "No" // safe=off
 				]
+			],
+			"sort" => [ // sort
+				"display" => "Sort by",
+				"option" => [
+					"any" => "Any order",
+					"date:d" => "Oldest",
+					"date:a" => "Newest"
+				]
+			],
+			"newer" => [
+				"display" => "Newer than",
+				"option" => "_DATE"
+			],			
+			"rm_dupes" => [ // filter
+				"display" => "Remove duplicates",
+				"option" => [
+					"yes" => "Yes", // 1
+					"no" => "No" // 0
+				]
 			]
 		];
 		
@@ -313,109 +332,29 @@ class google_api{
 								"zh-CN" => "Chinese (Simplified)",
 								"zh-TW" => "Chinese (Traditional)"
 							]
-						],
-						"sort" => [
-							"display" => "Sort by",
-							"option" => [
-								"any" => "Any order",
-								"date:d" => "Oldest",
-								"date:a" => "Newest"
-							]
-						],
-						"newer" => [
-							"display" => "Newer than",
-							"option" => "_DATE"
-						],
-						"rm_dupes" => [
-							"display" => "Remove duplicates",
-							"option" => [
-								"yes" => "Yes",
-								"no" => "No"
-							]
 						]
 					]
 				);
 				break;
-			/*
+			
 			case "images":
 				return array_merge(
 					$base,
 					[
-						"time" => [ // tbs=qdr:<time>
-							"display" => "Time posted",
-							"option" => [
-								"any" => "Any time",
-								"d" => "Past 24 hours",
-								"w" => "Past week",
-								"m" => "Past month",
-								"y" => "Past year"
-							]
-						],
-						"size" => [ // imgsz
+						"size" => [ // imgSize
 							"display" => "Size",
 							"option" => [
 								"any" => "Any size",
-								"l" => "Large",
-								"m" => "Medium",
-								"i" => "Icon",
-								"qsvga" => "Larger than 400x300",
-								"vga" => "Larger than 640x480",
-								"svga" => "Larger than 800x600",
-								"xga" => "Larger than 1024x768",
-								"2mp" => "Larger than 2MP",
-								"4mp" => "Larger than 4MP",
-								"6mp" => "Larger than 6MP",
-								"8mp" => "Larger than 8MP",
-								"10mp" => "Larger than 10MP",
-								"12mp" => "Larger than 12MP",
-								"15mp" => "Larger than 15MP",
-								"20mp" => "Larger than 20MP",
-								"40mp" => "Larger than 40MP",
-								"70mp" => "Larger than 70MP"
+								"icon" => "Icon",
+								"small" => "Small",
+								"medium" => "Medium",
+								"large" => "Large",
+								"xlarge" => "X-Large",
+								"xxlarge" => "XX-Large",
+								"huge" => "Huge"
 							]
 						],
-						"ratio" => [ // imgar
-							"display" => "Aspect ratio",
-							"option" => [
-								"any" => "Any ratio",
-								"t|xt" => "Tall",
-								"s" => "Square",
-								"w" => "Wide",
-								"xw" => "Panoramic"
-							]
-						],
-						"color" => [ // imgc
-							"display" => "Color",
-							"option" => [
-								"any" => "Any color",
-								"color" => "Full color",
-								"bnw" => "Black & white",
-								"trans" => "Transparent",
-								// from here, imgcolor
-								"red" => "Red",
-								"orange" => "Orange",
-								"yellow" => "Yellow",
-								"green" => "Green",
-								"teal" => "Teal",
-								"blue" => "Blue",
-								"purple" => "Purple",
-								"pink" => "Pink",
-								"white" => "White",
-								"gray" => "Gray",
-								"black" => "Black",
-								"brown" => "Brown"
-							]
-						],
-						"type" => [ // tbs=itp:<type>
-							"display" => "Type",
-							"option" => [
-								"any" => "Any type",
-								"clipart" => "Clip Art",
-								"lineart" => "Line Drawing",
-								"animated" => "Animated"
-							]
-						],
-						"format" => [ // as_filetype
+						"format" => [ // fileType
 							"display" => "Format",
 							"option" => [
 								"any" => "Any format",
@@ -429,17 +368,55 @@ class google_api{
 								"craw" => "RAW"
 							]
 						],
-						"rights" => [ // tbs=sur:<rights>
+						"color" => [
+							"display" => "Color",
+							"option" => [
+								"any" => "Any color",
+								
+								"color" => "Full color", // imgColorType
+								"mono" => "Black & White",
+								"trans" => "Transparent background",
+								
+								"red" => "Red", // imgDominantColor
+								"orange" => "Orange",
+								"yellow" => "Yellow",
+								"green" => "Green",
+								"teal" => "Teal",
+								"blue" => "Blue",
+								"purple" => "Purple",
+								"pink" => "Pink",
+								"white" => "White",
+								"gray" => "Gray",
+								"black" => "Black",
+								"brown" => "Brown"
+							]
+						],
+						"type" => [ // imgType
+							"display" => "Type",
+							"option" => [
+								"any" => "Any type",
+								"clipart" => "Clip Art",
+								"face" => "Faces",
+								"lineart" => "Line Drawing",
+								"stock" => "Stock photos",
+								"photo" => "Photos",
+								"animated" => "Animated",
+							]
+						],
+						"rights" => [ // rights
 							"display" => "Usage rights",
 							"option" => [
 								"any" => "Any license",
-								"cl" => "Creative Commons licenses",
-								"ol" => "Commercial & other licenses"
+								"cc_publicdomain" => "Public domain",
+								"cc_attribute" => "Attribution required",
+								"cc_sharealike" => "Sharealike",
+								"cc_noncommercial" => "Non-commercial use only",
+								"cc_nonderived" => "Original works"
 							]
 						]
 					]
 				);
-				break;*/
+				break;
 		}
 	}
 	
@@ -484,6 +461,7 @@ class google_api{
 		
 		return $data;
 	}
+	
 	
 	public function web($get){
 		
@@ -730,6 +708,160 @@ class google_api{
 		
 		return $out;
 	}
+	
+	
+	public function image($get){
+		
+		// rotate proxy + key on EVERY request
+		$keydata = $this->backend->get_key();
+		$proxy = $this->backend->get_ip($keydata["increment"]);
+		
+		if($get["npt"]){
+			
+			// $p is never used
+			[$params, $p] = $this->backend->get(
+				$get["npt"],
+				"web"
+			);
+			
+			$params = json_decode($params, true);
+			
+			$params["key"] = $keydata["key"];
+			
+		}else{
+			
+			//$json = file_get_contents("scraper/google.json");
+			$params = [
+				"q" => $get["s"],
+				"cx" => config::GOOGLE_CX_ENDPOINT,
+				"num" => 10,
+				"start" => 1,
+				"searchType" => "image",
+				"key" => $keydata["key"]
+			];
+			
+			//
+			// parse filters
+			//
+			if($get["newer"] !== false){
+				
+				$params["dateRestrict"] = "d" . (round((time() - $get["newer"]) / 100000));
+			}
+			
+			if($get["rm_dupes"] == "no"){ $params["filter"] = "0"; }
+			if($get["country"] != "any"){ $params["gl"] = $get["country"]; }
+			
+			if($get["nsfw"] == "yes"){
+				
+				$params["safe"] = "off";
+			}else{
+				
+				$params["safe"] = "active";
+			}
+			
+			if($get["sort"] != "any"){ $params["sort"] = $get["sort"]; }
+			
+			// image filters
+			if($get["size"] != "any"){ $params["imgSize"] = $get["size"]; }
+			if($get["format"] != "any"){ $params["fileType"] = $get["format"]; }
+			
+			switch($get["color"]){
+				
+				case "any":
+					break;
+				
+				case "color":
+				case "mono":
+				case "trans":
+					$params["imgColorType"] = $get["color"];
+					break;
+				
+				default:
+					$params["imgDominantColor"] = $get["color"];
+					break;
+			}
+			
+			if($get["type"] != "any"){ $params["imgType"] = $get["type"]; }
+			if($get["rights"] != "any"){ $params["rights"] = $get["rights"]; }
+		}
+		
+		try{
+			$json =
+				$this->get(
+					$proxy,
+					"https://www.googleapis.com/customsearch/v1",
+					$params
+				);
+		}catch(Exception $error){
+			
+			throw new Exception("Failed to fetch JSON");
+		}
+		
+		$json = json_decode($json, true);
+		
+		if($json === null){
+			
+			throw new Exception("Failed to decode JSON");
+		}
+		
+		$out = [
+			"status" => "ok",
+			"npt" => null,
+			"image" => []
+		];
+		
+		if(isset($json["error"]["message"])){
+			
+			throw new Exception(
+				"API returned an error: " .
+				$json["error"]["message"] .
+				" (key #" . $keydata["increment"] . ")"
+			);
+		}
+		
+		if(!isset($json["items"])){
+			
+			// google just doesnt return items when theres no results
+			return $out;
+		}
+		
+		foreach($json["items"] as $image){
+			
+			$out["image"][] = [
+				"title" => $this->titledots($image["title"]),
+				"source" => [
+					[
+						"url" => $image["link"],
+						"width" => (int)$image["image"]["width"],
+						"height" => (int)$image["image"]["height"]
+					],
+					[
+						"url" => $image["image"]["thumbnailLink"],
+						"width" => (int)$image["image"]["thumbnailWidth"],
+						"height" => (int)$image["image"]["thumbnailHeight"]
+					]
+				],
+				"url" => $image["image"]["contextLink"]
+			];
+		}
+		
+		// get npt
+		if(isset($json["queries"]["nextPage"][0]["startIndex"])){
+			
+			unset($params["key"]);
+			$params["start"] = (int)$json["queries"]["nextPage"][0]["startIndex"];
+			
+			$out["npt"] =
+				$this->backend->store(
+					json_encode($params),
+					"web",
+					$proxy
+				);
+		}
+		
+		return $out;
+	}
+	
 	
 	private function titledots($title){
 		
