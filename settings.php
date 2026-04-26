@@ -162,14 +162,6 @@ $settings = [
 						"text" => "Yep"
 					],
 					[
-						"value" => "greppr",
-						"text" => "Greppr"
-					],
-					[
-						"value" => "crowdview",
-						"text" => "Crowdview"
-					],
-					[
 						"value" => "mwmbl",
 						"text" => "Mwmbl"
 					],
@@ -196,10 +188,6 @@ $settings = [
 					[
 						"value" => "wiby",
 						"text" => "wiby"
-					],
-					[
-						"value" => "curlie",
-						"text" => "Curlie"
 					]
 				]
 			],
