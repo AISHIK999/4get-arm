@@ -12,6 +12,8 @@ class google{
 		
 		include "lib/backend.php";
 		$this->backend = new backend("google");
+		
+		$this->message = "Still working on a Google scraper that uses a headful browser. It will require Firefox + a webExtension running on a dedicated server. Waiting for my EDID adapter and we can get the show going. In the meantime, use the Google CSE/API or Yahoo JP/Startpage scrapers. They're all crippled in their own special ways but they're serviceable I guess.";
 	}
 	
 	public function getfilters($page){
@@ -505,7 +507,7 @@ class google{
 		}
 	}
 	
-	private function get($proxy, $url, $get = [], $alt_ua = false){
+	private function get($proxy, $url, $get = []){
 		
 		$curlproc = curl_init();
 		
@@ -518,35 +520,22 @@ class google{
 		
 		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
 		
-		if($alt_ua === true){
-			
-			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
-				"User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 26_0_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/406.0.862495628 Mobile/15E148 Safari/604.1",
-				"Accept: text/html, application/xml;q=0.9, */*;q=0.8",
-				"Accept-Language: en-US,en;q=0.8",
-				"Accept-Encoding: gzip, deflate",
-				"Connection: Keep-Alive",
-				"Cache-Control: no-cache"
-			]);
-		}else{
-			
-			curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
-				"User-Agent: " . config::USER_AGENT,
-				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-				"Accept-Language: en-US,en;q=0.5",
-				"Accept-Encoding: gzip",
-				"DNT: 1",
-				"Connection: keep-alive",
-				"Upgrade-Insecure-Requests: 1",
-				"Sec-Fetch-Dest: document",
-				"Sec-Fetch-Mode: navigate",
-				"Sec-Fetch-Site: none",
-				"Sec-Fetch-User: ?1",
-				"Priority: u=1",
-				"TE: trailers"
-			]);
-		}
+		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+		curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
+			"User-Agent: " . config::USER_AGENT,
+			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+			"Accept-Language: en-US,en;q=0.5",
+			"Accept-Encoding: gzip",
+			"DNT: 1",
+			"Connection: keep-alive",
+			"Upgrade-Insecure-Requests: 1",
+			"Sec-Fetch-Dest: document",
+			"Sec-Fetch-Mode: navigate",
+			"Sec-Fetch-Site: none",
+			"Sec-Fetch-User: ?1",
+			"Priority: u=1",
+			"TE: trailers"
+		]);
 		
 		curl_setopt($curlproc, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curlproc, CURLOPT_SSL_VERIFYHOST, 2);
@@ -574,228 +563,22 @@ class google{
 	
 	public function web($get){
 		
-		throw new Exception("There are no known ways to scrape Google's /search endpoint without JS at this time. I'm working on a method that extracts cookies from browsers. Use Google API/CSE/Yahoo JP/Startpage for google results for now.");
-	}
-	
-	
-	public function video($get){
-		throw new Exception("There are no known ways to scrape Google's /search endpoint without JS at this time. I'm working on a method that extracts cookies from browsers. Use Google API/CSE/Yahoo JP/Startpage for google results for now.");
-	}
-	
-	
-	public function news($get){
-		throw new Exception("There are no known ways to scrape Google's /search endpoint without JS at this time. I'm working on a method that extracts cookies from browsers. Use Google API/CSE/Yahoo JP/Startpage for google results for now.");
+		throw new Exception($this->message);
 	}
 	
 	
 	public function image($get){
-		
-		// generate parameters
-		if($get["npt"]){
-			
-			[$params, $proxy] =
-				$this->backend->get(
-					$get["npt"],
-					"images"
-				);
-			
-			$params = json_decode($params, true);
-			
-			$page = $params["page"] + 1;
-			$params = $params["params"];
-			$params["async"] = "_fmt:json,p:1,ijn:{$page}";
-			
-		}else{
-			
-			$search = $get["s"];
-			if(strlen($search) === 0){
-			
-				throw new Exception("Search term is empty!");
-			}
-			
-			$proxy = $this->backend->get_ip();
-			$country = $get["country"];
-			$nsfw = $get["nsfw"];
-			$time = $get["time"];
-			$size = $get["size"];
-			$ratio = $get["ratio"];
-			$color = $get["color"];
-			$type = $get["type"];
-			$format = $get["format"];
-			$rights = $get["rights"];
-			
-			$page = 0;
-			
-			$params = [
-				"q" => $search,
-				"tbm" => "isch",
-				"asearch" => "isch",
-				"async" => "_fmt:json,p:0,ijn:{$page}", // ijn:0 = page 1
-			];
-			
-			// country (image search uses cr instead of gl)
-			if($country != "any"){
-				
-				$params["cr"] = "country" . strtoupper($country);
-			}
-			
-			// nsfw
-			$params["safe"] = $nsfw == "yes" ? "off" : "active";
-			
-			// generate tbs
-			$tbs = [];
-			
-			// time
-			if($time != "any"){
-				
-				$tbs["qdr"] = $time;
-			}
-			
-			// size
-			if($size != "any"){
-				
-				$params["imgsz"] = $size;
-			}
-			
-			// ratio
-			if($ratio != "any"){
-				
-				$params["imgar"] = $ratio;
-			}
-			
-			// color
-			if($color != "any"){
-				
-				if(
-					$color == "color" ||
-					$color == "trans"
-				){
-					
-					$params["imgc"] = $color;
-				}elseif($color == "bnw"){
-					
-					$params["imgc"] = "gray";
-				}else{
-					
-					$tbs["ic"] = "specific";
-					$tbs["isc"] = $color;
-				}
-			}
-			
-			// type
-			if($type != "any"){
-				
-				$tbs["itp"] = $type;
-			}
-			
-			// format
-			if($format != "any"){
-				
-				$params["as_filetype"] = $format;
-			}
-			
-			// rights (tbs)
-			if($rights != "any"){
-				
-				$tbs["sur"] = $rights;
-			}
-			
-			// append tbs
-			if(count($tbs) !== 0){
-				
-				$params["tbs"] = "";
-				
-				foreach($tbs as $key => $value){
-					
-					$params["tbs"] .= $key . ":" . $value . ",";
-				}
-				
-				$params["tbs"] = rtrim($params["tbs"], ",");
-			}
-		}
-		
-		try{
-			$json = 
-				$this->get(
-					$proxy,
-					"https://www.google.com/search",
-					$params
-				);
-		}catch(Exception $error){
-			
-			throw new Exception("Failed to get search page");
-		}
-		
-		unset($params["async"]);
-		
-		//$json = file_get_contents("scraper/google.json");
-		
-		// detect captcha
-		$this->fuckhtml->load($json);
-		$this->detect_sorry();
-		
-		// remove xssi
-		$json =
-			preg_replace(
-				'/^[^{]*/',
-				"",
-				$json
-			);
-		
-		$json = json_decode($json, true);
-		
-		if($json === null){
-			
-			throw new Exception("Failed to decode JSON");
-		}
-		
-		$out = [
-			"status" => "ok",
-			"npt" => null,
-			"image" => []
-		];
-		
-		if(!isset($json["ischj"]["metadata"])){
-			
-			throw new Exception("Google did not return an image array");
-		}
-		
-		foreach($json["ischj"]["metadata"] as $image){
-			
-			$out["image"][] = [
-				"title" => $this->titledots($image["result"]["page_title"]),
-				"source" => [
-					[
-						"url" => $image["original_image"]["url"],
-						"width" => (int)$image["original_image"]["width"],
-						"height" => (int)$image["original_image"]["height"]
-					],
-					[
-						"url" => $image["thumbnail"]["url"],
-						"width" => (int)$image["thumbnail"]["width"],
-						"height" => (int)$image["thumbnail"]["height"]
-					]
-				],
-				"url" => $image["result"]["referrer_url"]
-			];
-		}
-		
-		$page++;
-		
-		if(count($out["image"]) === 10){
-			
-			$out["npt"] =
-				$this->backend->store(
-					json_encode([
-						"params" => $params,
-						"page" => $page
-					]),
-					"images",
-					$proxy
-				);
-		}
-		
-		return $out;
+		throw new Exception($this->message);
+	}
+	
+	
+	public function video($get){
+		throw new Exception($this->message);
+	}
+	
+	
+	public function news($get){
+		throw new Exception($this->message);
 	}
 	
 	
