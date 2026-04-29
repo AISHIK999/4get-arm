@@ -297,8 +297,6 @@ class pinterest{
 			throw new Exception("Failed to decode JSON");
 		}
 		
-		print_r($json);
-		
 		$out = [
 			"status" => "ok",
 			"npt" => null,
