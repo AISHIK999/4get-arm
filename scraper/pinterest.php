@@ -297,6 +297,8 @@ class pinterest{
 			throw new Exception("Failed to decode JSON");
 		}
 		
+		print_r($json);
+		
 		$out = [
 			"status" => "ok",
 			"npt" => null,
@@ -426,7 +428,7 @@ class pinterest{
 							]
 						],
 						"url" =>
-							$item["link"] === null ?
+							!isset($item["link"]) ?
 							"https://ca.pinterest.com/pin/" . $item["id"] :
 							$item["link"]
 					];
