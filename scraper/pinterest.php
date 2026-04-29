@@ -297,6 +297,14 @@ class pinterest{
 			throw new Exception("Failed to decode JSON");
 		}
 		
+		if(
+			isset($json["client_context"]["is_bad_bot"]) &&
+			(int)$json["client_context"]["is_bad_bot"] === 1
+		){
+			
+			throw new Exception("Pinterest blocked this instance or request proxy.");
+		}
+		
 		$out = [
 			"status" => "ok",
 			"npt" => null,
