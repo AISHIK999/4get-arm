@@ -13,11 +13,11 @@ _NOT to be confused with 4get.ch, 4get.lol and friends! I **don't** host these._
 
 ## Totally unbiased comparison between alternatives
 
-|                            | 4get                    | searx(ng) | libreY      | araa      | hearch.co         |
-|----------------------------|-------------------------|-----------|-------------|-----------|-------------------|
-| RAM usage                  | 200-400mb~              | 2GB~      | 200-400mb~  | 2GB~      | idk               |
-| Does it suck               | no (debunked by snopes) | yes       | yes         | a little  | better than searx |
-| Does it work               | ye                      | sometimes | sometimes   | sometimes | yes               |
+|                            | 4get                    | searx(ng) | whoogle    | degoog                               |
+|----------------------------|-------------------------|-----------|------------|--------------------------------------|
+| RAM usage                  | 100-400mb~              | 400mb-1GB | 100mb      | 200mb-1GB                            |
+| Does it suck               | no (debunked by snopes) | yes       | kind of?   | its kinda cool but no search filters |
+| Does it work               | ye                      | lmao      | shits dead | works right now...                   |
 
 ## Features
 1. Rotating proxies on a per-scraper basis
@@ -31,25 +31,29 @@ tl;dr 4get is the best way to browse for shit.
 
 # Supported websites
 
-| Web        | Images       | Videos       | News       | Music      | Autocompleter |
-|------------|--------------|--------------|------------|------------|---------------|
-| DuckDuckGo | DuckDuckGo   | YouTube      | DuckDuckGo | Soundcloud | Brave         |
-| Brave      | Brave        | Sepia Search | Brave      |            | DuckDuckGo    |
-| Yandex     | Yandex       | DuckDuckGo   | Google     |            | Yandex        |
-| Google     | Google       | Brave        | Startpage  |            | Google        |
-| Startpage  | Startpage    | Yandex       | Qwant      |            | Startpage     |
-| Qwant      | Qwant        | Google       | Mojeek     |            | Kagi          |
-| Ghostery   | Yep          | Startpage    | Baidu      |            | Qwant         |
-| Yep        | Baidu        | Qwant        |            |            | Ghostery      |
-| Greppr     | Pinterest    | Baidu        |            |            | Yep           |
-| Crowdview  | 500px        | Coc Coc      |            |            | Marginalia    |
-| Mwmbl      | VSCO         |              |            |            | YouTube       |
-| Mojeek     | Imgur        |              |            |            | Soundcloud    |
-| Baidu      | FindThatMeme |              |            |            |               |
-| Coc Coc    |              |              |            |            |               |
-| Marginalia |              |              |            |            |               |
-| wiby       |              |              |            |            |               |
-| Curlie     |              |              |            |            |               |
+| web          | images       | videos       | news         | music      | autocomplete |
+|--------------|--------------|--------------|--------------|------------|--------------|
+| DuckDuckGo   | DuckDuckGo   | YouTube      | DuckDuckGo   | SoundCloud | Brave        |
+| Brave        | Yandex       | Vimeo        | Brave        | Swisscows  | DuckDuckGo   |
+| Yandex       | Brave        | Sepia Search | Google       |            | Yandex       |
+| Google       | Google       | DuckDuckGo   | Yahoo! JAPAN |            | Google       |
+| Google API   | Google API   | Brave        | Startpage    |            | Startpage    |
+| Google CSE   | Google CSE   | Yandex       | Qwant        |            | Kagi         |
+| Yahoo! JAPAN | Yahoo! JAPAN | Google       | Mojeek       |            | Qwant        |
+| Startpage    | Startpage    | Yahoo! JAPAN | Baidu        |            | Ghostery     |
+| Qwant        | Qwant        | Startpage    |              |            | Yep          |
+| Ghostery     | Baidu        | Qwant        |              |            | Marginalia   |
+| Yep          | Solofield    | Baidu        |              |            | YouTube      |
+| Mwmbl        | Pinterest    | Coc Coc      |              |            | SoundCloud   |
+| Mojeek       | Cara         | Solofield    |              |            |              |
+| Baidu        | Flickr       |              |              |            |              |
+| Coc Coc      | Pexels       |              |              |            |              |
+| Solofield    | Pixabay      |              |              |            |              |
+| Marginalia   | Unsplash     |              |              |            |              |
+| wiby         | 500px        |              |              |            |              |
+|              | VSCO         |              |              |            |              |
+|              | Imgur        |              |              |            |              |
+|              | FindThatMeme |              |              |            |              |
 
 # Installation
 Refer to the <a href="https://git.lolcat.ca/lolcat/4get/src/branch/master/docs/">documentation index</a>. I recommend following the <a href="https://git.lolcat.ca/lolcat/4get/src/branch/master/docs/apache2.md">apache2 guide</a>.
