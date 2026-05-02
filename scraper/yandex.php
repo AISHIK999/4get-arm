@@ -868,123 +868,71 @@ class yandex{
 		
 		if($get["npt"]){
 			
-			[$params, $proxy] =
+			[$get, $proxy] =
 				$this->backend->get(
 					$get["npt"],
 					"video"
 				);
 			
-			$params = json_decode($params, true);
-			
-			$nsfw = $params["nsfw"];
-			unset($params["nsfw"]);
+			$get = json_decode($get, true);
 		}else{
 			
-			$search = $get["s"];
-			if(strlen($search) === 0){
+			if(strlen($get["s"]) === 0){
 				
 				throw new Exception("Search term is empty!");
 			}
 			
 			$proxy = $this->backend->get_ip();
-			$nsfw = $get["nsfw"];
-			$time = $get["time"];
-			$duration = $get["duration"];
-			
-			// https://yandex.com/video/search
-			// ?tmpl_version=releases/frontend/video/v1.1168.0#8d942de0f4ebc4eb6b8f3c24ffbd1f8dbc5bbe63
-			// &format=json
-			// &request=
-			// {
-			//		"blocks":[
-			//			{"block":"extra-content","params":{},"version":2},
-			//			{"block":"i-global__params:ajax","params":{},"version":2},
-			//			{"block":"search2:ajax","params":{},"version":2},
-			//			{"block":"vital-incut","params":{},"version":2},
-			//			{"block":"content_type_search","params":{},"version":2},
-			//			{"block":"serp-controller","params":{},"version":2},
-			//			{"block":"cookies_ajax","params":{},"version":2}
-			//		],
-			//		"metadata":{
-			//			"bundles":{"lb":"^G]!q<X120"},
-			//			"assets":{"las":"react-with-dom=1;185.0=1;73.0=1;145.0=1;5a502a.0=1;32c342.0=1;b84ac8.0=1"},
-			//			"extraContent":{"names":["i-react-ajax-adapter"]}
-			//		}
-			// }
-			// &yu=4861394161661655015
-			// &from=tabbar
-			// &reqid=1693106278500184-6825210746979814879-balancer-l7leveler-kubr-yp-sas-7-BAL-4237
-			// &suggest_reqid=486139416166165501562797413447032
-			// &text=minecraft
-			
-			$params = [
-				"tmpl_version" => "releases/frontend/video/v1.1168.0#8d942de0f4ebc4eb6b8f3c24ffbd1f8dbc5bbe63",
-				"format" => "json",
-				"request" => json_encode([
-					"blocks" => [
-						(object)[
-							"block" => "extra-content",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "i-global__params:ajax",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "search2:ajax",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "vital-incut",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "content_type_search",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "serp-controller",
-							"params" => (object)[],
-							"version" => 2
-						],
-						(object)[
-							"block" => "cookies_ajax",
-							"params" => (object)[],
-							"version" => 2
-						]
-					],
-					"metadata" => (object)[
-						"bundles" => (object)[
-							"lb" => "^G]!q<X120"
-						],
-						"assets" => (object)[
-							"las" => "react-with-dom=1;185.0=1;73.0=1;145.0=1;5a502a.0=1;32c342.0=1;b84ac8.0=1"
-						],
-						"extraContent" => (object)[
-							"names" => [
-								"i-react-ajax-adapter"
-							]
-						]
-					]
-				]),
-				"text" => $search
-			];
-			
-			if($duration != "any"){
-				
-				$params["duration"] = $duration;
-			}
-			
-			if($time != "any"){
-				
-				$params["within"] = $time;
-			}
 		}
+		
+		// https://yandex.com/video/search?text=skycamefalling&from=tabbar&format=json&ncrnd=7271&p=0&parent-reqid=&request={%22blocks%22%3A[{%22block%22%3A%22video-app%22%2C%22params%22%3A{}}]}&serpid=1777751040971457-16832445014469941403-balancer-l7leveler-kubr-yp-klg-151-BAL&yu=3091577281773194415&tmpl_version=releases-frontend-video-v1.1816.0__3bdc24e10a8a138a1194877428e220a3ca0dbc5a
+		// https://yandex.com/video/search
+		// ?text=skycamefalling
+		// &from=tabbar
+		// &format=json
+		// &ncrnd=7271
+		// &p=0
+		// &parent-reqid=
+		// &request={%22blocks%22%3A[{%22block%22%3A%22video-app%22%2C%22params%22%3A{}}]} {"blocks":[{"block":"video-app","params":{}}]}
+		// &serpid=1777751040971457-16832445014469941403-balancer-l7leveler-kubr-yp-klg-151-BAL
+		// &yu=3091577281773194415
+		// &tmpl_version=releases-frontend-video-v1.1816.0__3bdc24e10a8a138a1194877428e220a3ca0dbc5a
+		
+		$params = [
+			"text" => $get["s"],
+			"from" => "tabbar",
+			"format" => "json",
+			"ncrnd" => 7271,
+			"p" => 0,
+			"parent-reqid" => "",
+			"request" => json_encode((object)[
+				"blocks" => [
+					(object)[
+						"block" => "video-app",
+						"params" => (object)[]
+					]
+				]
+			]),
+			"serpid" => "1777751040971457-16832445014469941403-balancer-l7leveler-kubr-yp-klg-151-BAL",
+			"yu" => 3091577281773194415,
+			"tmpl_version" => "releases-frontend-video-v1.1816.0__3bdc24e10a8a138a1194877428e220a3ca0dbc5a"
+		];
+		
+		if(isset($get["p"])){
+			
+			$params["p"] = $get["p"];
+		}
+		
+		if($get["duration"] != "any"){
+			
+			$params["duration"] = $get["duration"];
+		}
+		
+		if($get["time"] != "any"){
+			
+			$params["within"] = $get["time"];
+		}
+		
 		/*
 		$handle = fopen("scraper/yandex-video.json", "r");
 		$json = fread($handle, filesize("scraper/yandex-video.json"));
@@ -996,7 +944,7 @@ class yandex{
 					$proxy,
 					"https://yandex.com/video/search",
 					$params,
-					$nsfw,
+					$get["nsfw"],
 					"yandex_v"
 				);
 		}catch(Exception $error){
@@ -1011,7 +959,7 @@ class yandex{
 			throw new Exception("Could not parse JSON");
 		}
 		
-		if(!isset($json["blocks"])){
+		if(!isset($json["results"]["clips"]["items"])){
 			
 			throw new Exception("Yandex blocked this 4get instance. Please try again in 7~ minutes.");
 		}
@@ -1026,209 +974,120 @@ class yandex{
 			"reel" => []
 		];
 		
-		$html = null;
-		foreach($json["blocks"] as $block){
+		foreach($json["results"]["clips"]["items"] as $k => $data){
 			
-			if(isset($block["html"])){
+			if(isset($data["preview"]["posterSrc"])){
 				
-				$html .= $block["html"];
+				$poster = $data["preview"]["posterSrc"];
+				
+				if(
+					preg_match(
+						'/^\/\//',
+						$data["preview"]["posterSrc"]
+					)
+				){
+					
+					$poster = "https:" . $poster;
+				}
+				
+				$thumb = [
+					"ratio" => "16:9",
+					"url" => $poster
+				];
+			}else{
+				
+				$thumb = [
+					"ratio" => null,
+					"url" => null
+				];
 			}
+			
+			$out["video"][] = [
+				"title" => $data["relatedParams"]["text"],
+				"description" => $this->titledots($data["description"]),
+				"author" => [
+					"name" =>
+						isset($json["results"]["clips"]["dups"][$k]["host"]["secondPart"]["name"]) ?
+						$json["results"]["clips"]["dups"][$k]["host"]["secondPart"]["name"] : null,
+					"url" => 
+						isset($json["results"]["clips"]["dups"][$k]["host"]["secondPart"]["origUrl"]) ?
+						$json["results"]["clips"]["dups"][$k]["host"]["secondPart"]["origUrl"] : null,
+					"avatar" => null
+				],
+				"date" =>
+					isset($json["results"]["clips"]["dups"][$k]["date"]) ?
+					strtotime($json["results"]["clips"]["dups"][$k]["date"]) : null,
+				"duration" =>
+					isset($json["results"]["clips"]["dups"][$k]["duration"]["value"]) ?
+					(int)$json["results"]["clips"]["dups"][$k]["duration"]["value"] : null,
+				"views" =>
+					isset($json["results"]["clips"]["dups"][$k]["views"]["text"]) ?
+					$this->parseviews($json["results"]["clips"]["dups"][$k]["views"]["text"]) : null,
+				"thumb" => $thumb,
+				"url" =>
+					preg_replace(
+						'/^http:\/\//',
+						"https://",
+						$data["relatedParams"]["related_url"]
+					)
+			];
 		}
 		
-		$this->fuckhtml->load($html);
-		
-		$div =
-			$this->fuckhtml
-			->getElementsByTagName("div");
-		
-		/*
-			Get nextpage
-		*/
-		$npt =
-			$this->fuckhtml
-			->getElementsByClassName(
-				"more more_direction_next i-bem",
-				$div
-			);
-		
-		if(count($npt) !== 0){
+		// get npt
+		if($json["results"]["search"]["hasNextPage"]){
 			
-			$params["p"] = "1";
-			$params["nsfw"] = $nsfw;
+			$get["p"] = (int)$json["results"]["search"]["currentPage"] + 1;
+			
 			$out["npt"] =
 				$this->backend->store(
-					json_encode($params),
+					json_encode($get),
 					"video",
 					$proxy
 				);
 		}
 		
-		$items =
-			$this->fuckhtml
-			->getElementsByClassName(
-				"serp-item",
-				$div
-			);
-		
-		foreach($items as $item){
-			
-			$data =
-				json_decode(
-					$this->fuckhtml
-					->getTextContent(
-						$item["attributes"]["data-video"]
-					),
-					true
-				);
-			
-			$this->fuckhtml->load($item);
-			
-			$thumb =
-				$this->fuckhtml
-				->getElementsByClassName(
-					"thumb-image__image",
-					"img"
-				);
-			
-			$c = 1;
-			if(count($thumb) === 0){
-				
-				$thumb = [
-					"url" => null,
-					"ratio" => null
-				];
-			}else{
-				
-				$thumb = [
-					"url" =>
-						str_replace(
-							"//",
-							"https://",
-							$this->fuckhtml
-							->getTextContent(
-								$thumb
-								[0]
-								["attributes"]
-								["src"]
-							),
-							$c
-						),
-					"ratio" => "16:9"
-				];
-			}
-			
-			$smallinfos =
-				$this->fuckhtml
-				->getElementsByClassName(
-					"serp-item__sitelinks-item",
-					"div"
-				);
-			
-			$date = null;
-			$views = null;
-			$first = true;
-			
-			foreach($smallinfos as $info){
-				
-				if($first){
-					
-					$first = false;
-					continue;
-				}
-				
-				$info =
-					$this->fuckhtml
-					->getTextContent(
-						$info
-					);
-				
-				if($temp_date = strtotime($info)){
-					
-					$date = $temp_date;
-				}else{
-					
-					$views = $this->parseviews($info);
-				}
-			}
-			
-			$description =
-				$this->fuckhtml
-				->getElementsByClassName(
-					"serp-item__text serp-item__text_visibleText_always",
-					"div"
-				);
-			
-			if(count($description) === 0){
-				
-				$description = null;
-			}else{
-				
-				$description =
-					$this->titledots(
-						$this->fuckhtml
-						->getTextContent(
-							$description[0]
-						)
-					);
-			}
-			
-			$out["video"][] = [
-				"title" =>
-					$this->fuckhtml
-					->getTextContent(
-						$this->titledots(
-							$data["title"]
-						)
-					),
-				"description" => $description,
-				"author" => [
-					"name" => null,
-					"url" => null,
-					"avatar" => null
-				],
-				"date" => $date,
-				"duration" =>
-					(int)$data
-					["counters"]
-					["toHostingLoaded"]
-					["stredParams"]
-					["duration"],
-				"views" => $views,
-				"thumb" => $thumb,
-				"url" =>
-					str_replace(
-						"http://",
-						"https://",
-						$this->fuckhtml
-						->getTextContent(
-							$data["counters"]
-							["toHostingLoaded"]
-							["postfix"]
-							["href"]
-						),
-						$c
-					)
-			];
-		}
-		
 		return $out;
 	}
 	
-	private function parseviews($text){
+	private function parseviews($number){
 		
-		$text = explode(" ", $text);
+		// decimal should always be 1 number long
+		$number = explode(" ", $number, 2);
+		$number = $number[0];
 		
-		$num = (float)$text[0];
-		$mod = $text[1];
+		$unit = strtolower($number[strlen($number) - 1]);
 		
-		switch($mod){
+		$tmp = explode(".", $number, 2);
+		$number = (int)$number;
+		
+		if(count($tmp) === 2){
 			
-			case "bln.": $num = $num * 1000000000; break;
-			case "mln.": $num = $num * 1000000; break;
-			case "thsd.": $num = $num * 1000; break;
+			$decimal = (int)$tmp[1];
+		}else{
+			
+			$decimal = 0;
 		}
 		
-		return $num;
+		switch($unit){
+			
+			case "k":
+				$exponant = 1000;
+				break;
+			
+			case "m":
+				$exponant = 1000000;
+				break;
+			
+			case "b";
+				$exponant = 1000000000;
+				break;
+			
+			default:
+				$exponant = 1;
+				break;
+		}
+		
+		return ($number * $exponant) + ($decimal * ($exponant / 10));
 	}
 	
 	private function titledots($title){
