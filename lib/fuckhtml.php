@@ -553,28 +553,21 @@ class fuckhtml{
 				
 				case "\"":
 				case "'":
-					if(
-						$i !== 0 && // only check if a quote could be there
-						(
-							(
-								$json[$i - 1] === "\\" &&
-								(
-									$i === 2 ||
-									$json[$i - 2] === "\\"
-								)
-							) ||
-							$json[$i - 1] !== "\\"
-						)
-					){
-						// found a non-escaped quote
-						
+					// count preceding backslashes
+					$bsCount = 0;
+					$j = $i - 1;
+
+					while($j >= 0 && $json[$j] === "\\"){
+						$bsCount++;
+						$j--;
+					}
+
+					// quote is NOT escaped if even number of backslashes
+					if($bsCount % 2 === 0){
 						if($in_quote === null){
-							
 							// open quote
 							$in_quote = $json[$i];
-							
 						}elseif($in_quote === $json[$i]){
-							
 							// close quote
 							$in_quote = null;
 						}

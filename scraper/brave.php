@@ -347,11 +347,8 @@ class brave{
 				$q["spellcheck"] = "0";
 			}
 		}
-		/*
-		$handle = fopen("scraper/brave.html", "r");
-		$html = fread($handle, filesize("scraper/brave.html"));
-		fclose($handle);*/
 		
+		//$html = file_get_contents("scraper/brave.html");
 		try{
 			$html =
 				$this->get(
