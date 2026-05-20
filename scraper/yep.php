@@ -303,11 +303,11 @@ class yep{
 		
 		try{
 			
-			// https://api.yep.com/fs/2/search?limit=20&query=asmr
+			// https://api.yep.com/search?limit=20&query=asmr
 			$json =
 				$this->get(
 					$this->backend->get_ip(),
-					"https://api.yep.com/fs/2/search",
+					"https://api.yep.com/search",
 					$filters
 				);
 			
