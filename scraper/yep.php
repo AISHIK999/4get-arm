@@ -449,8 +449,6 @@ class yep{
 		// add api key
 		$key_data = $this->backend->get_key();
 		
-		print_r($filters);
-		
 		try{
 			
 			$json =
@@ -503,6 +501,15 @@ class yep{
 		}
 		
 		foreach($json["results"] as $item){
+			
+			if(
+				$item["url"] === null ||
+				$item["url"] == ""
+			){
+				
+				// sometimes API fucks up
+				continue;
+			}
 			
 			$out["web"][] = [
 				"title" => $item["title"],
