@@ -13,11 +13,11 @@ _NOT to be confused with 4get.ch, 4get.lol and friends! I **don't** host these._
 
 ## Totally unbiased comparison between alternatives
 
-|                            | 4get                    | searx(ng) | whoogle    | degoog                               |
-|----------------------------|-------------------------|-----------|------------|--------------------------------------|
-| RAM usage                  | 100-400mb~              | 400mb-1GB | 100mb      | 200mb-1GB                            |
-| Does it suck               | no (debunked by snopes) | yes       | kind of?   | its kinda cool but no search filters |
-| Does it work               | ye                      | lmao      | shits dead | works right now...                   |
+|                            | 4get                    | searx(ng) | whoogle    | degoog                                    |
+|----------------------------|-------------------------|-----------|------------|-------------------------------------------|
+| RAM usage                  | 100-400mb~              | 400mb-1GB | 100mb      | 100mb-250mb                               |
+| Does it suck               | no (debunked by snopes) | yes       | kind of?   | hit and miss with search filters          |
+| Does it work               | ye                      | lmao      | shits dead | works $rightNow, it's actually kinda cool |
 
 ## Features
 1. Rotating proxies on a per-scraper basis
