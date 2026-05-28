@@ -497,10 +497,10 @@ class ddg{
 			if(
 				isset($form["attributes"]["id"]) &&
 				$form["attributes"]["id"] == "challenge-form"
-			)
-		}{
+			){
 			
-			throw new Exception("DuckDuckGo returned an image captcha");
+				throw new Exception("DuckDuckGo returned an image captcha");
+			}
 		}
 		
 		foreach(array_reverse($forms) as $form){
