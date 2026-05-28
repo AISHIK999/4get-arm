@@ -492,6 +492,17 @@ class ddg{
 				"form"
 			);
 		
+		foreach($forms as $form){
+			
+			if(
+				isset($form["attributes"]["id"]) &&
+				$form["attributes"]["id"] == "challenge-form"
+			)
+		}{
+			
+			throw new Exception("DuckDuckGo returned an image captcha");
+		}
+		
 		foreach(array_reverse($forms) as $form){
 			
 			$this->fuckhtml->load($form);
