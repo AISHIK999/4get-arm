@@ -570,8 +570,8 @@ class startpage{
 						$out["spelling"] =
 							[
 								"type" => "including",
-								"using" => $json["render"]["query"],
-								"correction" => urldecode($category["results"][0]["query"])
+								"using" => rawurldecode($json["render"]["query"]),
+								"correction" => html_entity_decode($category["results"][0]["query"])
 							];
 					}
 					break;
