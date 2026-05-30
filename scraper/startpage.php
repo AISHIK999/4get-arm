@@ -1105,29 +1105,20 @@ class startpage{
 			
 			if($page["name"] == "Next"){
 				
-				parse_str(
-					explode(
-						"?",
-						$page["url"],
-						2
-					)[1],
-					$str
-				);
-				
 				return
 					$this->backend->store(
 						http_build_query(
 							[
 								"lui" => "english",
 								"language" => "english",
-								"sc" => $str["sc"],
+								"sc" => $json["render"]["search_sc"],
 								"t" => "device",
 								"cat" => $pagetype,
-								"segment" => "startpage.udog",
-								"abd" => 0,
-								"abe" => 0,
-								"query" => $str["q"],
-								"page" => $str["page"],
+								"segment" => "organic",
+								"abd" => "0",
+								"abe" => "0",
+								"query" => $json["render"]["query"],
+								"page" => $page["number"],
 								"qsr" => "all",
 								"qadf" => "none" // @ todo fix (??)
 							]
