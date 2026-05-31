@@ -408,6 +408,8 @@ class startpage{
 			//$html = file_get_contents("scraper/startpage.html");
 		}
 		
+		//echo htmlspecialchars($html);
+		
 		$this->detect_captcha($html);
 		
 		if(
@@ -1117,7 +1119,7 @@ class startpage{
 								"segment" => "organic",
 								"abd" => "0",
 								"abe" => "0",
-								"query" => $json["render"]["query"],
+								"query" => rawurldecode($json["render"]["query"]),
 								"page" => $page["number"],
 								"qsr" => "all",
 								"qadf" => "none" // @ todo fix (??)
