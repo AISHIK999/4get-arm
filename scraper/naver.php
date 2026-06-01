@@ -599,6 +599,9 @@ class naver{
 		
 		foreach($json["items"] as $image){
 			
+			// why does it fucking do that
+			if($image["orgWidth"] === 0){ continue; }
+			
 			$out["image"][] = [
 				"title" => trim($image["title"], "."),
 				"source" => [
