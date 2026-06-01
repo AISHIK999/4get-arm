@@ -440,7 +440,7 @@ class yep{
 		// parse filters
 		$filters = [
 			"query" => $search,
-			"limit" => 100
+			"limit" => 99 // for some reason they dont show anything sometimes at 100 results
 		];
 		
 		if($get["nsfw"] == "no"){ $filters["safe_search"] = true; }
