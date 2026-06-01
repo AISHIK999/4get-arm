@@ -170,6 +170,10 @@ $settings = [
 						"text" => "Mojeek"
 					],
 					[
+						"value" => "naver",
+						"text" => "Naver"
+					],
+					[
 						"value" => "baidu",
 						"text" => "Baidu"
 					],
@@ -230,6 +234,10 @@ $settings = [
 					[
 						"value" => "qwant",
 						"text" => "Qwant"
+					],
+					[
+						"value" => "naver",
+						"text" => "Naver"
 					],
 					[
 						"value" => "baidu",
@@ -324,6 +332,10 @@ $settings = [
 					[
 						"value" => "qwant",
 						"text" => "Qwant"
+					],
+					[
+						"value" => "naver",
+						"text" => "Naver"
 					],
 					[
 						"value" => "baidu",
