@@ -227,8 +227,8 @@ class yep{
 		
 		curl_setopt($curlproc, CURLOPT_URL, $url);
 		
-		// use http2
-		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+		// use http1 lol
+		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		
 		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
 		
