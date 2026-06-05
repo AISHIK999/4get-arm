@@ -30,19 +30,18 @@ class vsco{
 			
 			curl_setopt($curlproc, CURLOPT_HTTPHEADER,
 				["User-Agent: " . config::USER_AGENT,
-				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 				"Accept-Language: en-US,en;q=0.5",
-				"Accept-Encoding: gzip",
+				"Accept-Encoding: gzip, deflate, br, zstd",
 				"DNT: 1",
 				"Sec-GPC: 1",
 				"Connection: keep-alive",
 				"Upgrade-Insecure-Requests: 1",
 				"Sec-Fetch-Dest: document",
 				"Sec-Fetch-Mode: navigate",
-				"Sec-Fetch-Site: same-origin",
+				"Sec-Fetch-Site: none",
 				"Sec-Fetch-User: ?1",
-				"Priority: u=0, i",
-				"TE: trailers"]
+				"Priority: u=0, i"]
 			);
 		}else{
 			
@@ -73,8 +72,8 @@ class vsco{
 		curl_setopt($curlproc, CURLOPT_CONNECTTIMEOUT, 30);
 		curl_setopt($curlproc, CURLOPT_TIMEOUT, 30);
 		
-		// http2 bypass
-		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+		// http1 bypass?!?!?!
+		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		
 		$this->backend->assign_proxy($curlproc, $proxy);
 		
