@@ -62,4 +62,4 @@ Refer to the <a href="https://git.lolcat.ca/lolcat/4get/src/branch/master/docs/"
 Shit breaks all the time but I repair it all the time too. Email me here: <b>will (at) lolcat.ca</b> or create an issue.
 
 ## License
-AGPL
+AGPLv3-only
