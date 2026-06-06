@@ -644,7 +644,6 @@ class frontend{
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
-						"ghostery" => "Ghostery",
 						"yep" => "Yep",
 						"mwmbl" => "Mwmbl",
 						"mojeek" => "Mojeek",
