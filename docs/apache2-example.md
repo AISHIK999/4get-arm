@@ -49,9 +49,13 @@ Looking for the apache2 guide? <a href="https://git.lolcat.ca/lolcat/4get/src/br
 	</Directory>
 
 	# deny access to private resources
-	<Directory /var/www/4get/data/>
-		Order Deny,allow
-		Deny from all
+	<DirectoryMatch "^/var/www/4get/(data|lib|scraper|template|oracles|docs|docker|extra)/">
+		Require all denied
+	</DirectoryMatch>
+
+	# remove directory listing from /icons
+	<Directory /var/www/4get/icons>
+		Options -Indexes
 	</Directory>
 </VirtualHost>
 
