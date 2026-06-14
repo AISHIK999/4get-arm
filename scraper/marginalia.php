@@ -289,7 +289,17 @@ class marginalia{
 				throw new Exception("The API key used is rate limited. Please try again in a few minutes.");
 			}
 			
+			if(strpos($json, "<title>Bad Gateway (502)</title>")){
+				
+				throw new Exception("Marginalia returned a 502 error");
+			}
+			
 			$json = json_decode($json, true);
+			
+			if($json === null){
+				
+				throw new Exception("Failed to decode JSON");
+			}
 			
 			foreach($json["results"] as $result){
 				
