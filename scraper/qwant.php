@@ -217,15 +217,19 @@ class qwant{
 		$headers = [
 			"User-Agent: " . config::USER_AGENT,
 			"Accept: application/json, text/plain, */*",
-			"Accept-Language: en-US,en;q=0.5",
-			"Accept-Encoding: gzip",
-			"DNT: 1",
-			"Connection: keep-alive",
-			"Origin: https://www.qwant.com",
+			"Accept-Language: en-US,en;q=0.9",
+			"Accept-Encoding: gzip, deflate, br, zstd",
 			"Referer: https://www.qwant.com/",
+			"Origin: https://www.qwant.com",
+			"DNT: 1",
+			"Sec-GPC: 1",
+			"Connection: keep-alive",
 			"Sec-Fetch-Dest: empty",
 			"Sec-Fetch-Mode: cors",
 			"Sec-Fetch-Site: same-site",
+			"Priority: u=4",
+			"Pragma: no-cache",
+			"Cache-Control: no-cache",
 			"TE: trailers"
 		];
 		
@@ -297,7 +301,8 @@ class qwant{
 				"device" => "desktop",
 				"tgp" => 3,
 				"safesearch" => 0,
-				"displayed" => "true"
+				"displayed" => "true",
+				"llm" => "false"
 			];
 			
 			switch($get["nsfw"]){
@@ -316,7 +321,7 @@ class qwant{
 			$json =
 				$this->get(
 					$proxy,
-					"https://fdn.qwant.com/v3/search/web",
+					"https://api.qwant.com/v3/search/web",
 					$params
 				);
 			
@@ -353,6 +358,8 @@ class qwant{
 			"related" => []
 		];
 		
+		$this->detect_errors($json);
+		
 		if(
 			$json["status"] != "success" &&
 			$json["data"]["error_code"] === 5
@@ -361,8 +368,6 @@ class qwant{
 			// no results
 			return $out;
 		}
-		
-		$this->detect_errors($json);
 		
 		if(!isset($json["data"]["result"]["items"]["mainline"])){
 			
