@@ -490,6 +490,37 @@ class marginalia{
 			return $this->web($get, $redirect);
 		}
 		
+		// detect internal error
+		$infobox =
+			$this->fuckhtml
+			->getElementsByClassName("infobox");
+		
+		if(count($infobox) !== 0){
+			
+			foreach($infobox as $i){
+				
+				$this->fuckhtml->load($i);
+				
+				$h2 =
+					$this->fuckhtml
+					->getElementsByTagName("h2");
+				
+				if(
+					count($h2) !== 0 &&
+					$this->fuckhtml
+					->getTextContent(
+						$h2[0]
+					) == "Internal error"
+				){
+					
+					throw new Exception("Marginalia returned an internal server error");
+				}
+			}
+						
+			// reset
+			$this->fuckhtml->load($html);
+		}
+		
 		$sections =
 			$this->fuckhtml
 			->getElementsByClassName(
