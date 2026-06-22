@@ -340,7 +340,7 @@ class mojeek{
 							"zm" => "Zambia",
 							"zw" => "Zimbabwe"
 						]
-					],
+					],/*
 					"region" => [
 						"display" => "Region",
 						"option" => [
@@ -350,7 +350,7 @@ class mojeek{
 							"fr" => "France",
 							"uk" => "United Kingdom"
 						]
-					],
+					],*/
 					"domain" => [
 						"display" => "Results per domain",
 						"option" => [
@@ -458,7 +458,7 @@ class mojeek{
 				"date" => 1, // show date
 				"tlen" => 128, // max length of title
 				//"dlen" => 511, // max length of description
-				"arc" => ($country == "any" ? "none" : $country) // location. don't use autodetect!
+				//"arc" => ($country == "any" ? "none" : $country) // location. don't use autodetect!
 			];
 			
 			switch($focus){
@@ -501,6 +501,11 @@ class mojeek{
 				
 				throw new Exception("Failed to get HTML");
 			}
+		}
+		
+		if(strlen($html) === 0){
+			
+			throw new Exception("Mojeek returned an empty page (probably a homepage redirect)");
 		}
 		
 		$out = [
