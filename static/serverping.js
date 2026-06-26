@@ -80,6 +80,15 @@ document.body.insertBefore(table, quote.nextSibling);
 
 // handle sorting clicks
 var tbody = table.getElementsByTagName("tbody")[0];
+
+// server popup without inline javascript
+tbody.addEventListener('click', function(event){
+	var row = event.target.closest('.show_server');
+	if(!row) return;
+
+	show_server(row.id);
+})
+
 var th = table.getElementsByTagName("th");
 
 for(var i=0; i<th.length; i++){
@@ -343,7 +352,7 @@ function render_list(){
 	
 	for(var k=0; k<sorted_list.length; k++){
 		
-		html += '<tr onclick="show_server(' + sorted_list[k].index + ');">';
+		html += '<tr class="show_server" id="' + sorted_list[k].index + '">';
 		
 		for(var i=0; i<7; i++){
 			
@@ -406,6 +415,7 @@ function render_list(){
 	console.log(html);
 	
 	tbody.innerHTML = html;
+
 }
 
 var popup_bg = document.getElementById("popup-bg");
