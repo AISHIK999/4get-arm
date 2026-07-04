@@ -54,8 +54,8 @@ class ddg{
 				$headers =
 					["User-Agent: " . config::USER_AGENT,
 					"Accept: */*",
-					"Accept-Language: en-US,en;q=0.5",
-					"Accept-Encoding: gzip",
+					"Accept-Language: en-US,en;q=0.9",
+					"Accept-Encoding: gzip, deflate, br, zstd",
 					"Referer: https://duckduckgo.com/",
 					"DNT: 1",
 					"Sec-GPC: 1",
@@ -920,112 +920,6 @@ class ddg{
 			){
 				
 				throw new Exception("DuckDuckGo returned a JSA challenge");
-				
-				// get JSA initial token
-				if(
-					!preg_match(
-						'/let jsa *= *([0-9]+)/',
-						$js,
-						$jsa
-					)
-				){
-					
-					$jsa = 0;
-				}else{
-					
-					$jsa = (int)$jsa[1];
-				}
-				
-				// get function bodies
-				preg_match_all(
-					'/let *([A-Za-z0-9]+) *= *function\(.*\) *{(.*)};/sU',
-					$js,
-					$functions
-				);
-				
-				$parsed_functions = [];
-				
-				for($i=0; $i<count($functions[0]); $i++){
-					
-					$functions[2][$i] = trim($functions[2][$i]);
-					
-					if(
-						preg_match(
-							'/return num *\* *([0-9]+)/i',
-							$functions[2][$i],
-							$num
-						)
-					){
-						
-						$parsed_functions[$functions[1][$i]] = [
-							"type" => "multiplication",
-							"num" => (int)$num[1]
-						];
-						continue;
-					}
-					
-					if(
-						preg_match(
-							'/innerHTML *= *`([^`]+)`/i',
-							$functions[2][$i],
-							$challenge
-						)
-					){
-						
-						$challenge[1] =
-							preg_replace(
-								'/<\/(br)>/',
-								'<$1>',
-								$challenge[1]
-							);
-						
-						$parsed_functions[$functions[1][$i]] = [
-							"type" => "challenge",
-							"text" => $challenge[1]
-						];
-					}
-				}
-				
-				// get function call order
-				preg_match_all(
-					'/jsa *= *([A-Za-z0-9]+)\(jsa\)/i',
-					$js,
-					$call_order
-				);
-				
-				foreach($call_order[1] as $order){
-					
-					if(!isset($parsed_functions[$order])){
-						
-						throw new Exception("JS challenge solve failure: DuckDuckGo called an unknown function");
-					}
-					
-					if($parsed_functions[$order]["type"] == "multiplication"){
-						
-						$jsa = $jsa * $parsed_functions[$order]["num"];
-						continue;
-					}
-					
-					if($parsed_functions[$order]["type"] == "challenge"){
-						
-						// @TODO get parsed length
-						//$parsed_functions[$order]["text"]
-						
-						$jsa = $jsa + strlen($parsed_functions[$order]["text"]);
-					}
-				}
-				
-				try{
-					$js = $this->get(
-						$proxy,
-						"https://links.duckduckgo.com" . $challenge_url[1] . $jsa,
-						[],
-						ddg::req_xhr
-					);
-				}catch(Exception $error){
-					
-					throw new Exception("Failed to get challenged d.js");
-				}
 			}
 			
 			//
