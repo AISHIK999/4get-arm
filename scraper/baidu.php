@@ -666,14 +666,24 @@ class baidu{
 			//
 			// Don't parse as a search result if it's a card
 			//
-			$card =
+			$tpl_probe =
 				$this->fuckhtml
-				->getElementsByClassName(
-					"cosc-card",
-					$div
+				->getElementsByAttributeValue(
+					"tpl",
+					"www_index",
+					[$datafield]
 				);
 			
-			if(count($card) !== 0){
+			if(
+				count($tpl_probe) === 0 &&
+				count(
+					$this->fuckhtml
+					->getElementsByClassName(
+						"cosc-card",
+						$div
+					)
+				) !== 0
+			){
 				
 				//
 				// Parse chinese youtube shorts
@@ -870,10 +880,13 @@ class baidu{
 			// class:FYB_RD -> News garbage, IGNORE
 			
 			$result =
-				$this->fuckhtml
-				->getElementsByClassName(
-					"result",
-					[$datafield]
+				array_merge(
+					$tpl_probe,
+					$this->fuckhtml
+					->getElementsByClassName(
+						"result",
+						[$datafield]
+					)
 				);
 			
 			if(count($result) !== 0){
@@ -885,7 +898,7 @@ class baidu{
 				$title =
 					$this->fuckhtml
 					->getElementsByClassName(
-						"sc-link",
+						"cosc-title-a",
 						"a"
 					);
 				
@@ -905,8 +918,9 @@ class baidu{
 				
 				$description =
 					$this->fuckhtml
-					->getElementsByClassName(
-						"c-color",
+					->getElementsByAttributeValue(
+						"data-sanssr-cmpt",
+						"card/www-summary-1",
 						$div
 					);
 				
