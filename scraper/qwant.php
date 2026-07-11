@@ -1,25 +1,5 @@
 <?php
 
-//curl 'https://dd.qwant.com/js/' \
-  //-X POST \
-  //-H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0' \
-  //-H 'Accept: */*' \
-  //-H 'Accept-Language: en-US,en;q=0.9' \
-  //-H 'Accept-Encoding: gzip, deflate, br, zstd' \
-  //-H 'Referer: https://www.qwant.com/' \
-  //-H 'Content-type: application/x-www-form-urlencoded' \
-  //-H 'Origin: https://www.qwant.com' \
-  //-H 'DNT: 1' \
-  //-H 'Sec-GPC: 1' \
-  //-H 'Connection: keep-alive' \
-  //-H 'Sec-Fetch-Dest: empty' \
-  //-H 'Sec-Fetch-Mode: cors' \
-  //-H 'Sec-Fetch-Site: same-site' \
-  //-H 'Pragma: no-cache' \
-  //-H 'Cache-Control: no-cache' \
-  //--data-raw 'jspl=vNWp303yWe339-y3I7k8lLVcD5DIYf3OAS4FgU0t2LT7G6yCiA_7iFV-cc-YZRpRjb8tRIlUJUgAP-LMmZ2TaQbCXRyJ8dMJFzNiB7A5bgV6ExgkaH3KUwHpeAs6-m21SNns4ObqUc2yYDAn8insJyPENvxduC2_xbUzKUzoNATNIhlYHJk9NiGbV6R8H57zCr1LQYMwt1OnC_kLUDvqMOMZGGcg89Rh_HK9LCKKRqqkbqogH9A7mAN-9ZLVqxZSAgUTFLnM67ZzlMIzxzSzwzLHHTGupumwsMuu_kg63_CduamVJ61s0yuE4gmP5kCB1iYCZoRKbMSN3yWIrTT-7WH2AEPh_X2yNBw3IFiNSAefVEAcaI4a19d6_ioTsXwNe48-12MeGd28pEmdxmyyp57eE3YNB10-4nFsyiWuPjcV8ifhajFIohUmdld7vCrqo3Am_tH8QHp9RWELH1cyBupp06xSHQG177okwaAn973kQNvm-Ohtqxy3yS4Z0uTl4NhjarcOq12UY58YaA8OooyET43psctg4C2ZnaHy2wF8HNVOVQdN1ul1asfbyvA4bkWBwgniAw6_Np8Qe-c06D0nVb-7SARNxt74gcRwsnfhocY8QGp6rLr1pJtQRWgYbdHyRgVMe4180flKfFVD5mGglJRcRcCHQ9XZmUCXXGdYNB7Ol4gwOcIlFKQHF9WcaPbrdTibpmkpd4dzEk5PWM1uze4HjVpKf5H4NkwSlOjBlP5PQwsUWBOsSmvmLWq8oX1eu8P9USehEGLfzHN903goldtZwPbbAhINlCkjgP7YciGd2ZA24Z0I74pubIeXiL3430WlZQVLeCQOJ_TtQqNNzCad9JjuLK8wVKVB0MpJl5fCYeVp-SN-qYSzrKYBWCkvGnN_DkoZDVLeV33h8plgQSR21lJOTqarGVZLS0fI9LxIi5szg-xV2sWt4IN8RzPpMBE2DsFqwFL6sIyHYCdfYoN35EhfoI0CrtuGI3pgKSYsQs3ZpzCgEQGWVbJV13iS2xdRIiXEEyzFD063CExNzZWKofE3n2vyiO17KFs8R1X_WFck9ZamKHAq5lR3E_kv_9MQUcHNTPvSWn3N9QL_CAOoUlKnohT4hNlzA2LbBO136H7pFLdjz_9zJV44fIh8vXmsbI6BbIhD7fvEEYyeejMDo_zKkhizvdpGtxsPNdEfw7CwmVtfR30eVfcGBwM81GVFsK0LsmTqS60ovDsa-Cmqwl4BcIPj8uUtpb6pciLRBGHka9OU-RfQb4KqJgDcJ_lQTh2zdPGGxEaeMuirhC0VLNoiGRSnZk8UtQOYB_ts7lFXGEMkWbtX1Qoccl0XsiNcFlyxOR4E7h5LDV8Pafr5J0et6nzxMJYkofNWvw7qUdl31O63kBOIJauKmDP9ko6k9rwmhgzqAfTqYtUGkUQwDw2DJI3RPIP8lPBzqVIbHnbQGfEBrStjhsh0UeS5J4z5o8Xpc1JtbZ0t_3kMnhErjq9AZ0gfRq6Mm7736wFUxGpPTh0EN85Zc7tR3YlnaXFrf9usyoSUchTd9ecBiLTJY9lXT2c-aiuLGm9vjX-oKZLhK5vkrzL-vBr5jO0u_LmykqAz280cFIrjfdC0Ruov34dRf1yfA01XGZTw4Tmq-ZoUuuUbfHiwhTliQmVh0uQ4b4XOPh_gImqPM5Vgzb8phCuKXNDO9UVCnnbf3UZUei7Tfa7dBdZuhMhg1Wc0umkX9tDpWgYG_A250X5KfR9MFb8gfPHhEdvnDLFuVxhZrU3-Kb8RJIeSje5xLFmV-obHGjAS1jUnILXCWaYfFpRSdIjbIWFudjrqreJPxZF1swdunfLKsIHiR5IdMkPyCr9gq5IANlythNyVKAmqJ552pVpUzXaGkhkwFfjHVDxG3aOryDoOD1v-sjKgKraI9gkZIjX9qwxPIGIZ3Xa7KyO9aa8PwKQdvOg2-jKhMRTjn5pzgEtMtQJYwdUiMNP-8P25-px8uUNwgB-pzpnk1ExosEmZuUAiv7U11dtix0wJEzfCQyCIozgaOggloCPv7YvVGmsbTtH0z9Nybh8jHPJzQ-mo9_b0hAFUwX2ix4bxeH3WTQFKkhJSZ6O1keDu_9Jsp1RS_wktsqTyyVpt_nwLxyKLF0OFeMkNQxcY-aIAPWznW0tpp5WTkZT7ZNepueFnd6ZcgT1wfpDkhsWzvLy4KOOxXsFPpJjSAEesakQiN3yMRZvr7JecXMrqqPCCNwbsEiG9BLmzjuHP6Oq8FXondLt7_KIWGmm-udcK07g-2Z_icfDYzAcsdQBKergGwMBsgPymtQGizzx51tceDLnmIuII3JIeRPokMaid0sS-y8Myf4ShCqTPJXuxwTiOW4UWufJHg9oC_eGXYG8oVkrB8yFX5Wnh8fjNgNm3b7xzMup4SmenP_xcbk5dsCOTxxzO-Gq5dFBD1uqLFhZPUtD2KPqPR5NyCTCVViY23-qP2_-mHnJzjwycHS6oU6IbEYYegvWgDLUTUbM8Vy6dxkH6OCYRsOxcPRCNdgHm7lxT4sSQQWZU5js1-V077ZGCIPC4CU6TBG5RjG4tUyQVEdsba4sk1pgp8RrVwm4vdMEIy6SaUlY5SgmD73DRdxVgHbMyuIMolTkk08DswjuxuHzgmCPvDMO3aYT5fNVwbIBBhN4bF8DeCZVrdfJeohGKuroNW8QvoTvAtwi6GbG0rY1V8n1zwCEY_le6vcB6qK7pJe69QSeBu_vUXt-9BJqlYdE8YGC3TB7TA6x7GJj6-uFWCNbuqbm7KVATx_ow3Iaqn_WvXsXS6V8pTnKPS9LMWwTUz2DJtYJHKtl70w6ntCc9K6bt5VaNYtRFJXxBNDNN-mZljN0oYhx2WKuMZWzxNug646Dx1RMTHsUTkaph4v9xu001f9GObGuIDeEviETaBmDGOhdZhZnFLoowP8ubbCybA_PqsDC04pf_QkKndahtD-llhNvhFrGxWXj1mBcCAt1__ha1xurg7fpWUYtsoeqhrwlPJfQ-tvNHeba21FfzV7y5sJpuwXCZqKZ_xwMZ_THkmAinfFgYYG6uBnLaeBGDNaaA35jjWGgtFe4ciOrGGZzA1opxps3ryGbwHCEgM_9UNsTmtysv5ssMNRoLske28q99oeBk-pkIJHtSBRt-uLucb6MO5lfk5JGtZK9PBNf3AU-tBAqZo5CtNrL4VeZgd1PgWusXaH_id0CT4D6WNA3ENXdm-efBxJA7nIQixo7Q02HrBv67my0HyCsNRoJhJjSmNHDr4bZPg5SWv2sedd13Vqldl1Xis1FAToSK74Dwvm1RGC-kJth6YNwJFUMRLIzQQPymbm8ccXu1bar33i4nr6BYbVsB5eynMFCXJpSjqIU6GwdO4OFHqHRJ30lRYyYcVLjCZnr80mOVqWg8yaf3DF6CijnNGrbC3pRqaB8MuYuoobnB_-35mI-5foeftnQp_xCuLw2AL-rrEiwhE6iN-kp3xdVTxP6YbRlPUCsJ7KZmSiPPekR2QFs-ijYGivIWA4CD4ftdX8MmbBxqtIWhUYBHICMVn-Frnf8IQRMwk1VlLu42w_9RbLtBslBE4UQUpg_3ExNJZeEFb1OgWK3z7nOHP4BcDvvEwjl_ie-meCdL2GBgC5vWIULcJi0GQzw-d0SFCEmn4dwXNolxvsHk4EizZV3V9X5cn_1njviM8FzDQV2I2AG1dQEKYV8PAK7GAQetiyO-f3Nfud0-uR5TocEntpBg12NDDLmZlchixVFdFAgaYimW_jo15P5qx7BvPJbWzd1hfRynDV67kcD3eFcbNVBJb6MqVZ0iPkpUXiIQnaYjdTVmJb2U3B8EYYmGX6jGdE1iXvRKsYiStOYsEr5vZFp1Dto9wLFx8-fbf7ys-2NqdnO6k8r6H40yVSKFEJvafPv7coXKd-APYgK8fmeM9VqN0p224OvbiEPzAMYfc3Ibc4zXp7BdrvxDj3naBao3njM67tbhBRt4yw_OnrfbAJPg4pnwdUq6BP_MMR-oUwpGeQs5ojbHRmmw4TgX9bFKxDbhRM_w0sqynJeKfXgjS3Xn5x95jCt_dw_Gfh9GAJELxKSv_b-VMMGXNIFzQyXeEIY-ieE0-Q46twzQTz8u70GHSsBGq20jinc6sa1m16q3uVs3wyVfnSEW5mS0tLgSqBdOzVoMdmjUzZY7s21UnCdupUxZHF9K355UgfByad37kMorobHm52BRPEHTEdvxigkd-jcwDIl40uTpY5M36iwRgUob8VaMIRW9Suxg39W0hXxIjbd9fgg4tddWdrBBZTGexyBtUbCCgBdd5TDjMFXNIUXwyvvjwFErFrvaiO80jBWHSkgm4D4abj7968zCrWxIcYt2YDUZXioB3EhMp3kVygpRzti9vZcUdouEwyquGK0zLAKGI_hX0b-hGQnUiH96WZUS3Prf5ylg0P25O0FJ5QnTEmkqfCPKq7LfQpK0VAkduLK9BXNV3znx5T7avofWZI6S8hU0Rve904kYqKpU3s7S3Jp6IML6d-cHhtvZQTBdRsCxNFRMU_L8vspgPaEJmuCalgaHwTEJPWcIwA_WBahht8FsfdikkdY1rsexXHLhXa3767CVs8dhR3DB5wPTaUV2HlD6PF&eventCounters=%5B%5D&jsType=ch&cid=kYTjYX20GtjREVyt6XE1~8FuJuJf8EThptWfE9ZIm04Emkmj0ks4X9P7NnB1A0Am3AXBNNR3gpxi7TkOEc9J5AgToM9~uiwAiolqJKHU2Tk09K~NW7~0B6oW8n3GnVdc&ddk=78B13B7513D180B7AB6D6FF9EB0A51&Referer=https%253A%252F%252Fwww.qwant.com%252F%253Fq%253Dasmr%2526t%253Dweb&request=%252F%253Fq%253Dasmr%2526t%253Dweb&responsePage=origin&ddv=5.8.0'
-
-
 class qwant{
 	
 	public function __construct(){
@@ -367,49 +347,7 @@ class qwant{
 		$json = fread($handle, filesize("scraper/qwant_web.json"));
 		fclose($handle);*/
 		
-		if($cookie === null){
-			// get datadome bullshit
-			// yeah go ahead and patch this you code monkey
-			
-			// ... you know, instead of fixing this shit, can you make the second page of results return more than 1 result?
-			// i search shit like "higurashi" and i only get 1 result and then just a bunch of related searches ad finitum
-			// also, stop pretending you guys have your own index, this is clearly all bing results
-			try{
-				$datadome =
-					$this->get(
-						$proxy,
-						"https://dd.qwant.com/js/",
-						[
-							"jspl" => "-oirHDeP7G3G9LXY3rhxGDYf6t_ZlYPzaiL2dRhQ34uNUc4dO2Td0SmmKu_VJp7-jrAIoOMrTqKgCtV4cPzntMyNuOYN7QQ1q0Fi2c-679vYpJr9ub5dRFXMhCMQmjZsOWXUa8yafIXf85UA5Goct-n4hVT5dFfBGM-dE6gwZEFkHQ1j1195sLybZFTNA1IfX26MBMxlVHoyT-aHtkd6YjGXbvOPMMsObVHDa_Cf4BmApRGo-eehsAttsCqDRwkl0M2E1b0OXCIwMVnCK-qWZ81MGaJGjqxdj_LaxhAjE9JI_4oNedAg4Yj4m_vkQBKdmWJT_bTUsllAZXqX5IxYQHJ8WvlknOTr6sR3wgoSOa_JNVHkUQxqXBbQcoDdy6VciL5rIqwWl4Y2caVYzeXa8YNXxwsfrPDegH3dQ6vOiIiCDT3bexkcS_y7GAioPPv9qDu7M9y4sI8t0VkPgMbWY6MIu5u9WAv6lEiKIYrtlyU-iiXnNdkd9EnpC1TD8_s12PtCuLg5bGgLVmI1dw8VXVZxmVyFvfBtuqXkzM-kZOyv-YIRcf-wPY8DUtnHox1d6t64oYhGv-pYV5dmZ0rGs99LC6ThiifeF_oHz5ZK46Ms68WsiAjc1HLAbFPFxWw8X6lyLlpT5aHgFdDBeCTExKXyItlc9PBxkgK8UnXHQFiWX3HTen8rziwkI31AbkMU7xGP6cvuwuLG7MA7sH3yLF1uimQlhr6EuTrImWQNV7X81DqyZ0OE7I-uT9bp_xISa5it-6AJpFtGcwz04_OuO2zvZazBeiKJI5Fw0X2r3RHTHdA29SXqTIe4y2LRAAp0MSAZUIJAMIbbrz9BG-3D5BHfQUA1Bbuklxv-tNWiuanWbbTmAiuxTAo9P-D2ZMrWHwdN8sCb3nINLur38z1xviSs2qEEjKo9kzQIWoHgwm_amV-jjDtNBXwpCQnoaqt3FfL8e59ecYWVg61Gnl3YCwq6rubFdkIv6UStcWSlj4pRFlFZSjQxzznvGTAc5Nz1JJWVeBHJItei4wqDUYEw2BNTS_fU9keV3LFyKDH_x248AxHLiXt583DhZZwPAKlpmMo0E7odzfOgVQGM5b9l64NL3RQRq8cDxI8KgmOFnPHdI7Myq1A3nW1uoBB8m9_GR_9orboKl5tAQrT0VTMRd6JyNwOOQ71ZoQpMwsD5Xd9YDZd618TNE9dA38h9OyBco_-hwKCYayyEqib1atLLBO_gnO4InR471AklOokDOKx1oY_xgNhlFrZskE4nQQOqeCQ_47oysob9s3kblA8UqDrL2vM3i2KPLWwlQzMAPrQAIv7Amp6rO-wYwBQdbP7XghYympxx9-hNxc1Duq-nS4R3pjPtZg3LoCvG1N_0JLf9jfPBqw_rdPM6DnjEOvpCdvrfv4wBlEpgqbaRQCZBPEz-O5ZlY24OyPvaNX0krPeXkbi-KYuwZSAbfW0zsksXb8cbRmz6tvh25IRYP1XNDPVd8NFrYOdDH9GzhV5MYZziYMurQlVwgumGLz85Y6qTHZU2D5qkMH7o5C5bzptReO96889oxkReS_LDhzdxH0tAQ5a9GgETJTHAXJ9Lt7X037i0qQlatbPLizOl9fo4vUBGJ7w-uSUmIzg1yIwOo8xhLu39WghXfoJ_EX5ptNi7arpAo11UoJIGEgWgq7bS40q2dtnG5HYpp9ef37iFgztM7PV5dlJf_W-n9uXJyCk2nhxZeuGiIGhMTzjP_8oeyiMFelmoyLlqK8wOs6hvWqgDD4NwtZc-XBkEAKsxuPrirb_sszp0z6BWsh3D6fBxAW_lTrNVkxZ1EBtoEN72HvO1aeX8PVuJP3CKwkkUcAhJ5Zvajo8t4Ai8ave2MTZul4QhDIe7ZALJMo71u-hNSj8YG9JLPqF1jcnbkl8ykt_XMMxX8wSZ_AfTsfmAuOWBfEzxv8Fl2Ne-oxcEtfuYnYNJIjQDHXXdtYbWKBezE41wonQu7FWh3wSSF3DDm9EocWMsUZ610nrIviOFdtTqjrY7KnOZp0hS9Hm2V04z-06Db-To71L5O5poYKuOlDAP_ULfW0hgMgYaPnt4Nive9gtue6ZQ5yNFylKM11zCWcF8vmuEPGx4NIZjvNFB-QSkdxZtBTQOgO6r4BqHJNZIDqiD9A6PyMemVtQEo-JhooX6bwHFHx6C84r-kKq1lg0RaDelbu1h6347kocxOczdgHWlagKPFrUvHpPHvCZeFmzLLmPWbDEpUhhfkbEZlNe47svO5WN1TYZMCAlE0g01pe6b_NB9-twQ4FJB1SkUQRA4o5DxiIHSgXBBfw1X98XPEKcJgCU2zRbYuU69mvyPcsxoPsLo8Cl2OAXj2U1tcLUxVhR_vu3I0SG_Ee8hxBp5b6QbpIu2sE0bgpqfi88XqUXf3qvxGbkoZDZ8dPvEvCVmpDZOOGJY5Db4MnpKBByW79lUnpbLCbsVOoxYu8SVmVQ63eGY9yBlACuWxlXA_PhCpnKYwMppjxKvKqalNJGMMg5WQ8cvhsIftE5wgaj21n0A15GwRO1WgUcsO_dLe1MqO88hTHWHV0Q3gNut3sdsmVr_n-0SniLtVAaw4IEtDZWNUfhpaoC7iyKxoJ86t8r697EYPlWUu4nTQhb3TOXAjHF22rFsJJMldKHVxjxjd086ky3OY3L_7cbjVof60-y4gTJdumw5hch-mhaT93nVnaTuPLGCAC48dZSgOitW8Dw62mPS05fTPAfKUY1HpyIWr9ACk7U2KVAijpzFB-bXvqJeCyBeUHr4cB61K2XxTmkNA8Oo9RC32TeYDrThFzoUyYZ_D6zPe1lLtQaFsPRvDBSsYCcr5fcABlST4DyUgnkgqtx-0-D1QEwtWiH3xiHLQGa82ldjqNIXL9LqwxYoCRBKuljHyqEylZD26A9Jp6SL9rk_Ol6TJlYa3zx44PHyMoA3Coy-HIZW5NMwVKdV7egUDDOchvuFnc1Zv2QpSFKc0JY8lYFtSm1HZFwjq7hf2hBqkU0Xneh8AT4Ty9QVb4mJ8rpzc8m_NBZNrpZVE-pIzmv2yGjnRwKSrwsjat7b2iY34UPFqGBlDk5FX6EfRlN9bq-nztWdextLc47ndr1gxsjC-vr6tbdXl5FxMVhbsnLH80wOC6hHubxCysr5C7Ft59s3MLhVQCc3IIOPMBhLOjjjVsu6K8kAJvvamIpj-iYUQj9T8JztAqfobytzbiwPsQ3mywUGkJpZxTjXjqkKdT6yfFdW5ksR8p3VlKGAAKft9TKKcc5IgErmIRtiZF4hGhB45nwIO5XHA59V94QuV3b0oJrleuDCBj0iDFqWYpsUVHyKl3RjrO86Yq1IbNRwXIIMrlsVYos9CS1I75k9kW4yQC6ni3a2ZitDkiEB-SoQuTlBsvfTs892Wt5q3CWH6_7srZO6l2QEAlWqyQp_P4i8j8uiEbZksGsgghVIgOkriblDP9ml7PdkpRX7S3OpY7jjQgTNR8XHaZ-SEw0-zPiqIIt5VioFK8JljPn-nMIDx-ew_vTDKqmKEOF39ezQcc5oQNTQNUvTAe8qCbK4ghS3fagItezoHtB5zm3qwhx9Iu6JMJy0UhywUZBaInY6NokiVZGDgtoqlVjOk7K4299MVZgsOr2P9QHRDo41lYnCeWWFUf50d-ouEOUO_ngteDpgG1DfV64eycrUOWAnpfI8XOUZ7mxS89SqJriw3T3tcljowHiOFw9QjYsjJi0vuHL5jfoBZVdYAUH6KiLfIScO-KgqitdUTpFwks8Qk7xfd2HcEfArlzSiAt3Hmb2Ty-5mhvtQj2RbPehgoI7gqa60b6Qffth-5tbIjXoKlZCQsaKVMAggF9C3w0Rv5uJ3ExCTGsfKO9IVOf--AfxaA8cNoO0W3NTaMH2iWftY0O1-1x3VJEcerp2v9BcZ0iIL3VFJ9eyOPYNHNwTYrI3S6OrVZxuQXFbu2E_Us32wxYqXvnMx-DEOk7bUUFIanL69Cbn_mR_9Wm1sFixBQ15diJoe1Oyl3XWHWL6_YF4XnHzZlMWySt3Awdeynwu99Ter8WMGXl-6K30novKRWC9jDVOfAtxPvXBkkRtpm8nnJT8fwkmIQoWOEPT2MCg3VYzzHzVEH-AueuRiCZj_o7L-fRqbtFrWPyVnGuetUYS5u0D3n7Rr6kCVqWhLfwjqAwV_calzIQs8-J0-AJe6GGaaONPYfXwXjYan0Sl11CS64lXvx7i3MgeOZuH210T6g6hj54dSLw0upO1L8k0FGli3I5OhLMekeGMLT_N2akyHktjbz8Odpk2ms0pJP_PdqvUegjXgH81F5lr40HAXZs7jfC9ytgcWaEjwlmnoFHSCTdlCIgJqEBzItXiz6ilk5zP35VwxdQTNoms7Meqg-ZrgRuLRaqXNtpQT9qWBmiFP6zoYLwymqytZ_P1SV9DCM-KIZQ2Cq-ew8PsYSrwl8GmfuegoKEMBiON1I4mC9ChDgzJmbo5P9te60T0URS5g9ExiQuSo-JXs0MKC57LLiNo3MPZvqR1wRJOTg0_FqS4JFxzPwN5OqhBzfs25f6kK-axf0wWp-LetUx3U1CTNaxfbCTK5tb8KnLOIs3lDwJw5H5wIIRgXnfNLBJT8A2srfXkdpA",
-							"eventCounters" => [],
-							"jsType" => "ch",
-							"cid" => "3i4vPGHCl74uIBumWaxF2a0PjFkyCJxcSvFnn~heX7keA6sGHgRbnzSYcMr_RzJFlfeeBdg9HeufzFPxnvSHbyWowSvjm6mNCSPhkx6MwDqptANoj93ZgGVbrzxGtcYe",
-							"ddk" => "78B13B7513D180B7AB6D6FF9EB0A51",
-							"Referer" => "https://www.qwant.com/?q={$search}&t=web",
-							"request" => "/?q={$search}&t=web",
-							"responsePage" => "origin",
-							"ddv" => "5.8.0"
-						],
-						true
-					);
-			}catch(Exception $error){
-				
-				throw new Exception("Failed to fetch JS challenge token");
-			}
-			
-			$datadome = json_decode($datadome, true);
-			if($datadome === null){
-				
-				throw new Exception("Failed to decode JS challenge JSON");
-			}
-			
-			if(!isset($datadome["cookie"])){
-				
-				throw new Exception("Failed to get cookie from JS challenge endpoint");
-			}
-			
-			$cookie = explode(";", $datadome["cookie"])[0];
-		}
+		$cookie = $this->fuck_datadome($proxy, $search);
 		
 		try{
 			$json =
@@ -679,6 +617,9 @@ class qwant{
 				);
 			
 			$params = json_decode($params, true);
+			$cookie = $params["cookie"];
+			unset($params["cookie"]);
+			
 		}else{
 			
 			$search = $get["s"];
@@ -719,13 +660,19 @@ class qwant{
 				case "maybe": $params["safesearch"] = 1; break;
 				case "no": $params["safesearch"] = 2; break;
 			}
+			
+			$cookie = null;
 		}
+		
+		$cookie = $this->fuck_datadome($proxy, $search);
 		
 		try{
 			$json = $this->get(
 				$proxy,
 				"https://api.qwant.com/v3/search/images",
 				$params,
+				false,
+				$cookie
 			);
 		}catch(Exception $err){
 			
@@ -1102,5 +1049,54 @@ class qwant{
 		}
 		
 		return "https://" . $image["host"] . "/th?id=" . rawurlencode($id);
+	}
+	
+	private function fuck_datadome($proxy, $search){
+		
+		if($cookie === null){
+			// get datadome bullshit
+			// yeah go ahead and patch this you code monkey
+			
+			// ... you know, instead of fixing this shit, can you make the second page of results return more than 1 result?
+			// i search shit like "higurashi" and i only get 1 result and then just a bunch of related searches ad finitum
+			// also, stop pretending you guys have your own index, this is clearly all bing results
+			try{
+				$datadome =
+					$this->get(
+						$proxy,
+						"https://dd.qwant.com/js/",
+						[
+							"jspl" => "-oirHDeP7G3G9LXY3rhxGDYf6t_ZlYPzaiL2dRhQ34uNUc4dO2Td0SmmKu_VJp7-jrAIoOMrTqKgCtV4cPzntMyNuOYN7QQ1q0Fi2c-679vYpJr9ub5dRFXMhCMQmjZsOWXUa8yafIXf85UA5Goct-n4hVT5dFfBGM-dE6gwZEFkHQ1j1195sLybZFTNA1IfX26MBMxlVHoyT-aHtkd6YjGXbvOPMMsObVHDa_Cf4BmApRGo-eehsAttsCqDRwkl0M2E1b0OXCIwMVnCK-qWZ81MGaJGjqxdj_LaxhAjE9JI_4oNedAg4Yj4m_vkQBKdmWJT_bTUsllAZXqX5IxYQHJ8WvlknOTr6sR3wgoSOa_JNVHkUQxqXBbQcoDdy6VciL5rIqwWl4Y2caVYzeXa8YNXxwsfrPDegH3dQ6vOiIiCDT3bexkcS_y7GAioPPv9qDu7M9y4sI8t0VkPgMbWY6MIu5u9WAv6lEiKIYrtlyU-iiXnNdkd9EnpC1TD8_s12PtCuLg5bGgLVmI1dw8VXVZxmVyFvfBtuqXkzM-kZOyv-YIRcf-wPY8DUtnHox1d6t64oYhGv-pYV5dmZ0rGs99LC6ThiifeF_oHz5ZK46Ms68WsiAjc1HLAbFPFxWw8X6lyLlpT5aHgFdDBeCTExKXyItlc9PBxkgK8UnXHQFiWX3HTen8rziwkI31AbkMU7xGP6cvuwuLG7MA7sH3yLF1uimQlhr6EuTrImWQNV7X81DqyZ0OE7I-uT9bp_xISa5it-6AJpFtGcwz04_OuO2zvZazBeiKJI5Fw0X2r3RHTHdA29SXqTIe4y2LRAAp0MSAZUIJAMIbbrz9BG-3D5BHfQUA1Bbuklxv-tNWiuanWbbTmAiuxTAo9P-D2ZMrWHwdN8sCb3nINLur38z1xviSs2qEEjKo9kzQIWoHgwm_amV-jjDtNBXwpCQnoaqt3FfL8e59ecYWVg61Gnl3YCwq6rubFdkIv6UStcWSlj4pRFlFZSjQxzznvGTAc5Nz1JJWVeBHJItei4wqDUYEw2BNTS_fU9keV3LFyKDH_x248AxHLiXt583DhZZwPAKlpmMo0E7odzfOgVQGM5b9l64NL3RQRq8cDxI8KgmOFnPHdI7Myq1A3nW1uoBB8m9_GR_9orboKl5tAQrT0VTMRd6JyNwOOQ71ZoQpMwsD5Xd9YDZd618TNE9dA38h9OyBco_-hwKCYayyEqib1atLLBO_gnO4InR471AklOokDOKx1oY_xgNhlFrZskE4nQQOqeCQ_47oysob9s3kblA8UqDrL2vM3i2KPLWwlQzMAPrQAIv7Amp6rO-wYwBQdbP7XghYympxx9-hNxc1Duq-nS4R3pjPtZg3LoCvG1N_0JLf9jfPBqw_rdPM6DnjEOvpCdvrfv4wBlEpgqbaRQCZBPEz-O5ZlY24OyPvaNX0krPeXkbi-KYuwZSAbfW0zsksXb8cbRmz6tvh25IRYP1XNDPVd8NFrYOdDH9GzhV5MYZziYMurQlVwgumGLz85Y6qTHZU2D5qkMH7o5C5bzptReO96889oxkReS_LDhzdxH0tAQ5a9GgETJTHAXJ9Lt7X037i0qQlatbPLizOl9fo4vUBGJ7w-uSUmIzg1yIwOo8xhLu39WghXfoJ_EX5ptNi7arpAo11UoJIGEgWgq7bS40q2dtnG5HYpp9ef37iFgztM7PV5dlJf_W-n9uXJyCk2nhxZeuGiIGhMTzjP_8oeyiMFelmoyLlqK8wOs6hvWqgDD4NwtZc-XBkEAKsxuPrirb_sszp0z6BWsh3D6fBxAW_lTrNVkxZ1EBtoEN72HvO1aeX8PVuJP3CKwkkUcAhJ5Zvajo8t4Ai8ave2MTZul4QhDIe7ZALJMo71u-hNSj8YG9JLPqF1jcnbkl8ykt_XMMxX8wSZ_AfTsfmAuOWBfEzxv8Fl2Ne-oxcEtfuYnYNJIjQDHXXdtYbWKBezE41wonQu7FWh3wSSF3DDm9EocWMsUZ610nrIviOFdtTqjrY7KnOZp0hS9Hm2V04z-06Db-To71L5O5poYKuOlDAP_ULfW0hgMgYaPnt4Nive9gtue6ZQ5yNFylKM11zCWcF8vmuEPGx4NIZjvNFB-QSkdxZtBTQOgO6r4BqHJNZIDqiD9A6PyMemVtQEo-JhooX6bwHFHx6C84r-kKq1lg0RaDelbu1h6347kocxOczdgHWlagKPFrUvHpPHvCZeFmzLLmPWbDEpUhhfkbEZlNe47svO5WN1TYZMCAlE0g01pe6b_NB9-twQ4FJB1SkUQRA4o5DxiIHSgXBBfw1X98XPEKcJgCU2zRbYuU69mvyPcsxoPsLo8Cl2OAXj2U1tcLUxVhR_vu3I0SG_Ee8hxBp5b6QbpIu2sE0bgpqfi88XqUXf3qvxGbkoZDZ8dPvEvCVmpDZOOGJY5Db4MnpKBByW79lUnpbLCbsVOoxYu8SVmVQ63eGY9yBlACuWxlXA_PhCpnKYwMppjxKvKqalNJGMMg5WQ8cvhsIftE5wgaj21n0A15GwRO1WgUcsO_dLe1MqO88hTHWHV0Q3gNut3sdsmVr_n-0SniLtVAaw4IEtDZWNUfhpaoC7iyKxoJ86t8r697EYPlWUu4nTQhb3TOXAjHF22rFsJJMldKHVxjxjd086ky3OY3L_7cbjVof60-y4gTJdumw5hch-mhaT93nVnaTuPLGCAC48dZSgOitW8Dw62mPS05fTPAfKUY1HpyIWr9ACk7U2KVAijpzFB-bXvqJeCyBeUHr4cB61K2XxTmkNA8Oo9RC32TeYDrThFzoUyYZ_D6zPe1lLtQaFsPRvDBSsYCcr5fcABlST4DyUgnkgqtx-0-D1QEwtWiH3xiHLQGa82ldjqNIXL9LqwxYoCRBKuljHyqEylZD26A9Jp6SL9rk_Ol6TJlYa3zx44PHyMoA3Coy-HIZW5NMwVKdV7egUDDOchvuFnc1Zv2QpSFKc0JY8lYFtSm1HZFwjq7hf2hBqkU0Xneh8AT4Ty9QVb4mJ8rpzc8m_NBZNrpZVE-pIzmv2yGjnRwKSrwsjat7b2iY34UPFqGBlDk5FX6EfRlN9bq-nztWdextLc47ndr1gxsjC-vr6tbdXl5FxMVhbsnLH80wOC6hHubxCysr5C7Ft59s3MLhVQCc3IIOPMBhLOjjjVsu6K8kAJvvamIpj-iYUQj9T8JztAqfobytzbiwPsQ3mywUGkJpZxTjXjqkKdT6yfFdW5ksR8p3VlKGAAKft9TKKcc5IgErmIRtiZF4hGhB45nwIO5XHA59V94QuV3b0oJrleuDCBj0iDFqWYpsUVHyKl3RjrO86Yq1IbNRwXIIMrlsVYos9CS1I75k9kW4yQC6ni3a2ZitDkiEB-SoQuTlBsvfTs892Wt5q3CWH6_7srZO6l2QEAlWqyQp_P4i8j8uiEbZksGsgghVIgOkriblDP9ml7PdkpRX7S3OpY7jjQgTNR8XHaZ-SEw0-zPiqIIt5VioFK8JljPn-nMIDx-ew_vTDKqmKEOF39ezQcc5oQNTQNUvTAe8qCbK4ghS3fagItezoHtB5zm3qwhx9Iu6JMJy0UhywUZBaInY6NokiVZGDgtoqlVjOk7K4299MVZgsOr2P9QHRDo41lYnCeWWFUf50d-ouEOUO_ngteDpgG1DfV64eycrUOWAnpfI8XOUZ7mxS89SqJriw3T3tcljowHiOFw9QjYsjJi0vuHL5jfoBZVdYAUH6KiLfIScO-KgqitdUTpFwks8Qk7xfd2HcEfArlzSiAt3Hmb2Ty-5mhvtQj2RbPehgoI7gqa60b6Qffth-5tbIjXoKlZCQsaKVMAggF9C3w0Rv5uJ3ExCTGsfKO9IVOf--AfxaA8cNoO0W3NTaMH2iWftY0O1-1x3VJEcerp2v9BcZ0iIL3VFJ9eyOPYNHNwTYrI3S6OrVZxuQXFbu2E_Us32wxYqXvnMx-DEOk7bUUFIanL69Cbn_mR_9Wm1sFixBQ15diJoe1Oyl3XWHWL6_YF4XnHzZlMWySt3Awdeynwu99Ter8WMGXl-6K30novKRWC9jDVOfAtxPvXBkkRtpm8nnJT8fwkmIQoWOEPT2MCg3VYzzHzVEH-AueuRiCZj_o7L-fRqbtFrWPyVnGuetUYS5u0D3n7Rr6kCVqWhLfwjqAwV_calzIQs8-J0-AJe6GGaaONPYfXwXjYan0Sl11CS64lXvx7i3MgeOZuH210T6g6hj54dSLw0upO1L8k0FGli3I5OhLMekeGMLT_N2akyHktjbz8Odpk2ms0pJP_PdqvUegjXgH81F5lr40HAXZs7jfC9ytgcWaEjwlmnoFHSCTdlCIgJqEBzItXiz6ilk5zP35VwxdQTNoms7Meqg-ZrgRuLRaqXNtpQT9qWBmiFP6zoYLwymqytZ_P1SV9DCM-KIZQ2Cq-ew8PsYSrwl8GmfuegoKEMBiON1I4mC9ChDgzJmbo5P9te60T0URS5g9ExiQuSo-JXs0MKC57LLiNo3MPZvqR1wRJOTg0_FqS4JFxzPwN5OqhBzfs25f6kK-axf0wWp-LetUx3U1CTNaxfbCTK5tb8KnLOIs3lDwJw5H5wIIRgXnfNLBJT8A2srfXkdpA",
+							"eventCounters" => [],
+							"jsType" => "ch",
+							"cid" => "3i4vPGHCl74uIBumWaxF2a0PjFkyCJxcSvFnn~heX7keA6sGHgRbnzSYcMr_RzJFlfeeBdg9HeufzFPxnvSHbyWowSvjm6mNCSPhkx6MwDqptANoj93ZgGVbrzxGtcYe",
+							"ddk" => "78B13B7513D180B7AB6D6FF9EB0A51",
+							"Referer" => "https://www.qwant.com/?q={$search}&t=web",
+							"request" => "/?q={$search}&t=web",
+							"responsePage" => "origin",
+							"ddv" => "5.8.0"
+						],
+						true
+					);
+			}catch(Exception $error){
+				
+				throw new Exception("Failed to fetch JS challenge token");
+			}
+			
+			$datadome = json_decode($datadome, true);
+			if($datadome === null){
+				
+				throw new Exception("Failed to decode JS challenge JSON");
+			}
+			
+			if(!isset($datadome["cookie"])){
+				
+				throw new Exception("Failed to get cookie from JS challenge endpoint");
+			}
+			
+			$cookie = explode(";", $datadome["cookie"])[0];
+		}
+		
+		return $cookie;
 	}
 }
