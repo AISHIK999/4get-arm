@@ -1763,7 +1763,7 @@ class ddg{
 					if(count($answer) !== 0){
 						
 						$out["answer"][] = [
-							"title" => ucfirst($word),
+							"title" => ucfirst(rawurldecode($word)),
 							"description" => $answer,
 							"url" => "https://www.wordnik.com/words/" . $word,
 							"thumb" => null,
