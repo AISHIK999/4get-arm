@@ -249,7 +249,7 @@ class yep{
 			curl_setopt($curlproc, CURLOPT_HTTPHEADER,
 				["User-Agent: " . config::USER_AGENT,
 				"Accept: */*",
-				"Accept-Language: en-US,en;q=0.5",
+				"Accept-Language: en-US,en;q=0.9",
 				"Accept-Encoding: gzip, deflate, br, zstd",
 				"Referer: https://yep.com/",
 				"Origin: https://yep.com",
@@ -259,6 +259,8 @@ class yep{
 				"Sec-Fetch-Mode: cors",
 				"Sec-Fetch-Site: same-site",
 				"Priority: u=4",
+				"Pragma: no-cache",
+				"Cache-Control: no-cache",
 				"TE: trailers"]
 			);
 		}
