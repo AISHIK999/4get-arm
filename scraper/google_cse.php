@@ -910,11 +910,10 @@ class google_cse{
 			"image" => []
 		];
 		
-		// detect next page
-		if(
-			isset($json["cursor"]["isExactTotalResults"]) || // detects last page
-			!isset($json["cursor"]["pages"]) // detects no results on page
-		){
+		// A response can contain a final page of image results while also marking
+		// the cursor as exact/finished.  Parse those results before deciding
+		// whether another page token should be offered.
+		if(!isset($json["results"]) || !is_array($json["results"])){
 			
 			return $out;
 		}
@@ -937,6 +936,16 @@ class google_cse{
 				],
 				"url" => $result["originalContextUrl"]
 			];
+		}
+		
+		// Only decide whether a following page exists after preserving every
+		// result returned on this page.
+		if(
+			isset($json["cursor"]["isExactTotalResults"]) || // detects last page
+			!isset($json["cursor"]["pages"]) // detects no results on page
+		){
+			
+			return $out;
 		}
 		
 		// get next page
