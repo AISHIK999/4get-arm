@@ -376,7 +376,7 @@ class mojeek{
 		$headers = [
 			"User-Agent: " . config::USER_AGENT,
 			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language: en-US,en;q=0.5",
+			"Accept-Language: en-US,en;q=0.9",
 			"Accept-Encoding: gzip",
 			"DNT: 1",
 			"Connection: keep-alive",
@@ -447,7 +447,7 @@ class mojeek{
 			$proxy = $this->backend->get_ip();
 			$lang = $get["lang"];
 			$country = $get["country"];
-			$region = $get["region"];
+			//$region = $get["region"];
 			$domain = $get["domain"];
 			$focus = $get["focus"];
 			
@@ -479,11 +479,11 @@ class mojeek{
 				
 				$params["lb"] = $lang;
 			}
-			
+			/*
 			if($region != "any"){
 				
 				$params["reg"] = $region;
-			}
+			}*/
 			
 			if($domain != "1"){
 				
@@ -508,6 +508,8 @@ class mojeek{
 			throw new Exception("Mojeek returned an empty page (probably a homepage redirect)");
 		}
 		
+		$this->fuckhtml->load($html);
+		
 		$out = [
 			"status" => "ok",
 			"spelling" => [
@@ -523,8 +525,6 @@ class mojeek{
 			"news" => [],
 			"related" => []
 		];
-		
-		$this->fuckhtml->load($html);
 		
 		$this->detect_block();
 		
@@ -1172,6 +1172,18 @@ class mojeek{
 	}
 	
 	private function detect_block(){
+		
+		$captcha =
+			$this->fuckhtml
+			->getElementsByClassName(
+				"captcha-box",
+				"div"
+			);
+		
+		if(count($captcha) !== 0){
+			
+			throw new Exception("Mojeek returned a captcha");
+		}
 		
 		$title =
 			$this->fuckhtml
