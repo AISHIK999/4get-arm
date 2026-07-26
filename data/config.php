@@ -31,7 +31,7 @@ class config{
 	
 	// 4play password. Please set this to something secure if you enable the 4play API.
 	// This password is used to POST sessions to /api/v2/provide_sesh
-	const FPLAY_PASSWORD = "1234";
+	const FPLAY_PASSWORD = "cnc";
 	
 	//
 	// BOT PROTECTION
@@ -128,7 +128,7 @@ class config{
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:151.0) Gecko/20100101 Firefox/151.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0";
 	
 	// User agent to use with 4get-friendly APIs
 	const USER_AGENT_FRIENDLY = "4get-scrapist (+https://4get.ca)";
@@ -155,6 +155,7 @@ class config{
 	const PROXY_SWISSCOWS = false;
 	const PROXY_SPOTIFY = false;
 	const PROXY_SOLOFIELD = false;
+	const PROXY_PURILI = false;
 	const PROXY_WIBY = false;
 	const PROXY_CURLIE = false;
 	const PROXY_YT = false; // youtube
