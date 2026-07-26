@@ -186,6 +186,10 @@ $settings = [
 						"text" => "Marginalia"
 					],
 					[
+						"value" => "purili",
+						"text" => "Purili"
+					],
+					[
 						"value" => "wiby",
 						"text" => "wiby"
 					]
@@ -340,6 +344,10 @@ $settings = [
 					[
 						"value" => "coccoc",
 						"text" => "Cốc Cốc"
+					],
+					[
+						"value" => "purili",
+						"text" => "Purili"
 					],
 					[
 						"value" => "solofield",

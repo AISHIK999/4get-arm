@@ -634,6 +634,7 @@ class frontend{
 				$filters["scraper"] = [
 					"display" => "Scraper",
 					"option" => [
+						//"fget" => "fget",
 						"ddg" => "DuckDuckGo",
 						//"yahoo" => "Yahoo!",
 						"brave" => "Brave",
@@ -652,6 +653,7 @@ class frontend{
 						"coccoc" => "Cốc Cốc",
 						"solofield" => "Solofield",
 						"marginalia" => "Marginalia",
+						"purili" => "Purili",
 						"wiby" => "wiby"
 					]
 				];
@@ -707,6 +709,7 @@ class frontend{
 						"naver" => "Naver",
 						"baidu" => "Baidu",
 						"coccoc" => "Cốc Cốc",
+						"purili" => "Purili",
 						"solofield" => "Solofield"
 					]
 				];
