@@ -1,0 +1,28 @@
+name: Mirror Upstream Repository
+
+# Mirror the repo from https://git.lolcat.ca/lolcat/4get.git
+
+on:
+  schedule:
+    # Runs at 18:30 UTC every day, which is Midnight (00:00) IST
+    - cron: '30 18 * * *'
+  # Keeps the manual trigger button available in the Actions UI
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror upstream git repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPSTREAM_URL: 'https://git.lolcat.ca/lolcat/4get.git'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git clone --mirror "$UPSTREAM_URL" repo_mirror.git
+          cd repo_mirror.git
+
+          TARGET_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          git push --mirror "$TARGET_URL"

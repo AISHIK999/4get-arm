@@ -1,33 +1,21 @@
-## <a href="https://4get.ca/donate">Donate to the project here!</a>
+# 4get arm
+4get search engine for arm64 devices. Original project: https://git.lolcat.ca/lolcat/4get
 
-# 4get search
-**4get** is a proxy search engine that doesn't suck.
-
-## About 4get
-https://4get.ca/about
+## About
+**4get** is a proxy search engine
 
 ## Official instance
 https://4get.ca , or visit the official instance list: https://4get.ca/instances
 
 _NOT to be confused with 4get.ch, 4get.lol and friends! I **don't** host these._
 
-## Totally unbiased comparison between alternatives
-
-|                            | 4get                    | searx(ng) | whoogle    | degoog                                    |
-|----------------------------|-------------------------|-----------|------------|-------------------------------------------|
-| RAM usage                  | 100-400mb~              | 400mb-1GB | 100mb      | 100mb-250mb                               |
-| Does it suck               | no (debunked by snopes) | yes       | kind of?   | hit and miss with search filters          |
-| Does it work               | ye                      | lmao      | shits dead | works $rightNow, it's actually kinda cool |
-
 ## Features
 1. Rotating proxies on a per-scraper basis
-2. Search filters, which SearxNG lacks for the most part
-3. Bot protection that *actually* filters out the bots (when configured)
+2. Search filters
+3. Bot protection (per configuration)
 4. Interface doesn't require javascript
 5. Favicon fetcher with caching support & image proxy
 6. Bunch of other shits
-
-tl;dr 4get is the best way to browse for shit.
 
 # Supported websites
 
@@ -56,10 +44,16 @@ tl;dr 4get is the best way to browse for shit.
 |              | FindThatMeme |              |              |            |              |
 
 # Installation
-Refer to the <a href="https://git.lolcat.ca/lolcat/4get/src/branch/master/docs/">documentation index</a>. I recommend following the <a href="https://git.lolcat.ca/lolcat/4get/src/branch/master/docs/apache2.md">apache2 guide</a>.
 
-## Contact
-Shit breaks all the time but I repair it all the time too. Email me here: <b>will (at) lolcat.ca</b> or create an issue.
+Docker (recommended):
+
+```
+sudo docker compose up --build -d
+```
+
+### OR
+
+Refer to the <a href="https://github.com/AISHIK999/4get-arm/tree/master/docs/">documentation index</a>. I recommend following the <a href="https://github.com/AISHIK999/4get-arm/tree/master/docs/apache2.md">apache2 guide</a>.
 
 ## License
 AGPLv3-only
