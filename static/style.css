@@ -1013,6 +1013,23 @@ table tr a:last-child{
 	font-weight:bold;
 }
 
+/* booru */
+#images .image .i-title-wrapper{
+	margin-bottom:7px;
+	white-space:nowrap;
+	overflow:hidden;
+	text-overflow:ellipsis;
+}
+#images .image .i-title-wrapper a{
+	display:inline;
+}
+
+#images .image .i-title-wrapper .title{
+	display:inline;
+	margin-bottom:0;
+}
+/* end booru */
+
 #images .image .description{
 	overflow:hidden;
 	height:45px;
@@ -1113,6 +1130,17 @@ table tr a:last-child{
 /*
 	Settings page
 */
+.web .settings select{
+	all:unset;
+	user-select:none;
+	display:block;
+	border:1px solid var(--504945);
+	border-radius:2px;
+	font-size:14px;
+	padding:0 20px 0 4px;
+	height:24px;
+}
+
 .web .settings{
 	margin-top:17px;
 	border:1px dashed var(--504945);
