@@ -136,9 +136,9 @@ server.listen(webserver_port, function(){
 	console.log("http server running");
 });
 
-function get_proxy(parts){
+function get_proxy(proxy_line){
 	
-	parts = parts.split(":");
+	parts = proxy_line.split(":");
 	// format: type:address:port:username:password
 	// PHP explode(":", $ip, 5) splits into max 5 parts
 	var type = parts[0];
