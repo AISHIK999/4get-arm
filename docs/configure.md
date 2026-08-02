@@ -79,3 +79,16 @@ Done! The scraper you chose should now be using the rotating proxies. When askin
 
 ## Important!
 If you ever test out a `socks5` proxy locally on your machine and find out it works but doesn't on your server, try supplying the `socks5_hostname` protocol instead. Hopefully this tip can save you 3 hours of your life!
+
+# 4play
+4play is a botfaggotry Firefox extension. I made it, and it allows me to control a Firefox browser through code. More information about the project [here](https://git.lolcat.ca/lolcat/4play). It allows you to scrape Google (& probably more sites in the future)
+
+1. Install the [firefox extension](https://addons.mozilla.org/en-US/firefox/addon/4play/) onto a clean Firefox profile. Make sure you have a real display connected and that you use real hardware with an user-grade GPU. Websites detect this shit now.
+2. Navigate to `/extra/4play/`
+3. Install the 4play server: `npm install @lawlers/4play`
+4. Edit the `render-server.js` file. Change the line `var password = "cnc";` so that it uses a secure password.
+5. Edit `/data/config.php` and update the 4play password. Also update the `FPLAY_EXTERNAL_ENDPOINT` so that it points to the render HTTP server.
+
+Now, if you did everything correctly, you should be able to render search pages on scrapers that require it. If your render server sits on a different server, I highly recommend setting up a reverse proxy to add TLS support.
+
+In my case, the 4get website & scrapers sits at the OVH datacenter, while the render server is at my home running on a mini-PC I bought for the occasion. This wouldn't have been possible without your financial support, thank you all!!

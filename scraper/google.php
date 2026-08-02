@@ -1,8 +1,5 @@
 <?php
 
-// noJS but requires login/cookie token
-// https://www.google.com/search?q=asmr&tbm=isch&asearch=arc&async=arc_id:srp_a,ffilt:all,ve_name:MoreResultsContainer,use_ac:false,inf:0,_id:arc-srp_a,_pms:s,_fmt:pc
-
 class google{
 	
 	public function __construct(){
@@ -12,8 +9,6 @@ class google{
 		
 		include "lib/backend.php";
 		$this->backend = new backend("google");
-		
-		$this->message = "Still working on a Google scraper that uses a headful browser. It will require Firefox + a webExtension running on a dedicated server. Waiting for my EDID adapter and we can get the show going. In the meantime, use the Google CSE/API or Yahoo JP/Startpage scrapers. They're all crippled in their own special ways but they're serviceable I guess.";
 	}
 	
 	public function getfilters($page){
@@ -507,79 +502,1635 @@ class google{
 		}
 	}
 	
-	private function get($proxy, $url, $get = []){
+	private function get($proxy, $url, $get = [], $container = null){
 		
-		$curlproc = curl_init();
-		
-		if($get !== []){
-			$get = http_build_query($get);
-			$url .= "?" . $get;
-		}
-		
-		curl_setopt($curlproc, CURLOPT_URL, $url);
-		
-		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
-		
-		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-		curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
-			"User-Agent: " . config::USER_AGENT,
-			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language: en-US,en;q=0.5",
-			"Accept-Encoding: gzip",
-			"DNT: 1",
-			"Connection: keep-alive",
-			"Upgrade-Insecure-Requests: 1",
-			"Sec-Fetch-Dest: document",
-			"Sec-Fetch-Mode: navigate",
-			"Sec-Fetch-Site: none",
-			"Sec-Fetch-User: ?1",
-			"Priority: u=1",
-			"TE: trailers"
-		]);
-		
-		curl_setopt($curlproc, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curlproc, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($curlproc, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($curlproc, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($curlproc, CURLOPT_TIMEOUT, 30);
-		
-		// follow redirects
-		curl_setopt($curlproc, CURLOPT_FOLLOWLOCATION, true);
-
-		$this->backend->assign_proxy($curlproc, $proxy);
-		
-		$data = curl_exec($curlproc);
-		
-		if(curl_errno($curlproc)){
+		if(config::FPLAY_EXTERNAL_ENDPOINT === null){
 			
-			throw new Exception(curl_error($curlproc));
+			throw new Exception("This scraper requires 4play, and the instance maintainer did not configure it. Please refer to the documentation for more information");
 		}
 		
-		curl_close($curlproc);
+		try{
+			$curlproc = curl_init();
+			
+			if($get !== []){
+				$get = http_build_query($get);
+				$url .= "?" . $get;
+			}
+			
+			if($container === null){
+				
+				$url =
+					config::FPLAY_EXTERNAL_ENDPOINT .
+					"?url=" .				urlencode($url) .
+					"&pw=" .				urlencode(config::FPLAY_PASSWORD) .
+					"&container=" .			urlencode($container) .
+					"&proxy=" .				urlencode($proxy) .
+					"&url_match=" .			urlencode("&sei=") .
+					"&fail_url_match=" .	urlencode("\/sorry\/");
+			}else{
+				
+				$url =
+					config::FPLAY_EXTERNAL_ENDPOINT .
+					"?url=" .				urlencode($url) .
+					"&pw=" .				urlencode(config::FPLAY_PASSWORD) .
+					"&container=" .			urlencode($container) .
+					"&proxy=" .				urlencode($proxy);
+			}
+			
+			$header_out = [];
+			curl_setopt($curlproc, CURLOPT_HEADERFUNCTION, function($curlproc, $header) use (&$header_out){
+				
+				$length = strlen($header);
+				$header_out[] = trim($header);
+				
+				return $length;
+			});
+			
+			curl_setopt($curlproc, CURLOPT_URL, $url);
+			curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
+			
+			curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
+				"User-Agent: " . config::USER_AGENT_FRIENDLY,
+				"Accept: text/plain"
+			]);
+			
+			curl_setopt($curlproc, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curlproc, CURLOPT_SSL_VERIFYHOST, 2);
+			curl_setopt($curlproc, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($curlproc, CURLOPT_CONNECTTIMEOUT, 30);
+			curl_setopt($curlproc, CURLOPT_TIMEOUT, 30);
+			
+			curl_setopt($curlproc, CURLOPT_FOLLOWLOCATION, true);
+
+			//$this->backend->assign_proxy($curlproc, $proxy);
+			
+			$data = curl_exec($curlproc);
+			
+			if(curl_errno($curlproc)){
+				
+				throw new Exception(curl_error($curlproc));
+			}
+			
+			curl_close($curlproc);
+		}catch(Exception $error){
+			
+			throw new Exception("4play API is currently unreachable. Render server offline (probably) woopsies");
+		}
 		
-		return $data;
+		// check for failstate
+		if(
+			str_contains(
+				$header_out[0],
+				"400"
+			)
+		){
+			
+			throw new Exception("Page renderer returned an error: " . $data);
+		}
+		
+		// parse headers
+		$container = null;
+		
+		foreach($header_out as $header){
+			
+			$header = explode(":", $header, 2);
+			
+			if(strtolower($header[0]) == "x-container-id"){
+				
+				$container = trim($header[1]);
+				break;
+			}
+		}
+		
+		if($container === null){
+			
+			throw new Exception("The 4play API did not return a valid container ID. Make sure your configuration forwards X-Container-ID headers properly");
+		}
+		
+		return [
+			"data" => $data,
+			"container" => $container
+		];
 	}
 	
 	
 	public function web($get){
 		
-		throw new Exception($this->message);
+		if($get["npt"]){
+			
+			[$get, $proxy] = $this->backend->get($get["npt"], "web");
+			
+			$get = json_decode($get, true);
+			$container = $get["c"];
+			$get = $get["u"];
+			
+			$data =
+				$this->get(
+					$proxy,
+					"https://www.google.com" . $get,
+					[],
+					$container
+				);
+			
+			$html = &$data["data"];
+			$container = &$data["container"];
+			
+		}else{
+			
+			$search = $get["s"];
+			if(strlen($search) === 0){
+				
+				throw new Exception("Search term is empty!");
+			}
+			/*
+			$session = $this->backend->session_get();
+			
+			if(config::FPLAY_ENABLE_API === false){
+				
+				throw new Exception("This scraper requires the 4play session generator. Check the documentation for more information");
+			}
+			
+			if($session === false){
+				
+				throw new Exception("Session database is empty");
+			}
+			
+			$proxy = &$session["proxy"];
+			$headers = &$session["headers"];
+			*/
+			
+			$proxy = $this->backend->get_ip();
+			
+			//
+			// Generate params
+			//
+			
+			$params = [
+				"q" => $get["s"],
+				"hl" => "en",
+				"udm" => 14
+			];
+			
+			// country
+			if($get["country"] != "any"){
+				
+				$params["gl"] = $country;
+			}
+			
+			// nsfw
+			$params["safe"] = $get["nsfw"] == "yes" ? "off" : "active";
+			
+			// language
+			if($get["lang"] != "any"){
+				
+				$params["lr"] = "lang_" . $lang;
+			}
+			
+			// generate tbs
+			$tbs = [];
+			
+			// get date
+			$get["older"] = $get["older"] === false ? null : date("m/d/Y", $older);
+			$get["newer"] = $get["newer"] === false ? null : date("m/d/Y", $newer);
+			
+			if(
+				$get["older"] !== null ||
+				$get["newer"] !== null
+			){
+				
+				$tbs["cdr"] = "1";
+				$tbs["cd_min"] = $get["newer"];
+				$tbs["cd_max"] = $get["older"];
+			}
+			
+			// spellcheck filter
+			if($get["spellcheck"] == "no"){
+				
+				$params["nfpr"] = "1";
+			}
+			
+			if(count($tbs) !== 0){
+				
+				$params["tbs"] = "";
+				
+				foreach($tbs as $key => $value){
+					
+					$params["tbs"] .= $key . ":" . $value . ",";
+				}
+				
+				$params["tbs"] = rtrim($params["tbs"], ",");
+			}
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params,
+				null
+			);
+			
+			$html = &$data["data"];
+			$container = &$data["container"];
+			
+			//file_put_contents("scraper/google-jp.html", $html);
+			//$html = file_get_contents("scraper/google-jp.html");
+		}
+		
+		$out = [
+			"status" => "ok",
+			"spelling" => [
+				"type" => "no_correction",
+				"using" => null,
+				"correction" => null
+			],
+			"npt" => null,
+			"answer" => [],
+			"web" => [],
+			"image" => [],
+			"video" => [],
+			"news" => [],
+			"related" => []
+		];
+		
+		$this->fuckhtml->load($html);
+		
+		// init
+		$this->detect_sorry();
+		$this->parsestyles();
+		$this->scrape_dimg($html);
+		$this->scrape_imagearr($html);
+		
+		$content =
+			$this->fuckhtml
+			->getElementById(
+				"rso"
+			);
+		
+		if($content === null){
+			
+			throw new Exception("Failed to grep search div");
+		}
+		
+		// get encoded links
+		$encoded_links =
+			explode(
+				"function(){var m={",
+				$html,
+				2
+			);
+		
+		if(count($encoded_links) === 2){
+			
+			$encoded_links =
+				json_decode(
+					$this->fuckhtml
+					->extract_json(
+						"{" . $encoded_links[1]
+					),
+					true
+				);
+		}else{
+			
+			$encoded_links = [];
+		}
+		
+		// get the "did you mean" bullshit
+		$taw =
+			$this->fuckhtml
+			->getElementById("taw");
+		
+		if($taw !== null){
+			$this->fuckhtml->load($taw);
+			
+			$as =
+				$this->fuckhtml
+				->getElementsByTagName("a");
+			
+			$links = [];
+			
+			foreach($as as $a){
+				
+				$href =
+					$this->fuckhtml
+					->getTextContent(
+						$a["attributes"]["href"]
+					);
+				
+				if(preg_match('/^\/search\?/', $href)){
+					
+					$links[] =
+						$this->fuckhtml
+						->getTextContent(
+							$a
+						);
+				}
+			}
+			
+			switch(count($links)){
+				
+				case 1:
+					$out["spelling"] = [
+						"type" => "including",
+						"using" => $params["q"],
+						"correction" => $links[0]
+					];
+					break;
+				
+				case 2:
+					$out["spelling"] = [
+						"type" => "including",
+						"using" => $links[0],
+						"correction" => $links[1]
+					];
+					break;
+			}
+			
+			// reset
+			$this->fuckhtml->load($html);
+		}
+			
+		$bottom =
+			$this->fuckhtml
+			->getElementById("botstuff");
+		
+		if($bottom !== null){
+			
+			$this->fuckhtml->load($bottom);
+						
+			// get next page thingy
+			$npt =
+				$this->fuckhtml
+				->getElementById(
+					"pnnext"
+				);
+			
+			if($npt !== false){
+				
+				$out["npt"] =
+					$this->backend->store(
+						json_encode([
+							"u" =>
+								$this->fuckhtml
+								->getTextContent(
+									$npt["attributes"]["href"]
+								),
+							"c" => $container
+						]),
+						"web",
+						$proxy
+					);
+			}
+			
+			// get lumendatabase notices
+			$notices = [];
+			$as =
+				$this->fuckhtml
+				->getElementsByTagName("a");
+			
+			foreach($as as $a){
+				
+				if(!isset($a["attributes"]["href"])){ continue; }
+				
+				$link =
+					$this->fuckhtml
+					->getTextContent(
+						$a["attributes"]["href"]
+					);
+				
+				if(
+					preg_match(
+						'/^https?:\/\/lumendatabase\.org/',
+						$link
+					)
+				){
+					
+					$notices[] = $link;
+				}
+			}
+			
+			// push notices to dom
+			if(count($notices) !== 0){
+				
+				$notices_dom = [];
+				
+				$i = 0;
+				$c = count($notices);
+								
+				$notices_dom = [
+					[
+						"type" => "text",
+						"value" => "Google removed results from this page, but you can get them anyways by consulting these takedown notices: "
+					]
+				];
+				
+				foreach($notices as $n){
+					
+					$i++;
+					
+					$notices_dom[] = [
+						"type" => "link",
+						"value" => "Notice #{$i}",
+						"url" => $n
+					];
+					
+					if($i !== count($notices)){
+						
+						$notices_dom[] = [
+							"type" => "text",
+							"value" => ", "
+						];
+					}
+				}
+				
+				$out["answer"][] = [
+					"title" => "LumenDB notices",
+					"description" => $notices_dom,
+					"url" => null,
+					"thumb" => null,
+					"table" => [],
+					"sublink" => []
+				];
+			}
+		}
+		
+		$this->fuckhtml->load($content);
+		
+		// get search results
+		$results =
+			$this->fuckhtml
+			->getElementsByAttributeName(
+				"data-rpos",
+				"div"
+			);
+		
+		foreach($results as $result){
+			
+			$this->fuckhtml->load($result);
+			
+			// get title
+			$title =
+				$this->fuckhtml
+				->getElementsByTagName("h3");
+			
+			if(count($title) === 0){
+				
+				// should not happen
+				continue;
+			}
+			
+			$title =
+				$this->titledots(
+					$this->fuckhtml
+					->getTextContent(
+						$title[0]
+					)
+				);
+			
+			$url =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"a"
+				);
+			
+			if(
+				count($url) === 0 ||
+				!isset($url[0]["attributes"]["href"])
+			){
+				
+				continue;
+			}
+			
+			$url =
+				$this->fuckhtml
+				->getTextContent(
+					$url[0]["attributes"]["href"]
+				);
+			
+			if(
+				preg_match(
+					'/^\/goto\?url/',
+					$url
+				)
+			){
+				
+				// encrypted url detected
+				// get reference div
+				$refdivs =
+					$this->fuckhtml
+					->getElementsByAttributeName(
+						"id",
+						"div"
+					);
+				
+				foreach($refdivs as $r){
+					
+					if(
+						preg_match(
+							'/^atritem-/',
+							$r["attributes"]["id"]
+						) &&
+						isset($r["attributes"]["jsdata"])
+					){
+						
+						$ref = explode(";", $r["attributes"]["jsdata"]);
+						$ref = $ref[count($ref) - 1];
+						
+						if(isset($encoded_links[$ref][32][3][0])){
+							
+							$url = $encoded_links[$ref][32][3][0];
+						}
+						break;
+					}
+				}
+			}
+			
+			// get citation text. contains table elements
+			$table = [];
+			$date = null;
+			
+			$cite =
+				$this->fuckhtml
+				->getElementsByTagName("cite");
+			
+			if(isset($cite[0])){
+				
+				$texts =
+					explode(
+						" · ",
+						$this->fuckhtml
+						->getTextContent($cite[0])
+					);
+				
+				foreach($texts as $text){
+					
+					$text = trim($text);
+					
+						preg_match(
+							'/([0-9+kmb,.]+) +(likes?|views?|comments?|followers?|subscribers?|(?:hours?|days?|months?|years?) +ago)/i',
+							$text,
+							$probe
+						);
+					
+					if(isset($probe[1])){
+						
+						// is it date?
+						if(
+							preg_match(
+								'/ago$/i',
+								$text
+							)
+						){
+							
+							$time = strtotime($text);
+							
+							if($time !== false){ $date = $time; }
+							continue;
+						}
+						
+						// anything else?
+						$table[ucfirst($probe[2])] = trim($probe[1]);
+					}
+				}
+			}
+			
+			// get description/image wrapper
+			$desc_img_wrappers =
+				$this->fuckhtml
+				->getElementsByAttributeName(
+					"data-sncf",
+					"div"
+				);
+			
+			$description = null;
+			$thumb = [
+				"url" => null,
+				"ratio" => null
+			];
+			
+			foreach($desc_img_wrappers as $wrapper){
+				
+				$this->fuckhtml->load($wrapper);
+				
+				// probe for image
+				$image =
+					$this->fuckhtml
+					->getElementsByTagName(
+						"img"
+					);
+				
+				if(count($image) !== 0){
+					
+					// handle thumbnails
+					$i = null;
+					
+					if(isset($image[0]["attributes"]["id"])){
+						
+						$i = $this->getdimg($image[0]["attributes"]["id"]);
+					}
+					
+					if($i !== null){
+						
+						$thumb = [
+							"ratio" => "1:1",
+							"url" => $i
+						];
+					}
+				}else{
+					
+					if($description === null){
+						
+						// parse it as description
+						$description =
+							$this->titledots(
+								$this->fuckhtml
+								->getTextContent(
+									$wrapper
+								)
+							);
+					}else{
+						
+						// parse table elements
+						$ts =
+							explode(
+								" · ",
+								$this->fuckhtml
+								->getTextContent(
+									$wrapper
+								)
+							);
+						
+						foreach($ts as $t){
+							
+							$t = trim(html_entity_decode($t));
+							
+							if(preg_match("/\p{Sc}/u", $t)){
+								
+								$table["Price"] = $t;
+								continue;
+							}
+							
+							if(str_contains($t, "stock")){
+								
+								$table["Stock"] = $t;
+								continue;
+							}
+							
+							if(str_contains($t, "return")){
+								
+								$table["Returns"] = $t;
+								continue;
+							}
+							
+							if(str_contains($t, "delivery")){
+								
+								$table["Delivery"] = $t;
+								continue;
+							}
+							
+							// 5.0(590,004)
+							if(preg_match('/^([0-9kmb\/%.,]+) *(\([0-9kmb,.]+\))?/', $t, $match)){
+								
+								if(isset($match[2])){
+									
+									$table["Ratings"] = "{$match[1]} {$match[2]}";
+									continue;
+								}
+							}
+							
+							if(str_contains($t, "rating")){
+								
+								$table["Ratings"] = $t;
+								continue;
+							}
+						}
+					}
+				}
+			}
+			
+			// extract date from description
+			// Nov 6, 2017 — Keira Hagai from Jak and Daxter. I took off her belt/suspenders/goggles. Originally posted by DemonBoy on Models Resource, and edited and posted to Sketchfab
+			if($date === null){
+				$date_probe =
+					explode(
+						" — ",
+						$description,
+						2
+					);
+				
+				if(count($date_probe) === 2){
+					
+					$time = strtotime($date_probe[0]);
+					
+					if($time !== false){
+						
+						$description = $date_probe[1];
+						$date = $time;
+					}
+				}
+			}
+			
+			$sublinks = [];
+			
+			$out["web"][] = [
+				"title" => $title,
+				"description" => $description,
+				"url" => $url,
+				"date" => $date,
+				"type" => "web",
+				"thumb" => $thumb,
+				"sublink" => $sublinks,
+				"table" => $table
+			];
+		}
+		
+		return $out;
 	}
+	
 	
 	
 	public function image($get){
-		throw new Exception($this->message);
+		
+		// generate parameters
+		if($get["npt"]){
+			
+			[$params, $proxy] =
+				$this->backend->get(
+					$get["npt"],
+					"images"
+				);
+			
+			$params = json_decode($params, true);
+			$container = $params["c"];
+			unset($params["c"]);
+		}else{
+			
+			$search = $get["s"];
+			if(strlen($search) === 0){
+			
+				throw new Exception("Search term is empty!");
+			}
+			
+			$proxy = $this->backend->get_ip();
+			$country = $get["country"];
+			$nsfw = $get["nsfw"];
+			$time = $get["time"];
+			$size = $get["size"];
+			$ratio = $get["ratio"];
+			$color = $get["color"];
+			$type = $get["type"];
+			$format = $get["format"];
+			$rights = $get["rights"];
+			
+			$params = [
+				"q" => $search,
+				"udm" => "2", // get images
+				"start" => 0
+			];
+			
+			// country (image search uses cr instead of gl)
+			if($country != "any"){
+				
+				$params["cr"] = "country" . strtoupper($country);
+			}
+			
+			// nsfw
+			$params["safe"] = $nsfw == "yes" ? "off" : "active";
+			
+			// generate tbs
+			$tbs = [];
+			
+			// time
+			if($time != "any"){
+				
+				$tbs["qdr"] = $time;
+			}
+			
+			// size
+			if($size != "any"){
+				
+				$params["imgsz"] = $size;
+			}
+			
+			// ratio
+			if($ratio != "any"){
+				
+				$params["imgar"] = $ratio;
+			}
+			
+			// color
+			if($color != "any"){
+				
+				if(
+					$color == "color" ||
+					$color == "trans"
+				){
+					
+					$params["imgc"] = $color;
+				}elseif($color == "bnw"){
+					
+					$params["imgc"] = "gray";
+				}else{
+					
+					$tbs["ic"] = "specific";
+					$tbs["isc"] = $color;
+				}
+			}
+			
+			// type
+			if($type != "any"){
+				
+				$tbs["itp"] = $type;
+			}
+			
+			// format
+			if($format != "any"){
+				
+				$params["as_filetype"] = $format;
+			}
+			
+			// rights (tbs)
+			if($rights != "any"){
+				
+				$tbs["sur"] = $rights;
+			}
+			
+			// append tbs
+			if(count($tbs) !== 0){
+				
+				$params["tbs"] = "";
+				
+				foreach($tbs as $key => $value){
+					
+					$params["tbs"] .= $key . ":" . $value . ",";
+				}
+				
+				$params["tbs"] = rtrim($params["tbs"], ",");
+			}
+		}
+		
+		//$html = file_get_contents("scraper/google.html");
+				
+		$data = $this->get(
+			$proxy,
+			"https://www.google.com/search",
+			$params
+		);
+		
+		$html = &$data["data"];
+		$container = &$data["container"];
+		
+		$this->fuckhtml->load($html);
+		
+		$this->detect_sorry();
+		
+		// get javascript images
+		$this->scrape_imagearr($html);
+		
+		$out = [
+			"status" => "ok",
+			"npt" => null,
+			"image" => []
+		];
+		
+		$images =
+			$this->fuckhtml
+			->getElementsByClassName(
+				"ivg-i",
+				"div"
+			);
+		
+		foreach($images as $div){
+			
+			$this->fuckhtml->load($div);
+			
+			$image =
+				$this->fuckhtml
+				->getElementsByTagName("img")[0];
+			
+			// make sure we dont attempt to show an image we dont have data for
+			if(
+				isset($div["attributes"]["data-docid"]) &&
+				isset($this->image_arr[$div["attributes"]["data-docid"]])
+			){
+				
+				$source =
+					$this->image_arr[
+						$div["attributes"]["data-docid"]
+					];
+			}else{
+				
+				continue;
+			}
+			
+			$out["image"][] = [
+				"title" =>
+					$this->titledots(
+						$this->fuckhtml
+						->getTextContent(
+							$image["attributes"]["alt"]
+						)
+					),
+				"source" => $source,
+				"url" =>
+					$this->fuckhtml
+					->getTextContent(
+						$div["attributes"]["data-lpage"]
+					)
+			];
+		}
+		
+		// as usual, no way to check if there is a next page reliably
+		if(count($out["image"]) > 50){
+			
+			if(!isset($params["start"])){
+				
+				$params["start"] = 10;
+			}else{
+				
+				$params["start"] += 10;
+			}
+			
+			$out["npt"] =
+				$this->backend
+				->store(
+					json_encode($params),
+					"image",
+					$proxy
+				);
+		}
+		
+		return $out;
 	}
 	
 	
+	
 	public function video($get){
-		throw new Exception($this->message);
+		
+		if($get["npt"]){
+			
+			[$params, $proxy] = $this->backend->get($get["npt"], "video");
+			$params = json_decode($params, true);
+			
+			$container = $params["c"];
+			unset($params["c"]);
+			
+		}else{
+			$search = $get["s"];
+			$country = $get["country"];
+			$nsfw = $get["nsfw"];
+			$older = $get["older"];
+			$newer = $get["newer"];
+			$duration = $get["duration"];
+			$quality = $get["quality"];
+			$captions = $get["captions"];
+			
+			$container = null;
+			$proxy = $this->backend->get_ip();
+			
+			$params = [
+				"q" => $search,
+				"udm" => "7",
+				"hl" => "en"
+			];
+			
+			// country
+			if($country != "any"){
+				
+				$params["gl"] = $country;
+			}
+			
+			// nsfw
+			$params["safe"] = $nsfw == "yes" ? "off" : "active";
+			
+			$tbs = [];
+			
+			// get date
+			$older = $older === false ? null : date("m/d/Y", $older);
+			$newer = $newer === false ? null : date("m/d/Y", $newer);
+			
+			if(
+				$older !== null ||
+				$newer !== null
+			){
+				
+				$tbs["cdr"] = "1";
+				$tbs["cd_min"] = $newer;
+				$tbs["cd_max"] = $older;
+			}
+			
+			// duration
+			if($duration != "any"){
+				
+				$tbs[] = "dur:" . $duration;
+			}
+			
+			// quality
+			if($quality != "any"){
+				
+				$tbs[] = "hq:" . $quality;
+			}
+			
+			// captions
+			if($captions != "any"){
+				
+				$tbs[] = "cc:" . $captions;
+			}
+			
+			// append tbs
+			if(count($tbs) !== 0){
+				
+				$params["tbs"] =
+					implode(",", $tbs);
+			}
+		}
+		
+		//$html = file_get_contents("scraper/google.html");		
+		$data = $this->get(
+			$proxy,
+			"https://www.google.com/search",
+			$params,
+			$container
+		);
+		
+		$html = &$data["data"];
+		$container = &$data["container"];
+		
+		if(!isset($params["start"])){
+			
+			$params["start"] = 0;
+		}
+		$params["start"] += 20;
+		
+		$this->fuckhtml->load($html);
+		
+		//
+		// Parse web video page
+		//
+		$this->detect_sorry();
+		
+		// parse all <style> tags
+		$this->parsestyles();
+		
+		// get javascript images
+		$this->scrape_dimg($html);
+		
+		$this->scrape_imagearr($html);
+		
+		$params["c"] = $container;
+		
+		$out = [
+			"status" => "ok",
+			"npt" =>
+				$this->backend->store(
+					json_encode($params),
+					"videos",
+					$proxy
+				),
+			"video" => [],
+			"author" => [],
+			"livestream" => [],
+			"playlist" => [],
+			"reel" => []
+		];
+		
+		$search_div =
+			$this->fuckhtml
+			->getElementById(
+				"center_col"
+			);
+		
+		if($search_div === false){
+			
+			throw new Exception("Failed to grep search div");
+		}
+		
+		$this->fuckhtml->load($search_div);
+		
+		$results =
+			$this->fuckhtml
+			->getElementsByClassName(
+				$this->getstyle([
+					"margin" => "0px 0px 30px"
+				]),
+				"div"
+			);
+		
+		foreach($results as $result){
+			
+			$this->fuckhtml->load($result);
+			
+			$url =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"a"
+				);
+			
+			if(count($url) === 0){
+				
+				// no url, weird, continue
+				continue;
+			}
+			
+			$title =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"h3"
+				);
+			
+			if(count($title) === 0){
+				
+				// no title, weird, continue
+				continue;
+			}
+			
+			// get description
+			$description =
+				$this->fuckhtml
+				->getElementsByClassName(
+					$this->getstyle([
+						"-webkit-box-orient" => "vertical",
+						"display" => "-webkit-box",
+						"-webkit-line-clamp" => "2",
+						"overflow" => "hidden",
+						"word-break" => "break-word"
+					]),
+					"div"
+				);
+			
+			if(count($description) === 0){
+				
+				$description = null;
+			}else{
+				
+				$description =
+					html_entity_decode(
+						$this->titledots(
+							$this->fuckhtml
+							->getTextContent(
+								$description[0]
+							)
+						)
+					);
+			}
+			
+			// get author + date posted
+			$metadiv =
+				$this->fuckhtml
+				->getElementsByClassName(
+					$this->getstyle([
+						"margin-top" => "12px"
+					]),
+					"div"
+				);
+			
+			$author = null;
+			$date = null;
+			
+			if(count($metadiv) !== 0){
+				
+				$metadiv =
+					explode(
+						"·",
+						$this->fuckhtml
+						->getTextContent(
+							$metadiv[0]
+						)
+					);
+				
+				if(count($metadiv) === 3){
+					
+					$author = trim($metadiv[1]);
+					$date = strtotime(trim($metadiv[2]));
+				}elseif(count($metadiv) === 2){
+					
+					$author = trim($metadiv[0]);
+					$date = strtotime(trim($metadiv[1]));
+				}
+			}
+			
+			$thumb = [
+				"url" => null,
+				"ratio" => null
+			];
+			
+			$image =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"img"
+				);
+			
+			$duration = null;
+			
+			if(
+				count($image) !== 0 &&
+				isset($image[0]["attributes"]["id"])
+			){
+				
+				$thumb = [
+					"url" => $this->getdimg($image[0]["attributes"]["id"]),
+					"ratio" => "16:9"
+				];
+				
+				// get duration
+				$duration =
+					$this->fuckhtml
+					->getElementsByClassName(
+						$this->getstyle([
+							"background-color" => "rgba(0,0,0,0.6)",
+							"color" => "#fff",
+							"fill" => "#fff"
+						])
+					);
+				
+				if(count($duration) !== 0){
+					
+					$duration =
+						$this->hms2int(
+							$this->fuckhtml
+							->getTextContent(
+								$duration[0]
+							));
+				}else{
+					
+					$duration = null;
+				}
+			}
+			
+			$out["video"][] = [
+				"title" =>
+					$this->titledots(
+						$this->fuckhtml
+						->getTextContent(
+							$title[0]
+						)
+					),
+				"description" => $description,
+				"author" => [
+					"name" => $author,
+					"url" => null,
+					"avatar" => null
+				],
+				"date" => $date,
+				"duration" => $duration,
+				"views" => null,
+				"thumb" => $thumb,
+				"url" =>
+					$this->fuckhtml
+					->getTextContent(
+						$url[0]["attributes"]["href"]
+					)
+			];
+		}
+		
+		return $out;
 	}
 	
 	
 	public function news($get){
-		throw new Exception($this->message);
+		
+		if($get["npt"]){
+			
+			[$req, $proxy] = $this->backend->get($get["npt"], "news");
+			
+			$req = json_decode($req, true);
+			$container = $req["c"];
+			$req = $req["u"];
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com" . $req,
+				[],
+				$container
+			);
+			
+			$html = &$data["data"];
+			$container = &$data["container"];
+			
+		}else{
+			$search = $get["s"];
+			$country = $get["country"];
+			$nsfw = $get["nsfw"];
+			$older = $get["older"];
+			$newer = $get["newer"];
+			$sort = $get["sort"];
+			
+			$container = null;
+			$proxy = $this->backend->get_ip();
+			
+			$params = [
+				"q" => $search,
+				"tbm" => "nws",
+				"hl" => "en"
+			];
+			
+			// country
+			if($country != "any"){
+				
+				$params["gl"] = $country;
+			}
+			
+			// nsfw
+			$params["safe"] = $nsfw == "yes" ? "off" : "active";
+			
+			$tbs = [];
+			
+			// get date
+			$older = $older === false ? null : date("m/d/Y", $older);
+			$newer = $newer === false ? null : date("m/d/Y", $newer);
+			
+			if(
+				$older !== null ||
+				$newer !== null
+			){
+				
+				$tbs["cdr"] = "1";
+				$tbs["cd_min"] = $newer;
+				$tbs["cd_max"] = $older;
+			}
+			
+			// relevance
+			if($sort == "date"){
+				
+				$tbs["sbd"] = "1";
+			}
+					
+			// append tbs
+			if(count($tbs) !== 0){
+				
+				$params["tbs"] = "";
+				
+				foreach($tbs as $key => $value){
+					
+					$params["tbs"] .= $key . ":" . $value . ",";
+				}
+				
+				$params["tbs"] = rtrim($params["tbs"], ",");
+			}
+			
+			//$html = file_get_contents("scraper/google.html");
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params
+			);
+			
+			$html = &$data["data"];
+			$container = &$data["container"];
+		}
+		
+		$out = [
+			"status" => "ok",
+			"npt" => null,
+			"news" => []
+		];
+		
+		$this->fuckhtml->load($html);
+		
+		$this->detect_sorry();
+		
+		// get images
+		$this->scrape_dimg($html);
+		
+		// parse styles
+		$this->parsestyles();
+		
+		$center_col =
+			$this->fuckhtml
+			->getElementById(
+				"center_col",
+				"div"
+			);
+		
+		if($center_col === null){
+			
+			throw new Exception("Could not grep result div");
+		}
+		
+		$this->fuckhtml->load($center_col);
+		
+		// get next page
+		$npt =
+			$this->fuckhtml
+			->getElementById(
+				"pnnext",
+				"a"
+			);
+		
+		if($npt !== false){
+			
+			$out["npt"] =
+				$this->backend->store(
+					json_encode([
+						"u" =>
+							$this->fuckhtml
+							->getTextContent(
+								$npt["attributes"]
+								["href"]
+							),
+						"c" => $container
+					]),
+					"news",
+					$proxy
+				);
+		}
+		
+		$as =
+			$this->fuckhtml
+			->getElementsByAttributeName(
+				"jsname",
+				"a"
+			);
+		
+		foreach($as as $a){
+			
+			$this->fuckhtml->load($a);
+			
+			// get title
+			$title =
+				$this->fuckhtml
+				->getElementsByAttributeValue(
+					"role",
+					"heading",
+					"div"
+				);
+			
+			if(count($title) === 0){
+				
+				continue;
+			}
+			
+			$title =
+				$this->titledots(
+					$this->fuckhtml
+					->getTextContent(
+						$title[0]
+					)
+				);
+			
+			// get thumbnail
+			$image =
+				$this->fuckhtml
+				->getElementsByAttributeName(
+					"id",
+					"img"
+				);
+			
+			// check for padded title node, if found, we're inside a carousel
+			$probe =
+				$this->fuckhtml
+				->getElementsByClassName(
+					$this->getstyle(
+						[
+							"padding" => "16px 16px 40px 16px"
+						]
+					),
+					"div"
+				);
+			
+			if(count($probe) !== 0){
+				
+				$probe = true;
+			}else{
+				
+				$probe = false;
+			}
+			
+			if(
+				count($image) !== 0 &&
+				!isset($image[0]["attributes"]["width"])
+			){
+				
+				$thumb = [
+					"url" =>
+						$this->getdimg(
+							$image[0]["attributes"]["id"]
+						),
+					"ratio" => $probe === true ? "16:9" : "1:1"
+				];
+			}else{
+				
+				$thumb = [
+					"url" => null,
+					"ratio" => null
+				];
+			}
+			
+			$description = null;
+			
+			if($probe === false){
+				
+				$desc_divs =
+					$this->fuckhtml
+					->getElementsByAttributeName(
+						"style",
+						"div"
+					);
+				
+				foreach($desc_divs as $desc){
+					
+					if(
+						strpos(
+							$desc["attributes"]["style"],
+							"margin-top:"
+						) !== false
+					){
+						
+						$description =
+							$this->titledots(
+								$this->fuckhtml
+								->getTextContent(
+									$desc
+								)
+							);
+						break;
+					}
+				}
+			}
+			
+			// get author
+			$author =
+				$this->fuckhtml
+				->getElementsByClassName(
+					$this->getstyle(
+						[
+							"overflow" => "hidden",
+							"text-align" => "left",
+							"text-overflow" => "ellipsis",
+							"white-space" => "nowrap",
+							"margin-bottom" => "8px"
+						]
+					),
+					"div"
+				);
+			
+			if(count($author) !== 0){
+				
+				$author =
+					$this->fuckhtml
+					->getTextContent(
+						$author[0]
+					);
+			}else{
+				
+				$author = null;
+			}
+			
+			// get date
+			$date = null;
+			
+			$date_div =
+				$this->fuckhtml
+				->getElementsByAttributeName(
+					"style",
+					"div"
+				);
+			
+			foreach($date_div as $d){
+				
+				$this->fuckhtml->load($d);
+				
+				$span =
+					$this->fuckhtml
+					->getElementsByTagName(
+						"span"
+					);
+				
+				if(
+					strpos(
+						$d["attributes"]["style"],
+						"bottom:"
+					) !== false
+				){
+					
+					$date =
+						strtotime(
+							$this->fuckhtml
+							->getTextContent(
+								$span[count($span) - 1]
+							)
+						);
+					break;
+				}
+			}
+			
+			$out["news"][] = [
+				"title" => $title,
+				"author" => $author,
+				"description" => $description,
+				"date" => $date,
+				"thumb" => $thumb,
+				"url" =>
+					$this->unshiturl(
+						$a["attributes"]
+						["href"]
+					)
+			];
+		}
+		
+		return $out;
 	}
+
 	
 	
 	private function scrape_dimg($html){
@@ -1058,7 +2609,7 @@ class google{
 	
 	private function titledots($title){
 		
-		return trim($title, " .\t\n\r\0\x0B…");
+		return trim($title, " .\t\n\r\0\x0B");
 	}
 	
 	private function hms2int($time){
@@ -1112,6 +2663,24 @@ class google{
 		if($captcha_form !== false){
 			
 			throw new Exception("Google returned a captcha");
+		}
+		
+		// detect JS challenge
+		$title =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"title"
+			);
+		
+		if(
+			count($title) !== 0 &&
+			$this->fuckhtml
+			->getTextContent(
+				$title[0]
+			) == "Google Search"
+		){
+			
+			throw new Exception("Google returned a JS challenge");
 		}
 	}
 }

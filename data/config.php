@@ -24,14 +24,20 @@ class config{
 	const API_ENABLED = true;
 	
 	//
-	// 4play (session provider)
+	// 4play settings
 	//
-	// Enable 4play API?
-	const FPLAY_ENABLE_API = true;
+	// Enable 4get's /api/v2/provide_sesh endpoint
+	const FPLAY_ENABLE_API = false;
 	
-	// 4play password. Please set this to something secure if you enable the 4play API.
+	// 4play password. Please set this to something secure if you use this extension.
 	// This password is used to POST sessions to /api/v2/provide_sesh
+	// It's also used as the external endpoint password.
 	const FPLAY_PASSWORD = "cnc";
+	
+	// Endpoint 4get hits to render webpages
+	// Eg: null=no endpoint provided
+	// Or "https://your-endpoint.com/my-endpoint" (excluding get parameters like &pw)
+	const FPLAY_EXTERNAL_ENDPOINT = null;
 	
 	//
 	// BOT PROTECTION
