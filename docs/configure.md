@@ -136,7 +136,7 @@ WantedBy=multi-user.target
 
 Now, enable the service
 ```sh
-sudo service fplay enable
+sudo systemctl enable fplay
 sudo service fplay start
 sudo service fplay status # check the status. You should see it running
 ```
