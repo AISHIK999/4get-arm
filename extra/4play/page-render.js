@@ -239,60 +239,15 @@ fplay.event.on("web_response", async function(page){
 	var fail_url_match = page.url.match(new RegExp(callback_data.fail_url_match, "i"));
 	var fail_content_match = body.match(new RegExp(callback_data.fail_content_match, "i"));
 	
-	// handle positive response
-	if(
-		(
-			callback_data.url_match === null &&
-			callback_data.content_match === null
-		) ||
-		(
-			url_match &&
-			content_match
-		) ||
-		(
-			url_match &&
-			callback_data.content_match === null
-		) ||
-		(
-			callback_data.url_match === null &&
-			content_match
-		)
-	){
-		
-		callback_data.http_res.writeHead(
-			200,
-			{
-				"Content-Type": "text/plain;charset=UTF-8",
-				"X-Proxy": callback_data.proxy.raw,
-				"X-Container-ID": typeof callback_data.container.id == "undefined" ? callback_data.container : callback_data.container.id
-			}
-		);
-		
-		callback_data.http_res.end(body);
-		
-		callback_q.delete(page.id); // cleanup callback only
-		return;
-	}
-	
 	// handle negative response
 	if(
 		(
-			callback_data.fail_url_match !== null &&
+			callback_data.fail_url_match !== null ||
 			callback_data.fail_content_match !== null
 		) &&
 		(
-			(
-				fail_url_match &&
-				fail_content_match
-			) ||
-			(
-				fail_url_match &&
-				callback_data.fail_content_match === null
-			) ||
-			(
-				callback_data.fail_url_match === null &&
-				fail_content_match
-			)
+			fail_url_match !== null ||
+			fail_content_match !== null
 		)
 	){
 		
@@ -311,6 +266,47 @@ fplay.event.on("web_response", async function(page){
 		await fplay.tab_close(global_ws, page.id);
 		await fplay.container_delete(global_ws, callback_data.container);
 		callback_q.delete(page.id);
+		
+		return;
+	}
+	
+	// handle positive response
+	if(
+		(
+			callback_data.url_match === null &&
+			callback_data.content_match === null
+		) ||
+		(
+			callback_data.url_match !== null &&
+			callback_data.content_match !== null &&
+			url_match &&
+			content_match
+		) ||
+		(
+			callback_data.url_match === null &&
+			callback_data.content_match !== null &&
+			content_match
+		) ||
+		(
+			callback_data.url_match !== null &&
+			callback_data.content_match === null &&
+			url_match
+		)
+	){
+		
+		callback_data.http_res.writeHead(
+			200,
+			{
+				"Content-Type": "text/plain;charset=UTF-8",
+				"X-Proxy": callback_data.proxy.raw,
+				"X-Container-ID": typeof callback_data.container.id == "undefined" ? callback_data.container : callback_data.container.id
+			}
+		);
+		
+		callback_data.http_res.end(body);
+		
+		callback_q.delete(page.id); // cleanup callback only
+		return;
 	}
 });
 
