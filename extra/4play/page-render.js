@@ -234,10 +234,10 @@ fplay.event.on("web_response", async function(page){
 	
 	var body = page.body.toString();
 	
-	var url_match = page.url.match(new RegExp(callback_data.url_match, "i"));
-	var content_match = body.match(new RegExp(callback_data.content_match, "i"));
-	var fail_url_match = page.url.match(new RegExp(callback_data.fail_url_match, "i"));
-	var fail_content_match = body.match(new RegExp(callback_data.fail_content_match, "i"));
+	var url_match = callback_data.url_match !== null ? page.url.match(new RegExp(callback_data.url_match, "i")) : null;
+	var content_match = callback_data.content_match !== null ? body.match(new RegExp(callback_data.content_match, "i")) : null;
+	var fail_url_match = callback_data.fail_url_match !== null ? page.url.match(new RegExp(callback_data.fail_url_match, "i")) : null;
+	var fail_content_match = callback_data.fail_content_match !== null ? body.match(new RegExp(callback_data.fail_content_match, "i")) : null;
 	
 	// handle negative response
 	if(
