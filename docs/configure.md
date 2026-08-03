@@ -141,11 +141,23 @@ sudo service fplay start
 sudo service fplay status # check the status. You should see it running
 ```
 
+This should expose a webservice located at `http://localhost:3000`. I highly recommend you put this endpoint behind apache2 or nginx to add SSL, if the render server sits on a different network.
+
 ## Setting up Firefox
 - Install Firefox. You can go for the ESR version or the latest version. You'll figure it out.
 - Head over to [this page](https://addons.mozilla.org/en-US/firefox/addon/4play/) or search "4play" on the Firefox extension store and install the extension.
 - Click the settings cog next to the extension name. Enable "Run in Private Windows" and "Allow automatic updates"
-- Click the extension in the top bar. Modify the `ws://localhost:3000/cnc` URL: replace the `cnc` path with the password you set earlier for the server.
+- Click the extension in the top bar. Modify the `ws://localhost:3030/cnc` URL: replace the `cnc` path with the password you set earlier for the server.
 - Use a timeout value of `30000` to avoid getting throttled by Firefox during reconnections.
 
 If done correctly, you should see the red dot turn green in the extension's icon. You're ready to load pages!
+
+## Setting up 4get
+Now, you need to tell 4get to use the 4play service. Edit `data/config.php` and change these:
+
+```php
+const FPLAY_PASSWORD = "cnc"; # Change this to your password
+const FPLAY_EXTERNAL_ENDPOINT = null; # Change null to "https://your-endpoint.com/api/example";, with the quotes and semicolon
+```
+
+If everything was done correctly, you should be seeing results on the Google scraper! You can set proxies in `data/config.php` for it, just like any other scraper.
