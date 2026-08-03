@@ -80,15 +80,72 @@ Done! The scraper you chose should now be using the rotating proxies. When askin
 ## Important!
 If you ever test out a `socks5` proxy locally on your machine and find out it works but doesn't on your server, try supplying the `socks5_hostname` protocol instead. Hopefully this tip can save you 3 hours of your life!
 
-# 4play
-4play is a botfaggotry Firefox extension. I made it, and it allows me to control a Firefox browser through code. More information about the project [here](https://git.lolcat.ca/lolcat/4play). It allows you to scrape Google (& probably more sites in the future)
+# 4play setup
+4play is a Firefox extension I wrote that lets you control a browser from 4get. When you do a search, 4get sends a query to a nodeJS http server that communicates to the browser via websockets. The browser then reports back various payloads used for scraping. It's very similar to tools like puppeteer or playwright, except it uses websockets to communicate with the browser instead of the browser's debugger. This is needed to prevent `navigator.webdriver` from being set to true (also avoids a fuckton of other botchecks, that's just the tip of the iceberg).
 
-1. Install the [firefox extension](https://addons.mozilla.org/en-US/firefox/addon/4play/) onto a clean Firefox profile. Make sure you have a real display connected and that you use real hardware with an user-grade GPU. Websites detect this shit now.
-2. Navigate to `/extra/4play/`
-3. Install the 4play server: `npm install @lawlers/4play`
-4. Edit the `render-server.js` file. Change the line `var password = "cnc";` so that it uses a secure password.
-5. Edit `/data/config.php` and update the 4play password. Also update the `FPLAY_EXTERNAL_ENDPOINT` so that it points to the render HTTP server.
+## Requirements
+- A dedicated laptop or computer running a full desktop environment (like Windows, Mac, or Linux DEs)
+- Something to make the computer think it's connected to a screen. You need it, otherwise you'll fallback to software rendering and sites can detect that. You can use:
+	- Your laptop's screen
+	- A turned-on screen connected via HDMI
+	- An EDID adapter to simulate a display (no affiliate links: [HDMI](https://www.aliexpress.com/item/1005011668390064.html), [DisplayPort](https://www.aliexpress.com/item/1005011659561729.html))
+- Firefox ESR or the latest version of Firefox
+- The [4play extension](https://addons.mozilla.org/en-US/firefox/addon/4play/) installed
 
-Now, if you did everything correctly, you should be able to render search pages on scrapers that require it. If your render server sits on a different server, I highly recommend setting up a reverse proxy to add TLS support.
+## Installation
+Install the dependencies on the machine you wish to run 4play on. In a sane setup, you usually want 4play to run on a dedicated user-grade machine. For the sake of simplicity, this machine will be referred as the "render server".
 
-In my case, the 4get website & scrapers sits at the OVH datacenter, while the render server is at my home running on a mini-PC I bought for the occasion. This wouldn't have been possible without your financial support, thank you all!!
+```sh
+git clone https://git.lolcat.ca/lolcat/4get
+cd 4get/extra/4play
+
+# install nodejs 26.x or later if it's not already installed
+
+npm install @lawlers/4play
+sudo npm install -g nodemon
+
+# edit line 7 where it says 'var password = "cnc";'. Use a strong password.
+nano page-render.js
+
+# test the server
+nodemon page-render.js
+```
+
+I recommend setting up a systemd service to auto-start the 4play server:
+```sh
+sudo nano /etc/systemd/system/fplay.service
+```
+
+Paste this in (make sure to update `User` & `WorkingDirectory`)
+```sh
+[Unit]
+Description=4play
+After=network.target
+
+[Service]
+Type=simple
+User=will
+WorkingDirectory=/home/will/Desktop/4get/extra/4play/
+ExecStart=nodemon /home/will/Desktop/4get/extra/4play/page-render.js
+Restart=always
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Now, enable the service
+```sh
+sudo service fplay enable
+sudo service fplay start
+sudo service fplay status # check the status. You should see it running
+```
+
+## Setting up Firefox
+- Install Firefox. You can go for the ESR version or the latest version. You'll figure it out.
+- Head over to [this page](https://addons.mozilla.org/en-US/firefox/addon/4play/) or search "4play" on the Firefox extension store and install the extension.
+- Click the settings cog next to the extension name. Enable "Run in Private Windows" and "Allow automatic updates"
+- Click the extension in the top bar. Modify the `ws://localhost:3000/cnc` URL: replace the `cnc` path with the password you set earlier for the server.
+- Use a timeout value of `30000` to avoid getting throttled by Firefox during reconnections.
+
+If done correctly, you should see the red dot turn green in the extension's icon. You're ready to load pages!
