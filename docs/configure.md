@@ -81,7 +81,7 @@ Done! The scraper you chose should now be using the rotating proxies. When askin
 If you ever test out a `socks5` proxy locally on your machine and find out it works but doesn't on your server, try supplying the `socks5_hostname` protocol instead. Hopefully this tip can save you 3 hours of your life!
 
 # 4play setup
-4play is a Firefox extension I wrote that lets you control a browser from 4get. When you do a search, 4get sends a query to a nodeJS http server that communicates to the browser via websockets. The browser then reports back various payloads used for scraping. It's very similar to tools like puppeteer or playwright, except it uses websockets to communicate with the browser instead of the browser's debugger. This is needed to prevent `navigator.webdriver` from being set to true (also avoids a fuckton of other botchecks, that's just the tip of the iceberg).
+4play is a Firefox extension I wrote that lets you control a browser from 4get. When you do a search, 4get sends a query to a nodeJS http server that communicates to the browser via websockets. The browser then reports back various payloads used for scraping. It's very similar to tools like puppeteer or playwright, except it uses websockets to communicate with the browser instead of the browser's debugger. This is needed to prevent `navigator.webdriver` from being set to `true` (also avoids a fuckton of other botchecks, that's just the tip of the iceberg).
 
 ## Requirements
 - A dedicated laptop or computer running a full desktop environment (like Windows, Mac, or Linux DEs)
@@ -159,5 +159,7 @@ Now, you need to tell 4get to use the 4play service. Edit `data/config.php` and 
 const FPLAY_PASSWORD = "cnc"; # Change this to your password
 const FPLAY_EXTERNAL_ENDPOINT = null; # Change null to "https://your-endpoint.com/api/example";, with the quotes and semicolon
 ```
+
+**IMPORTANT:** By default, `localhost:3030` is what Firefox connects to. The render server is exposed at `localhost:3000`. Don't mix them up, otherwise you will get errors about an "invalid Upgrade header".
 
 If everything was done correctly, you should be seeing results on the Google scraper! You can set proxies in `data/config.php` for it, just like any other scraper.
