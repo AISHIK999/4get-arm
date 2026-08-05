@@ -388,14 +388,14 @@ class brave{
 		*/
 		$nextpage =
 			$this->fuckhtml
-			->getElementById(
+			->getElementsByClassName(
 				"pagination",
 				"div"
 			);
 		
-		if($nextpage){
+		if(count($nextpage) !== 0){
 			
-			$this->fuckhtml->load($nextpage);
+			$this->fuckhtml->load($nextpage[0]);
 			
 			$nextpage =
 				$this->fuckhtml
