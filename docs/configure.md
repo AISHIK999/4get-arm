@@ -163,3 +163,7 @@ const FPLAY_EXTERNAL_ENDPOINT = null; # Change null to "https://your-endpoint.co
 **IMPORTANT:** By default, `localhost:3030` is what Firefox connects to. The render server is exposed at `localhost:3000`. Don't mix them up, otherwise you will get errors about an "invalid Upgrade header".
 
 If everything was done correctly, you should be seeing results on the Google scraper! You can set proxies in `data/config.php` for it, just like any other scraper.
+
+In case it isn't clear, here is a visual representation of what you want to achieve:
+
+![Network map](https://i.imgur.com/jFjbBtG.png)
