@@ -721,19 +721,19 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			/*
+			
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				null
-			);*/
+			);
 			
 			$html = &$data["data"];
 			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			$html = file_get_contents("scraper/google-softcaptcha.html");
+			//$html = file_get_contents("scraper/google-softcaptcha.html");
 		}
 		
 		$out = [
