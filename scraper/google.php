@@ -721,13 +721,13 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			
+			/*
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				null
-			);
+			);*/
 			
 			$html = &$data["data"];
 			$container = &$data["container"];
@@ -2694,16 +2694,10 @@ class google{
 		// getting this mostly on mid-trust IPs
 		$softcaptcha =
 			$this->fuckhtml
-			->getElementsByClassName(
-				$this->getstyle([
-					"display" => "flex",
-					"flex-direction" => "column",
-					"align-items" => "center",
-					"text-align" => "center",
-					"min-height" => "100vh",
-					"margin-top" => "210px",
-					"padding" => "20px"
-				])
+			->getElementsByAttributeValue(
+				"role",
+				"progressbar",
+				"div"
 			);
 		
 		if(count($softcaptcha) !== 0){
