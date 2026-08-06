@@ -721,19 +721,19 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			
+			/*
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				null
-			);
+			);*/
 			
 			$html = &$data["data"];
 			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			//$html = file_get_contents("scraper/google-softcaptcha.html");
+			$html = file_get_contents("scraper/google-softcaptcha.html");
 		}
 		
 		$out = [
@@ -756,7 +756,22 @@ class google{
 		
 		// init		
 		$this->parsestyles();
-		$this->detect_sorry();
+		
+		// solve softcaptcha
+		$softcaptcha = $this->detect_sorry();
+		
+		if($softcaptcha){
+			
+			$params["sei"] = $softcaptcha["sei"];
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params,
+				$container
+			);
+		}
+		
 		$this->scrape_dimg($html);
 		$this->scrape_imagearr($html);
 		
@@ -1384,7 +1399,19 @@ class google{
 		// parse all <style> tags
 		$this->parsestyles();
 		
-		$this->detect_sorry();
+		$softcaptcha = $this->detect_sorry();
+		
+		if($softcaptcha){
+			
+			$params["sei"] = $softcaptcha["sei"];
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params,
+				$container
+			);
+		}
 		
 		// get javascript images
 		$this->scrape_imagearr($html);
@@ -1572,7 +1599,19 @@ class google{
 		//
 		// Parse web video page
 		//
-		$this->detect_sorry();
+		$softcaptcha = $this->detect_sorry();
+		
+		if($softcaptcha){
+			
+			$params["sei"] = $softcaptcha["sei"];
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params,
+				$container
+			);
+		}
 		
 		// get javascript images
 		$this->scrape_dimg($html);
@@ -1893,7 +1932,19 @@ class google{
 		// parse styles
 		$this->parsestyles();		
 		
-		$this->detect_sorry();
+		$softcaptcha = $this->detect_sorry();
+		
+		if($softcaptcha){
+			
+			$params["sei"] = $softcaptcha["sei"];
+			
+			$data = $this->get(
+				$proxy,
+				"https://www.google.com/search",
+				$params,
+				$container
+			);
+		}
 		
 		// get images
 		$this->scrape_dimg($html);
@@ -2687,22 +2738,34 @@ class google{
 			throw new Exception("Google returned a JS challenge");
 		}
 		
-		// detect soft captcha
+		// bypass soft captcha
 		// "Verifying your request
 		// You'll be able to continue in a few seconds. Don't refresh this page."
-		
-		// getting this mostly on mid-trust IPs
-		$softcaptcha =
+		$scripts =
 			$this->fuckhtml
-			->getElementsByAttributeValue(
-				"role",
-				"progressbar",
-				"div"
+			->getElementsByTagName(
+				"script"
 			);
 		
-		if(count($softcaptcha) !== 0){
+		foreach($scripts as $sc){
 			
-			throw new Exception("Google returned a soft captcha");
+			if(
+				preg_match(
+					'/var eid ?= ?\'(.*)\'[\S\s]*, ?([0-9]+)\);/U',
+					$sc["innerHTML"],
+					$matches
+				)
+			){
+				
+				sleep(10); // gotta sleep to not trigger captcha. blame google, not me
+				
+				return [
+					"sei" => $matches[1],
+					"timeout" => (int)$matches[2] // set to 10000 usually
+				];
+			}
 		}
+		
+		return false; // no need to bypass
 	}
 }
