@@ -721,13 +721,13 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			/*
+			
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				null
-			);*/
+			);
 			
 			$html = &$data["data"];
 			$container = &$data["container"];
