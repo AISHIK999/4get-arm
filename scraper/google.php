@@ -523,7 +523,7 @@ class google{
 					config::FPLAY_EXTERNAL_ENDPOINT .
 					"?url=" .				urlencode($url) .
 					"&pw=" .				urlencode(config::FPLAY_PASSWORD) .
-					"&container=" .			urlencode($container) .
+					"&container=" .//		urlencode($container) .
 					"&proxy=" .				urlencode($proxy) .
 					"&url_match=" .			urlencode("&sei=") .
 					"&fail_url_match=" .	urlencode("\/sorry\/");
@@ -754,22 +754,24 @@ class google{
 		
 		$this->fuckhtml->load($html);
 		
-		// init		
-		$this->parsestyles();
-		
 		// solve softcaptcha
 		$softcaptcha = $this->detect_sorry();
 		
-		if($softcaptcha){
+		if($softcaptcha !== false){
 			
 			$params["sei"] = $softcaptcha["sei"];
 			
-			$data = $this->get(
+			$data2 = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				$container
 			);
+			
+			$html = &$data2["data"];
+						
+			$this->fuckhtml->load($html);
+			$this->parsestyles();
 		}
 		
 		$this->scrape_dimg($html);
@@ -1399,18 +1401,24 @@ class google{
 		// parse all <style> tags
 		$this->parsestyles();
 		
+		// solve softcaptcha
 		$softcaptcha = $this->detect_sorry();
 		
-		if($softcaptcha){
+		if($softcaptcha !== false){
 			
 			$params["sei"] = $softcaptcha["sei"];
 			
-			$data = $this->get(
+			$data2 = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				$container
 			);
+			
+			$html = &$data2["data"];
+						
+			$this->fuckhtml->load($html);
+			$this->parsestyles();
 		}
 		
 		// get javascript images
@@ -1596,22 +1604,29 @@ class google{
 		// parse all <style> tags
 		$this->parsestyles();
 		
-		//
-		// Parse web video page
-		//
+		// solve softcaptcha
 		$softcaptcha = $this->detect_sorry();
 		
-		if($softcaptcha){
+		if($softcaptcha !== false){
 			
 			$params["sei"] = $softcaptcha["sei"];
 			
-			$data = $this->get(
+			$data2 = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				$container
 			);
+			
+			$html = &$data2["data"];
+						
+			$this->fuckhtml->load($html);
+			$this->parsestyles();
 		}
+		
+		//
+		// Parse web video page
+		//
 		
 		// get javascript images
 		$this->scrape_dimg($html);
@@ -1932,18 +1947,24 @@ class google{
 		// parse styles
 		$this->parsestyles();		
 		
+		// solve softcaptcha
 		$softcaptcha = $this->detect_sorry();
 		
-		if($softcaptcha){
+		if($softcaptcha !== false){
 			
 			$params["sei"] = $softcaptcha["sei"];
 			
-			$data = $this->get(
+			$data2 = $this->get(
 				$proxy,
 				"https://www.google.com/search",
 				$params,
 				$container
 			);
+			
+			$html = &$data2["data"];
+						
+			$this->fuckhtml->load($html);
+			$this->parsestyles();
 		}
 		
 		// get images
