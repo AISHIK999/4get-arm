@@ -733,7 +733,7 @@ class google{
 			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			//$html = file_get_contents("scraper/google-jp.html");
+			//$html = file_get_contents("scraper/google-softcaptcha.html");
 		}
 		
 		$out = [
@@ -754,9 +754,9 @@ class google{
 		
 		$this->fuckhtml->load($html);
 		
-		// init
-		$this->detect_sorry();
+		// init		
 		$this->parsestyles();
+		$this->detect_sorry();
 		$this->scrape_dimg($html);
 		$this->scrape_imagearr($html);
 		
@@ -1381,6 +1381,9 @@ class google{
 		
 		$this->fuckhtml->load($html);
 		
+		// parse all <style> tags
+		$this->parsestyles();
+		
 		$this->detect_sorry();
 		
 		// get javascript images
@@ -1563,13 +1566,13 @@ class google{
 		
 		$this->fuckhtml->load($html);
 		
+		// parse all <style> tags
+		$this->parsestyles();
+		
 		//
 		// Parse web video page
 		//
 		$this->detect_sorry();
-		
-		// parse all <style> tags
-		$this->parsestyles();
 		
 		// get javascript images
 		$this->scrape_dimg($html);
@@ -1887,13 +1890,13 @@ class google{
 		
 		$this->fuckhtml->load($html);
 		
+		// parse styles
+		$this->parsestyles();		
+		
 		$this->detect_sorry();
 		
 		// get images
 		$this->scrape_dimg($html);
-		
-		// parse styles
-		$this->parsestyles();
 		
 		$center_col =
 			$this->fuckhtml
@@ -2653,6 +2656,7 @@ class google{
 	
 	private function detect_sorry(){
 		
+		// detect recaptcha
 		$captcha_form =
 			$this->fuckhtml
 			->getElementById(
@@ -2681,6 +2685,30 @@ class google{
 		){
 			
 			throw new Exception("Google returned a JS challenge");
+		}
+		
+		// detect soft captcha
+		// "Verifying your request
+		// You'll be able to continue in a few seconds. Don't refresh this page."
+		
+		// getting this mostly on mid-trust IPs
+		$softcaptcha =
+			$this->fuckhtml
+			->getElementsByClassName(
+				$this->getstyle([
+					"display" => "flex",
+					"flex-direction" => "column",
+					"align-items" => "center",
+					"text-align" => "center",
+					"min-height" => "100vh",
+					"margin-top" => "210px",
+					"padding" => "20px"
+				])
+			);
+		
+		if(count($softcaptcha) !== 0){
+			
+			throw new Exception("Google returned a soft captcha");
 		}
 	}
 }
