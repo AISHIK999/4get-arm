@@ -383,10 +383,10 @@ $settings = [
 						"value" => "qwant",
 						"text" => "Qwant"
 					],
-					[
+					/*[
 						"value" => "mojeek",
 						"text" => "Mojeek"
-					],
+					],*/
 					[
 						"value" => "baidu",
 						"text" => "Baidu"

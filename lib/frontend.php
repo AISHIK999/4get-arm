@@ -725,7 +725,7 @@ class frontend{
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
 						"qwant" => "Qwant",
-						"mojeek" => "Mojeek",
+						//"mojeek" => "Mojeek",
 						"baidu" => "Baidu"
 					]
 				];

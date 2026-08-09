@@ -16,18 +16,7 @@ class mojeek{
 			
 			case "web":
 				return [
-					"focus" => [
-						"display" => "Focus",
-						"option" => [
-							"any" => "No focus",
-							"blogs" => "Blogs",
-							"Dictionary" => "Dictionary",
-							"Recipes" => "Recipes",
-							"Time" => "Time",
-							"Weather" => "Weather"
-						]
-					],
-					"lang" => [
+					"lang" => [ // lb
 						"display" => "Language",
 						"option" => [
 							"any" => "Any language",
@@ -86,7 +75,7 @@ class mojeek{
 							"zu" => "Zulu"
 						]
 					],
-					"country" => [
+					"country" => [ // rb
 						"display" => "Country",
 						"option" => [
 							"any" => "No location bias",
@@ -340,28 +329,21 @@ class mojeek{
 							"zm" => "Zambia",
 							"zw" => "Zimbabwe"
 						]
-					],/*
-					"region" => [
-						"display" => "Region",
+					],
+					"sort" => [
+						"display" => "Sort by",
 						"option" => [
-							"any" => "Any region",
-							"eu" => "European Union",
-							"de" => "Germany",
-							"fr" => "France",
-							"uk" => "United Kingdom"
+							"relevance" => "Relevance",
+							"date" => "Date" // datewr=100
 						]
-					],*/
-					"domain" => [
-						"display" => "Results per domain",
-						"option" => [
-							"1" => "1 result",
-							"2" => "2 results",
-							"3" => "3 results",
-							"4" => "4 results",
-							"5" => "5 results",
-							"10" => "10 results",
-							"0" => "Unlimited",
-						]
+					],
+					"newer" => [
+						"display" => "Newer than",
+						"option" => "_DATE"
+					],
+					"older" => [
+						"display" => "Older than",
+						"option" => "_DATE"
 					]
 				];
 				break;
@@ -371,21 +353,29 @@ class mojeek{
 		}
 	}
 	
-	private function get($proxy, $url, $get = []){
+	private function get($proxy, $url, $get = [], $is_api = false){
 		
-		$headers = [
-			"User-Agent: " . config::USER_AGENT,
-			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-			"Accept-Language: en-US,en;q=0.9",
-			"Accept-Encoding: gzip",
-			"DNT: 1",
-			"Connection: keep-alive",
-			"Upgrade-Insecure-Requests: 1",
-			"Sec-Fetch-Dest: document",
-			"Sec-Fetch-Mode: navigate",
-			"Sec-Fetch-Site: none",
-			"Sec-Fetch-User: ?1"
-		];
+		if($is_api){
+						
+			$headers = [
+				"Accept: application/json"
+			];
+		}else{
+			
+			$headers = [
+				"User-Agent: " . config::USER_AGENT,
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+				"Accept-Language: en-US,en;q=0.9",
+				"Accept-Encoding: gzip",
+				"DNT: 1",
+				"Connection: keep-alive",
+				"Upgrade-Insecure-Requests: 1",
+				"Sec-Fetch-Dest: document",
+				"Sec-Fetch-Mode: navigate",
+				"Sec-Fetch-Site: none",
+				"Sec-Fetch-User: ?1"
+			];
+		}
 		
 		$curlproc = curl_init();
 		
@@ -419,6 +409,154 @@ class mojeek{
 	}
 	
 	public function web($get){
+		
+		return $this->web_api($get);
+	}
+	
+	public function web_api($get){
+				
+		$key = $this->backend->get_key();
+		$proxy = $this->backend->get_ip($key["increment"]);
+		
+		if($get["npt"]){
+			
+			[$params, $proxy] = $this->backend->get($get["npt"], "web");
+			$params = json_decode($params, true);
+			$params["api_key"] = $key["key"];
+			
+		}else{
+			
+			if(strlen($get["s"]) === 0){
+				
+				throw new Exception("Search term is empty!");
+			}
+			
+			$params = [
+				"api_key" => $key["key"],
+				"q" => $get["s"],
+				"date" => 1,
+				"tlen" => 127, // title length
+				"dlen" => 511, // description length
+				"fmt" => "json"
+			];
+			
+			if($get["lang"] != "any"){
+				
+				$params["lb"] = $get["lang"];
+			}
+			
+			if($get["country"] != "any"){
+				
+				$params["rb"] = $get["country"];
+			}
+			
+			if($get["sort"] == "date"){
+				
+				$params["datewr"] = 100;
+			}
+			
+			if($get["newer"] !== false){
+				
+				$params["since"] = date("Ymd", $get["newer"]);
+			}
+			
+			if($get["older"] !== false){
+				
+				$params["before"] = date("Ymd", $get["before"]);
+			}
+		}
+		
+		try{
+			$json =
+				$this->get(
+					$proxy,
+					"https://api.mojeek.com/search",
+					$params
+				);
+		}catch(Exception $error){
+			
+			throw new Exception("Failed to get JSON");
+		}
+		
+		$json = json_decode($json, true);
+		
+		if($json === null){
+			
+			throw new Exception("Failed to decode JSON");
+		}
+		
+		$out = [
+			"status" => "ok",
+			"spelling" => [
+				"type" => "no_correction",
+				"using" => null,
+				"correction" => null
+			],
+			"npt" => null,
+			"answer" => [],
+			"web" => [],
+			"image" => [],
+			"video" => [],
+			"news" => [],
+			"related" => []
+		];
+		
+		if(!isset($json["response"]["status"])){
+			
+			throw new Exception("API did not return a status field");
+		}
+		
+		if($json["response"]["status"] != "OK"){
+			
+			throw new Exception("Mojeek API returned an error: " . $json["response"]["status"]);
+		}
+		
+		if(!isset($json["response"]["results"])){
+			
+			throw new Exception("Mojeek API did not return a results object");
+		}
+		
+		foreach($json["response"]["results"] as $entry){
+			
+			$out["web"][] = [
+				"title" => html_entity_decode($entry["title"]),
+				"description" => html_entity_decode($entry["desc"]),
+				"url" => $entry["url"],
+				"date" => $entry["timestamp"],
+				"type" => "web",
+				"thumb" => [
+					"url" => null,
+					"ratio" => null
+				],
+				"sublink" => [],
+				"table" => []
+			];
+		}
+		
+		// get npt
+		if($json["response"]["head"]["results"] > $json["response"]["head"]["start"] + $json["response"]["head"]["return"]){
+			
+			unset($params["api_key"]);
+			if(!isset($params["s"])){
+				
+				$params["s"] = 11;
+			}else{
+				
+				$params["s"] = $params["s"] + 10;
+			}
+			
+			$out["npt"] =
+				$this->backend->store(
+					json_encode($params),
+					"web",
+					$proxy
+				);
+		}
+		
+		return $out;
+	}
+	
+	public function web_browser($get){
 		
 		if($get["npt"]){
 			
@@ -457,7 +595,6 @@ class mojeek{
 				"tn" => 7, // number of news results/page
 				"date" => 1, // show date
 				"tlen" => 128, // max length of title
-				//"dlen" => 511, // max length of description
 				//"arc" => ($country == "any" ? "none" : $country) // location. don't use autodetect!
 			];
 			
@@ -1000,7 +1137,12 @@ class mojeek{
 		return $out;
 	}
 	
-	public function news($get){
+	public function news(){
+		
+		throw new Exception("Currently unsupported");
+	}
+	
+	public function news_browser($get){
 		
 		$search = $get["s"];
 		
