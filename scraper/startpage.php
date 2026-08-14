@@ -12,6 +12,7 @@ class startpage{
 		
 		include "lib/anubis.php";
 		$this->anubis = new anubis();
+		$this->anubis_error = "all gucci";
 	}
 	
 	public function getfilters($page){
@@ -391,7 +392,7 @@ class startpage{
 		
 		if($get["npt"]){
 			
-			$anubis_error = "Not ran on pagination";
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "web");
 			
 			$post = json_decode($post, true);
@@ -485,7 +486,7 @@ class startpage{
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to re-fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
 			}
 		}
@@ -503,14 +504,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to grep JSON object. Anubis error: $anubis_error");
+			throw new Exception("Failed to grep JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON. Anubis error: $anubis_error");
+			throw new Exception("Failed to decode JSON. Anubis error: {$this->anubis_error}");
 		}
 		
 		//print_r($json);
@@ -741,7 +742,7 @@ class startpage{
 		
 		if($get["npt"]){
 			
-			$anubis_error = "Not ran on pagination";
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "images");
 			
 			$post = json_decode($post, true);
@@ -865,7 +866,7 @@ class startpage{
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to re-fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
 			}
 		}
@@ -886,14 +887,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to grep JSON object");
+			throw new Exception("Failed to grep JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		// get npt
@@ -936,7 +937,7 @@ class startpage{
 		
 		if($get["npt"]){
 			
-			$anubis_error = "Not ran on pagination";
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "videos");
 			
 			$post = json_decode($post, true);
@@ -1030,7 +1031,7 @@ class startpage{
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to re-fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
 			}
 		}
@@ -1045,14 +1046,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to get JSON object");
+			throw new Exception("Failed to get JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$out = [
@@ -1122,7 +1123,7 @@ class startpage{
 		
 		if($get["npt"]){
 			
-			$anubis_error = "Not ran on pagination";
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "news");
 			
 			$post = json_decode($post, true);
@@ -1182,7 +1183,7 @@ class startpage{
 				);
 			}catch(Exception $error){
 				
-				throw new Exception("Failed to fetch search page");
+				throw new Exception("Failed to fetch search page. Anubis error: {$this->anubis_error}");
 			}
 			
 			//$html = file_get_contents("scraper/startpage.html");
@@ -1211,7 +1212,7 @@ class startpage{
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to re-fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
 			}
 		}
@@ -1226,14 +1227,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to get JSON object");
+			throw new Exception("Failed to get JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$out = [
@@ -1466,7 +1467,6 @@ class startpage{
 		//
 		// solve anubis challenge, if theres one
 		//
-		$anubis_error = "all gucci";
 		$res = null;
 		$cookies = [];
 		
@@ -1476,7 +1476,7 @@ class startpage{
 		}catch(Exception $error){
 			
 			// do nothang
-			$anubis_error = $error->getMessage();
+			$this->anubis_error = $error->getMessage();
 		}
 		
 		if($res !== null){

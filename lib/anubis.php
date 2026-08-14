@@ -45,15 +45,15 @@ class anubis{
 		
 		if(
 			!isset($script["challenge"]) ||
+			!is_string($script["challenge"]["randomData"]) ||
 			!isset($script["rules"]["difficulty"]) ||
-			!is_int($script["rules"]["difficulty"]) ||
-			!is_string($script["challenge"])
+			!is_int($script["rules"]["difficulty"])
 		){
 			
 			throw new Exception("Found invalid challenge data");
 		}
 		
-		return $this->rape($script["challenge"], $script["rules"]["difficulty"]);
+		return $this->rape($script["challenge"]["id"], $script["challenge"]["randomData"], $script["rules"]["difficulty"]);
 	}
 	
 	private function is_valid_hash($hash, $difficulty){
@@ -74,9 +74,10 @@ class anubis{
 		return true;
 	}
 	
-	public function rape($data, $difficulty = 5){
+	public function rape($id, $data, $difficulty = 5){
 		
 		$nonce = 0;
+		$microtime = microtime(true);
 		
 		while(true){
 			
@@ -87,10 +88,12 @@ class anubis{
 				$hash_hex = bin2hex($hash_binary);
 				
 				return [
+					"id" => $id,
 					"response" => $hash_hex,
 					//"data" => $data,
 					//"difficulty" => $difficulty,
-					"nonce" => $nonce
+					"nonce" => $nonce,
+					"elapsedTime" => round((microtime(true) - $microtime) * 1000)
 				];
 			}
 			
