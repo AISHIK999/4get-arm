@@ -88,10 +88,6 @@ $settings = [
 						"text" => "Kagi"
 					],
 					[
-						"value" => "qwant",
-						"text" => "Qwant"
-					],
-					[
 						"value" => "yep",
 						"text" => "Yep"
 					],
@@ -144,10 +140,6 @@ $settings = [
 					[
 						"value" => "startpage",
 						"text" => "Startpage"
-					],
-					[
-						"value" => "qwant",
-						"text" => "Qwant"
 					],
 					[
 						"value" => "ghostery",
@@ -230,10 +222,6 @@ $settings = [
 					[
 						"value" => "startpage",
 						"text" => "Startpage"
-					],
-					[
-						"value" => "qwant",
-						"text" => "Qwant"
 					],
 					[
 						"value" => "naver",
@@ -330,10 +318,6 @@ $settings = [
 						"text" => "Startpage"
 					],
 					[
-						"value" => "qwant",
-						"text" => "Qwant"
-					],
-					[
 						"value" => "naver",
 						"text" => "Naver"
 					],
@@ -378,10 +362,6 @@ $settings = [
 					[
 						"value" => "startpage",
 						"text" => "Startpage"
-					],
-					[
-						"value" => "qwant",
-						"text" => "Qwant"
 					],
 					/*[
 						"value" => "mojeek",

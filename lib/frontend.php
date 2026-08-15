@@ -644,7 +644,6 @@ class frontend{
 						"google_cse" => "Google CSE",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"yep" => "Yep",
 						"mwmbl" => "Mwmbl",
 						"mojeek" => "Mojeek",
@@ -671,7 +670,6 @@ class frontend{
 						"google_cse" => "Google CSE",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"naver" => "Naver",
 						"baidu" => "Baidu",
 						"solofield" => "Solofield",
@@ -705,7 +703,6 @@ class frontend{
 						"google" => "Google",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"naver" => "Naver",
 						"baidu" => "Baidu",
 						"coccoc" => "Cốc Cốc",
@@ -724,7 +721,6 @@ class frontend{
 						"google" => "Google",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						//"mojeek" => "Mojeek",
 						"baidu" => "Baidu"
 					]
