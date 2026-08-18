@@ -383,6 +383,8 @@ class brave{
 		// load html
 		$this->fuckhtml->load($html);
 		
+		$this->detect_captcha($html);
+		
 		/*
 			Get next page "token"
 		*/
@@ -1175,6 +1177,8 @@ class brave{
 		// load html
 		$this->fuckhtml->load($html);
 		
+		$this->detect_captcha($html);
+		
 		// get npt
 		$out["npt"] =
 			$this->generatenextpagetoken(
@@ -1270,6 +1274,9 @@ class brave{
 		fclose($handle);*/
 		
 		$this->fuckhtml->load($html);
+		
+		$this->detect_captcha($html);
+		
 		$json = $this->get_js();
 		
 		foreach(
@@ -1373,6 +1380,8 @@ class brave{
 		}
 		
 		$this->fuckhtml->load($html);
+		
+		$this->detect_captcha($html);
 		
 		$out = [
 			"status" => "ok",
@@ -1852,5 +1861,30 @@ class brave{
 					)[0]
 				)
 			);
+	}
+	
+	private function detect_captcha(){
+		
+		$title =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"title"
+			);
+		
+		if(count($title) === 0){
+			
+			throw new Exception("Brave returned a malformed page");
+		}
+		
+		$title =
+			strtolower(
+				$this->fuckhtml
+				->getTextContent($title[0])
+			);
+		
+		if($title == "human verification"){
+			
+			throw new Exception("Brave returned a Captcha");
+		}
 	}
 }
