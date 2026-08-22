@@ -1873,6 +1873,11 @@ class brave{
 		
 		if(count($title) === 0){
 			
+			if(strtolower($this->fuckhtml->getloadedhtml()) == "this service is not available in your region"){
+				
+				throw new Exception("Brave rangebanned the IP range");
+			}
+			
 			throw new Exception("Brave returned a malformed page");
 		}
 		
