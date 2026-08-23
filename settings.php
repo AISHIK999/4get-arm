@@ -142,10 +142,6 @@ $settings = [
 						"text" => "Startpage"
 					],
 					[
-						"value" => "ghostery",
-						"text" => "Ghostery"
-					],
-					[
 						"value" => "yep",
 						"text" => "Yep"
 					],
