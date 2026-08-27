@@ -674,7 +674,6 @@ class frontend{
 						"baidu" => "Baidu",
 						"solofield" => "Solofield",
 						"pinterest" => "Pinterest",
-						"cara" => "Cara",
 						"flickr" => "Flickr",
 						"pexels" => "Pexels",
 						"pixabay" => "Pixabay",

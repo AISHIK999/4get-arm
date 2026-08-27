@@ -236,10 +236,6 @@ $settings = [
 						"text" => "Pinterest"
 					],
 					[
-						"value" => "cara",
-						"text" => "Cara"
-					],
-					[
 						"value" => "flickr",
 						"text" => "Flickr"
 					],
