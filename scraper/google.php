@@ -1581,8 +1581,7 @@ class google{
 					implode(",", $tbs);
 			}
 		}
-		
-		//$html = file_get_contents("scraper/google.html");		
+			
 		$data = $this->get(
 			$proxy,
 			"https://www.google.com/search",
@@ -1592,6 +1591,8 @@ class google{
 		
 		$html = &$data["data"];
 		$container = &$data["container"];
+		
+		//$html = file_get_contents("scraper/google.html");
 		
 		if(!isset($params["start"])){
 			
@@ -1634,6 +1635,29 @@ class google{
 		$this->scrape_imagearr($html);
 		
 		$params["c"] = $container;
+		
+		// get encoded links
+		$encoded_links =
+			explode(
+				"function(){var m={",
+				$html,
+				2
+			);
+		
+		if(count($encoded_links) === 2){
+			
+			$encoded_links =
+				json_decode(
+					$this->fuckhtml
+					->extract_json(
+						"{" . $encoded_links[1]
+					),
+					true
+				);
+		}else{
+			
+			$encoded_links = [];
+		}
 		
 		$out = [
 			"status" => "ok",
@@ -1813,6 +1837,50 @@ class google{
 				}
 			}
 			
+			$url =
+				$this->fuckhtml
+					->getTextContent(
+						$url[0]["attributes"]["href"]
+					);
+			
+			if(
+				preg_match(
+					'/^\/goto\?url/',
+					$url
+				)
+			){
+				
+				// encrypted url detected
+				// get reference div
+				$refdivs =
+					$this->fuckhtml
+					->getElementsByAttributeName(
+						"id",
+						"div"
+					);
+				
+				foreach($refdivs as $r){
+					
+					if(
+						preg_match(
+							'/^atritem-/',
+							$r["attributes"]["id"]
+						) &&
+						isset($r["attributes"]["jsdata"])
+					){
+						
+						$ref = explode(";", $r["attributes"]["jsdata"]);
+						$ref = $ref[count($ref) - 1];
+						
+						if(isset($encoded_links[$ref][32][11][7])){
+							
+							$url = $encoded_links[$ref][32][11][7];
+						}
+						break;
+					}
+				}
+			}
+			
 			$out["video"][] = [
 				"title" =>
 					$this->titledots(
@@ -1831,11 +1899,7 @@ class google{
 				"duration" => $duration,
 				"views" => null,
 				"thumb" => $thumb,
-				"url" =>
-					$this->fuckhtml
-					->getTextContent(
-						$url[0]["attributes"]["href"]
-					)
+				"url" => $url
 			];
 		}
 		
