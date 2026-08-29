@@ -152,6 +152,8 @@ This should expose a webservice located at `http://localhost:3000`. I highly rec
 
 If done correctly, you should see the red dot turn green in the extension's icon. You're ready to load pages!
 
+**IMPORTANT:** You will want to turn off search history to protect yourself and your users. Head to `about:preferences` and search for "history". Under the "History" category, pick "Customize category", then click "Choose what you want Firefox to remember". In that sub-menu, untick everything. Make sure to **NOT** turn on the "Always use private browsing mode" option, as it will prevent the 4play extension from creating containers.
+
 ## Setting up 4get
 Now, you need to tell 4get to use the 4play service. Edit `data/config.php` and change these:
 
