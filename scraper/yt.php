@@ -666,7 +666,11 @@ class yt{
 					) : null,
 				"thumb" => [
 					"ratio" => "16:9",
-					"url" => "https://i.ytimg.com/vi/" . $video["videoId"] . "/hq720.jpg"
+					"url" =>
+						$video["thumbnail"]
+						["thumbnails"]
+						[0]
+						["url"]
 				],
 				"url" => "https://www.youtube.com/watch?v=" . $video["videoId"]
 			];
