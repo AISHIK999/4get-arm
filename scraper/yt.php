@@ -1,9 +1,5 @@
 <?php
 
-//$yt = new youtube();
-//header("Content-Type: application/json");
-//echo json_encode($yt->video("minecraft", null, "today", "any", "any", "live", "relevance"));
-
 class yt{
 	
 	public function __construct(){
@@ -357,7 +353,7 @@ class yt{
 					["User-Agent: " . config::USER_AGENT,
 					"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
 					"Accept-Language: en-US,en;q=0.5",
-					"Accept-Encoding: gzip",
+					"Accept-Encoding: gzip, deflate, br, zstd",
 					"Cookie: PREF=tz=America.New_York",
 					"DNT: 1",
 					"Connection: keep-alive",
@@ -373,7 +369,7 @@ class yt{
 					["User-Agent: " . config::USER_AGENT,
 					"Accept: */*",
 					"Accept-Language: en-US,en;q=0.5",
-					"Accept-Encoding: gzip",
+					"Accept-Encoding: gzip, deflate, br, zstd",
 					"Cookie: PREF=tz=America.New_York",
 					"Referer: https://youtube.com.com/",
 					"Content-Type: application/json",
@@ -413,7 +409,7 @@ class yt{
 	
 	public function video($get){
 		
-		$this->out = [
+		$out = [
 			"status" => "ok",
 			"npt" => null,
 			"video" => [],
@@ -425,12 +421,7 @@ class yt{
 		
 		if($get["npt"]){
 			
-			// parse nextPage
-			// https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8&prettyPrint=false
-			/*
-			$handle = fopen("nextpage.json", "r");
-			$json = fread($handle, filesize("nextpage.json"));
-			fclose($handle);*/
+			$first_page = false;
 			
 			[$npt, $proxy] =
 				$this->backend->get(
@@ -453,54 +444,10 @@ class yt{
 				);
 			}catch(Exception $error){
 				
-				throw new Exception("Could not fetch results page");
+				throw new Exception("Could not fetch search page");
 			}
 			
-			$json = json_decode($json);
-			
-			foreach(
-				$json
-				->onResponseReceivedCommands[0]
-				->appendContinuationItemsAction
-				->continuationItems[0]
-				->itemSectionRenderer
-				->contents
-				as $video
-			){
-				
-				$this->parsevideoobject($video);
-			}
-			
-			if(
-				!isset(
-					$json
-					->onResponseReceivedCommands[0]
-					->appendContinuationItemsAction
-					->continuationItems[1]
-					->continuationItemRenderer
-					->continuationEndpoint
-					->continuationCommand
-					->token
-				)
-			){
-				
-				$npt = null;
-				
-			}else{
-				// prepare nextpage for later..
-				$npt["post"]["continuation"] =
-					$json
-					->onResponseReceivedCommands[0]
-					->appendContinuationItemsAction
-					->continuationItems[1]
-					->continuationItemRenderer
-					->continuationEndpoint
-					->continuationCommand
-					->token;
-			}
-			
-			$this->out["npt"] = $npt;
-			
+			$json = json_decode($json, true);
 		}else{
 			
 			$search = $get["s"];
@@ -546,13 +493,12 @@ class yt{
 				);
 			}catch(Exception $error){
 				
-				throw new Exception("Could not fetch results page");
+				throw new Exception("Could not fetch search page");
 			}
-			/*
-			$handle = fopen("test.html", "r");
-			$json = fread($handle, filesize("test.html"));
-			fclose($handle);
-			*/
+			
+			//$json = file_get_contents("scraper/yt.html");
+			
+			// get next page data, unique to first page
 			if(
 				!preg_match(
 					'/ytcfg\.set\(({".*})\); *window\.ytcfg/',
@@ -564,8 +510,10 @@ class yt{
 				throw new Exception("Could not get ytcfg");
 			}
 			
-			$ytconfig = json_decode($ytconfig[1]);
+			$ytconfig = json_decode($ytconfig[1], true);
+			$first_page = true;
 			
+			// this is where all of the data is
 			if(
 				!preg_match(
 					'/ytInitialData *= *({.*});<\/script>/',
@@ -577,928 +525,552 @@ class yt{
 				throw new Exception("Could not get ytInitialData");
 			}
 			
-			$json = json_decode($json[1]);
+			$json = json_decode($json[1], true);
+		}
+		
+		$items = [
+			"channelRenderer" => [],
+			"videoRenderer" => [],
+			"shortsLockupViewModel" => [],
+			"lockupViewModel" => [], // playlists
+			"continuationItemRenderer" => [] // pagination
+		];
+		
+		$search = [
+			"channelRenderer",
+			"videoRenderer",
+			"shortsLockupViewModel",
+			"lockupViewModel",
+			"continuationItemRenderer"
+		];
+		
+		$this->recursive_search($search, $items, $json);
+		
+		// add normal videos
+		foreach($items["videoRenderer"] as $video){
 			
-			// generate POST data for nextpage
+			$show_live_badge = false;
 			
-			$ytconfig->INNERTUBE_CONTEXT->client->screenWidthPoints = 1239;
-			$ytconfig->INNERTUBE_CONTEXT->client->screenHeightPoints = 999;
-			$ytconfig->INNERTUBE_CONTEXT->client->screenPixelDensity = 1;
-			$ytconfig->INNERTUBE_CONTEXT->client->screenDensityFloat = 1;
-			$ytconfig->INNERTUBE_CONTEXT->client->utcOffsetMinutes = -240;
-			$ytconfig->INNERTUBE_CONTEXT->request->internalExperimentFlags = [];
-			$ytconfig->INNERTUBE_CONTEXT->request->consistencyTokenJars = [];
-			
-			$ytconfig->INNERTUBE_CONTEXT->client->mainAppWebInfo = [
-				"graftUrl" => $ytconfig->INNERTUBE_CONTEXT->client->originalUrl,
-				"webDisplayMode" => "WEB_DISPLAY_MODE_BROWSER",
-				"isWebNativeShareAvailable" => false
-			];
-			
-			$ytconfig->INNERTUBE_CONTEXT->adSignalsInfo = [
-				"params" => [
-					[
-						"key" => "dt",
-						"value" => (string)$ytconfig->TIME_CREATED_MS
-					],
-					[
-						"key" => "flash",
-						"value" => "0"
-					],
-					[
-						"key" => "frm",
-						"value" => "0"
-					],
-					[
-						"key" => "u_tz",
-						"value" => "-240"
-					],
-					[
-						"key" => "u_his",
-						"value" => "3"
-					],
-					[
-						"key" => "u_h",
-						"value" => "1080"
-					],
-					[
-						"key" => "u_w",
-						"value" => "1920"
-					],
-					[
-						"key" => "u_ah",
-						"value" => "1080"
-					],
-					[
-						"key" => "u_cd",
-						"value" => "24"
-					],
-					[
-						"key" => "bc",
-						"value" => "31"
-					],
-					[
-						"key" => "bih",
-						"value" => "999"
-					],
-					[
-						"key" => "biw",
-						"value" => "1239"
-					],
-					[
-						"key" => "brdim",
-						"value" => "0,0,0,0,1920,0,1920,1061,1239,999"
-					],
-					[
-						"key" => "vis",
-						"value" => "1"
-					],
-					[
-						"key" => "wgl",
-						"value" => "true"
-					],
-					[
-						"key" => "ca_type",
-						"value" => "image"
-					]
-				]
-			];
-			
-			/*
-			echo json_encode($json);
-			die();*/
-			
-			// *inhales*
-			foreach(
-				$json
-				->contents
-				->twoColumnSearchResultsRenderer
-				->primaryContents
-				->sectionListRenderer
-				->contents[0]
-				->itemSectionRenderer
-				->contents
-				as $video
+			if(
+				$video["navigationEndpoint"]
+				["commandMetadata"]
+				["webCommandMetadata"]
+				["webPageType"]
+				== "WEB_PAGE_TYPE_SHORTS"
 			){
 				
-				$this->parsevideoobject($video);
+				$type = "reel";
+			}elseif(isset($video["upcomingEventData"])){
+				
+				// is an upcoming event, categorize as livestream
+				$type = "livestream";
+				
+			}else{
+				$type = "video";
+				
+				// detect if its a livestream
+				if(isset($video["badges"])){
+					
+					foreach($video["badges"] as $badge){
+						
+						if(
+							$badge
+							["metadataBadgeRenderer"]
+							["label"] == "LIVE"
+						){
+							
+							$type = "livestream";
+							$show_live_badge = true;
+							break;
+						}
+					}
+				}
 			}
 			
-			// get additional data from secondaryContents
+			$out[$type][] = [
+				"title" =>
+					$this->assemble_runs(
+						$video
+						["title"]
+					),
+				"description" =>
+					isset(
+						$video["detailedMetadataSnippets"]
+						[0]
+						["snippetText"]
+					) ?
+					$this->titledots(
+						$this->assemble_runs(
+							$video["detailedMetadataSnippets"]
+							[0]
+							["snippetText"]
+						)
+					) : null,
+				"author" => [
+					"name" =>
+						$this->assemble_runs(
+							$video["longBylineText"]
+						),
+					"url" =>
+						"https://www.youtube.com" .
+						$video["ownerText"]
+						["runs"]
+						[0]
+						["navigationEndpoint"]
+						["commandMetadata"]
+						["webCommandMetadata"]
+						["url"],
+					"avatar" =>
+						$video["channelThumbnailSupportedRenderers"]
+						["channelThumbnailWithLinkRenderer"]
+						["thumbnail"]
+						["thumbnails"]
+						[0]
+						["url"]
+				],
+				"date" =>
+					isset(
+						$video["publishedTimeText"]
+						["simpleText"]
+					) ?
+					strtotime(
+						trim(
+							str_replace(
+								"Streamed", "",
+								$video["publishedTimeText"]
+								["simpleText"]
+							)
+						)
+					) : null,
+				"duration" =>
+					$show_live_badge === true ?
+					"_LIVE" :
+					(
+						isset(
+							$video["lengthText"]
+							["simpleText"]
+						) ?
+						$this->hms2int(
+							$video["lengthText"]
+							["simpleText"]
+						) : null
+					),
+				"views" =>
+					isset(
+						$video["viewCountText"]
+						["simpleText"]
+					) ?
+					$this->views2int(
+						$video["viewCountText"]
+						["simpleText"]
+					) : null,
+				"thumb" => [
+					"ratio" => "16:9",
+					"url" =>
+						$video["thumbnail"]
+						["thumbnails"]
+						[0]
+						["url"]
+				],
+				"url" => "https://www.youtube.com/watch?v=" . $video["videoId"]
+			];
+		}
+		
+		// add channels
+		foreach($items["channelRenderer"] as $channel){
+			$out["author"][] = [
+				"title" =>
+					$channel
+					["title"]
+					["simpleText"],
+				"followers" =>
+					isset(
+						$channel
+						["videoCountText"]
+						["simpleText"]
+					) ?
+					$this->truncatedcount2int(
+						$channel
+						["videoCountText"]
+						["simpleText"]
+					) :
+					null,
+				"description" =>
+					isset($channel["descriptionSnippet"]) ?
+					$this->titledots(
+						$this->assemble_runs(
+							$channel
+							["descriptionSnippet"]
+						)
+					) : null,
+				"thumb" =>
+					[
+						"url" =>
+							$this->checkhttpspresence(
+								$channel
+								["thumbnail"]
+								["thumbnails"]
+								[
+									count(
+										$channel
+										["thumbnail"]
+										["thumbnails"]
+									) - 1
+								]
+								["url"]
+							),
+						"ratio" => "1:1"
+					],
+				"url" =>
+					"https://www.youtube.com/channel/" .
+					$channel
+					["channelId"]
+			];
+		}
+		
+		// add reels
+		foreach($items["shortsLockupViewModel"] as $reel){
+			
+			$out["reel"][] = [
+				"title" =>
+					$reel
+					["overlayMetadata"]
+					["primaryText"]
+					["content"],
+				"description" =>
+					isset(
+						$reel
+						["overlayMetadata"]
+						["primaryText"]
+						["content"]
+					) ?
+					$this->titledots(
+						$reel
+						["overlayMetadata"]
+						["primaryText"]
+						["content"]
+					) : null,
+				"author" => [
+					"name" => null,
+					"url" => null,
+					"avatar" => null
+				],
+				"date" => null,
+				"duration" => null,
+				"views" =>
+					$this->truncatedcount2int(
+						$reel
+						["overlayMetadata"]
+						["secondaryText"]
+						["content"]
+					),
+				"thumb" => [
+					"url" =>
+						$reel
+						["thumbnailViewModel"]
+						["thumbnailViewModel"]
+						["image"]
+						["sources"]
+						[0]
+						["url"],
+					"ratio" => "9:16"
+				],
+				"url" =>
+					"https://www.youtube.com/watch?v=" .
+					$reel
+					["onTap"]
+					["innertubeCommand"]
+					["reelWatchEndpoint"]
+					["videoId"]
+			];
+		}
+		
+		// add playlists
+		foreach($items["lockupViewModel"] as $playlist){
+			
+			// get author of playlist
+			$author_name = null;
+			$author_url = null;
+			
 			if(
-				isset(
-					$json
-					->contents
-					->twoColumnSearchResultsRenderer
-					->secondaryContents
-					->secondarySearchContainerRenderer
-					->contents[0]
-					->universalWatchCardRenderer
+				!isset(
+					$playlist
+					["metadata"]
+					["lockupMetadataViewModel"]
+					["title"]
+					["content"]
+				) ||
+				!isset(
+					$playlist
+					["itemPlayback"]
+					["inlinePlayerData"]
+					["onSelect"]
+					["innertubeCommand"]
+					["commandMetadata"]
+					["webCommandMetadata"]
+					["url"]
 				)
 			){
 				
-				$video =
-					$json
-					->contents
-					->twoColumnSearchResultsRenderer
-					->secondaryContents
-					->secondarySearchContainerRenderer
-					->contents[0]
-					->universalWatchCardRenderer;
-				/*
-				echo json_encode($video);
-				die();*/
-				
-				$author =
-					[
-						"name" =>
-							$video
-							->header
-							->watchCardRichHeaderRenderer
-							->title
-							->simpleText,
-						"url" =>
-							"https://www.youtube.com/channel/" .
-							$video
-							->header
-							->watchCardRichHeaderRenderer
-							->titleNavigationEndpoint
-							->browseEndpoint
-							->browseId,
-						"avatar" => null
-					];
-				
-				if(
-					isset(
-						$video
-						->header
-						->watchCardRichHeaderRenderer
-						->avatar
-						->thumbnails[0]
-						->url
-					)
-				){
-					
-					$author["avatar"] =
-						$video
-						->header
-						->watchCardRichHeaderRenderer
-						->avatar
-						->thumbnails[0]
-						->url;
-				}
-				
-				// add video in callToAction if present
-				if(
-					isset(
-						$video
-						->callToAction
-						->watchCardHeroVideoRenderer
-						->lengthText
-					)
-				){
-					
-					array_push(
-						$this->out["video"],
-						[
-							"title" =>
-								$video
-								->callToAction
-								->watchCardHeroVideoRenderer
-								->title
-								->simpleText,
-							"description" => null,
-							"author" => $author,
-							"date" =>
-								$this->textualdate2unix(
-									trim(
-										explode(
-											"•",
-											$video
-											->callToAction
-											->watchCardHeroVideoRenderer
-											->subtitle
-											->simpleText
-										)[2]
-									)
-								),
-							"duration" =>
-								$this->hms2int(
-									$video
-									->callToAction
-									->watchCardHeroVideoRenderer
-									->lengthText
-									->simpleText
-								),
-							"views" =>
-								$this->truncatedcount2int(
-									trim(
-										explode(
-											"•",
-											$video
-											->callToAction
-											->watchCardHeroVideoRenderer
-											->subtitle
-											->simpleText,
-											2
-										)[1]
-									)
-								),
-							"thumb" => [
-								"url" =>
-									$video
-									->callToAction
-									->watchCardHeroVideoRenderer
-									->heroImage
-									->singleHeroImageRenderer
-									->thumbnail
-									->thumbnails[0]
-									->url,
-								"ratio" => "16:9"
-							],
-							"url" =>
-								"https://www.youtube.com/watch?v=" .
-								$video
-								->callToAction
-								->watchCardHeroVideoRenderer
-								->navigationEndpoint
-								->watchEndpoint
-								->videoId
-						]
-					);
-				}
-				
-				// get all playlists, ignore videos
-				$out = null;
-				
-				foreach(
-					$video
-					->sections
-					as $section
-				){
-					
-					if(
-						isset(
-							$section
-							->watchCardSectionSequenceRenderer
-							->lists[0]
-							->horizontalCardListRenderer
-							->cards
-						)
-					){
-						
-						$out =
-							$section
-							->watchCardSectionSequenceRenderer
-							->lists[0]
-							->horizontalCardListRenderer
-							->cards;
-						break;
-					}
-				}
-				
-				if($out !== null){
-					
-					foreach(
-						$out as $video
-					){
-						
-						if(
-							!isset(
-								$video
-								->searchRefinementCardRenderer
-							)
-						){
-							
-							continue;
-						}
-						
-						$video =
-							$video
-							->searchRefinementCardRenderer;
-						
-						array_push(
-							$this->out["playlist"],
-							[
-								"title" =>
-									$video
-									->query
-									->runs[0]
-									->text,
-								"description" => null,
-								"author" => $author,
-								"date" => null,
-								"duration" => null,
-								"views" => null,
-								"thumb" => [
-									"url" =>
-										$video
-										->thumbnail
-										->thumbnails[0]
-										->url,
-									"ratio" => "1:1"
-								],
-								"url" =>
-									"https://www.youtube.com" .
-									$video
-									->searchEndpoint
-									->commandMetadata
-									->webCommandMetadata
-									->url
-							]
-						);
-					}
-				}
+				// got an ad viewmodel or some invalid item with no link
+				// i dont know why the fuck that happens dont ask me
+				continue;
 			}
 			
 			foreach(
-				$json
-				->contents
-				->twoColumnSearchResultsRenderer
-				->primaryContents
-				->sectionListRenderer
-				->contents
-				as $cont
+				$playlist
+				["metadata"]
+				["lockupMetadataViewModel"]
+				["metadata"]
+				["contentMetadataViewModel"]
+				["metadataRows"]
+				[0]
+				["metadataParts"]
+				as $possible_author
 			){
 				
-				if(isset($cont->continuationItemRenderer)){
+				if(
+					isset(
+						$possible_author
+						["text"]
+						["commandRuns"]
+						[0]
+						["onTap"]
+						["innertubeCommand"]
+						["commandMetadata"]
+						["webCommandMetadata"]
+						["webPageType"]
+					) &&
+					$possible_author
+					["text"]
+					["commandRuns"]
+					[0]
+					["onTap"]
+					["innertubeCommand"]
+					["commandMetadata"]
+					["webCommandMetadata"]
+					["webPageType"] == "WEB_PAGE_TYPE_CHANNEL"
+				){
 					
-					$this->out["npt"] = [
-						"key" =>
-							$ytconfig
-							->INNERTUBE_API_KEY,
-						"post" => [
-							"context" =>
-								$ytconfig
-								->INNERTUBE_CONTEXT,
-							"continuation" =>
-								$cont
-								->continuationItemRenderer
-								->continuationEndpoint
-								->continuationCommand
-								->token
-						]
-					];
+					$author_name = $possible_author["text"]["content"];
+					
+					$author_url =
+						"https://www.youtube.com" .
+						$possible_author
+						["text"]
+						["commandRuns"]
+						[0]
+						["onTap"]
+						["innertubeCommand"]
+						["commandMetadata"]
+						["webCommandMetadata"]
+						["url"];
+					
 					break;
 				}
 			}
+			
+			$out["playlist"][] = [
+				"title" =>
+					$playlist
+					["metadata"]
+					["lockupMetadataViewModel"]
+					["title"]
+					["content"],
+				"description" => null,
+				"author" => [
+					"name" => $author_name,
+					"url" => $author_url,
+					"avatar" => null
+				],
+				"date" => null,
+				"duration" => null,
+				"views" => null,
+				"thumb" => [
+					"url" =>
+						$playlist
+						["contentImage"]
+						["collectionThumbnailViewModel"]
+						["primaryThumbnail"]
+						["thumbnailViewModel"]
+						["image"]
+						["sources"]
+						[0]
+						["url"],
+					"ratio" => "16:9"
+				],
+				"url" =>
+					"https://www.youtube.com" .
+					$playlist
+					["itemPlayback"]
+					["inlinePlayerData"]
+					["onSelect"]
+					["innertubeCommand"]
+					["commandMetadata"]
+					["webCommandMetadata"]
+					["url"]
+			];
 		}
 		
-		if($this->out["npt"] !== null){
+		// get next page
+		$found_npt = false;
+		
+		if($first_page === true){
+			// we're using the old pagination trick, google now sends encrypted data
+			if(count($items["continuationItemRenderer"]) !== 0){
+				
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["screenWidthPoints"] = 1920;
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["screenHeightPoints"] = 999;
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["screenPixelDensity"] = 1;
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["screenDensityFloat"] = 1;
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["utcOffsetMinutes"] = -240;
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["internalExperimentFlags"] = [];
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["concistencyTokenJars"] = [];
+				
+				$ytconfig["INNERTUBE_CONTEXT"]["client"]["mainAppWebInfo"] = [
+					"graftUrl" => $ytconfig["INNERTUBE_CONTEXT"]["client"]["originalUrl"],
+					"webDisplayMode" => "WEB_DISPLAY_MODE_BROWSER",
+					"isWebNativeShareAvailable" => false
+				];
+				
+				$ytconfig["INNERTUBE_CONTEXT"]["adSignalsInfo"] = [
+					"params" => [
+						[
+							"key" => "dt",
+							"value" => (string)$ytconfig["TIME_CREATED_MS"]
+						],
+						[
+							"key" => "flash",
+							"value" => "0"
+						],
+						[
+							"key" => "frm",
+							"value" => "0"
+						],
+						[
+							"key" => "u_tz",
+							"value" => "-240"
+						],
+						[
+							"key" => "u_his",
+							"value" => "3"
+						],
+						[
+							"key" => "u_h",
+							"value" => "1080"
+						],
+						[
+							"key" => "u_w",
+							"value" => "1920"
+						],
+						[
+							"key" => "u_ah",
+							"value" => "1080"
+						],
+						[
+							"key" => "u_cd",
+							"value" => "24"
+						],
+						[
+							"key" => "bc",
+							"value" => "31"
+						],
+						[
+							"key" => "bih",
+							"value" => "999"
+						],
+						[
+							"key" => "biw",
+							"value" => "1920"
+						],
+						[
+							"key" => "brdim",
+							"value" => "0,0,0,0,1920,0,1920,1061,1920,999"
+						],
+						[
+							"key" => "vis",
+							"value" => "1"
+						],
+						[
+							"key" => "wgl",
+							"value" => "true"
+						],
+						[
+							"key" => "ca_type",
+							"value" => "image"
+						]
+					]
+				];
+				
+				$found_npt = true;
+				$npt = [
+					"key" =>
+						$ytconfig
+						["INNERTUBE_API_KEY"],
+					"post" => [
+						"context" =>
+							$ytconfig
+							["INNERTUBE_CONTEXT"],
+						"continuation" =>
+							$items
+							["continuationItemRenderer"]
+							[0]
+							["continuationEndpoint"]
+							["continuationCommand"]
+							["token"]
+					]
+				];
+			}
+		}else{
 			
-			$this->out["npt"] =
+			// handle next page for json endpoint
+			if(count($items["continuationItemRenderer"]) !== 0){
+				
+				$found_npt = true;
+				$npt["post"]["continuation"] =
+					$items
+					["continuationItemRenderer"]
+					[0]
+					["continuationEndpoint"]
+					["continuationCommand"]
+					["token"];
+			}
+		}
+		
+		if($found_npt){
+			
+			$out["npt"] =
 				$this->backend->store(
 					json_encode(
-						$this->out["npt"]
+						$npt
 					),
 					"videos",
 					$proxy
 				);
 		}
 		
-		return $this->out;
+		return $out;
 	}
 	
-	private function parsevideoobject($video){
+	private function recursive_search(&$search, &$items, &$pointer){
 		
-		if(isset($video->videoRenderer)){
-			
-			$video = $video->videoRenderer;
-			
-			$description = null;
-			
-			if(isset($video->detailedMetadataSnippets)){
-				foreach(
-					$video
-					->detailedMetadataSnippets[0]
-					->snippetText
-					->runs
-					as $description_part
-				){
-					
-					$description .= $description_part->text;
-				}
-			}
+		foreach($pointer as $key => $value){
 			
 			if(
-				isset(
-					$video
-					->badges[0]
-					->metadataBadgeRenderer
-					->icon
-					->iconType
-				) &&
-				$video
-				->badges[0]
-				->metadataBadgeRenderer
-				->icon
-				->iconType
-				== "LIVE"
-			){
-				
-				$type = "livestream";
-				$date = null;
-				$duration = "_LIVE";
-				
-				if(isset($video->viewCountText->runs[0]->text)){
-					
-					$views =
-						$this->views2int(
-							$video
-							->viewCountText
-							->runs[0]
-							->text
-						);
-				}else{
-					
-					$views = null;
-				}
-			}else{
-				
-				$type = "video";
-				
-				if(isset($video->publishedTimeText->simpleText)){
-					
-					$date = $this->textualdate2unix(
-						$video
-						->publishedTimeText
-						->simpleText
-					);
-				}else{
-					
-					$date = null;
-				}
-				
-				if(isset($video->lengthText->simpleText)){
-					
-					$duration =
-						$this->hms2int(
-							$video
-							->lengthText
-							->simpleText
-						);
-				}else{
-					
-					$duration = null;
-				}
-				
-				if(isset($video->viewCountText->simpleText)){
-					
-					$views =
-						$this->views2int(
-							$video
-							->viewCountText
-							->simpleText
-						);
-				}else{
-					
-					$views = null;
-				}
-			}
-			
-			if(
-				$video
-				->navigationEndpoint
-				->commandMetadata
-				->webCommandMetadata
-				->webPageType
-				== "WEB_PAGE_TYPE_SHORTS"
-			){
-				
-				// haha you thought you could get me, youtube
-				// jokes on you i dont go outside
-				$type = "reel";
-			}
-			
-			array_push(
-				$this->out[$type],
-				[
-					"title" =>
-						$video
-						->title
-						->runs[0]
-						->text,
-					"description" =>
-						$this->titledots($description),
-					"author" => [
-							"name" =>
-								$video
-								->longBylineText
-								->runs[0]
-								->text,
-							"url" =>
-								"https://www.youtube.com/channel/" .
-								$video
-								->longBylineText
-								->runs[0]
-								->navigationEndpoint
-								->browseEndpoint
-								->browseId,
-							"avatar" =>
-								$this->checkhttpspresence(
-									$video
-									->channelThumbnailSupportedRenderers
-									->channelThumbnailWithLinkRenderer
-									->thumbnail
-									->thumbnails[0]
-									->url
-								)
-						],
-					"date" => $date,
-					"duration" => $duration,
-					"views" => $views,
-					"thumb" => [
-						"url" =>
-							$video
-							->thumbnail
-							->thumbnails[0]
-							->url,
-						"ratio" => "16:9"
-					],
-					"url" =>
-						"https://www.youtube.com/watch?v=" .
-						$video
-						->videoId
-				]
-			);
-		}elseif(isset($video->watchCardCompactVideoRenderer)){
-			
-			$video =
-				$video
-				->watchCardCompactVideoRenderer;
-			
-			array_push(
-				$this->out["video"],
-				[
-					"title" =>
-						$video
-						->title
-						->simpleText,
-					"description" => null,
-					"author" => [
-							"name" =>
-								$video
-								->byline
-								->runs[0]
-								->text,
-							"url" =>
-								"https://www.youtube.com/channel/" .
-								$video
-								->byline
-								->runs[0]
-								->navigationEndpoint
-								->browseEndpoint
-								->browseId,
-							"avatar" => null
-						],
-					"date" =>
-						$this->textualdate2unix(
-							trim(
-								explode(
-									"•",
-									$video
-									->subtitle
-									->simpleText,
-									2
-								)[1]
-							)
-						),
-					"duration" =>
-						$this->hms2int(
-							$video
-							->lengthText
-							->simpleText
-						),
-					"views" =>
-						$this->truncatedcount2int(
-							trim(
-								explode(
-									"•",
-									$video
-									->subtitle
-									->simpleText,
-									2
-								)[0]
-							)
-						),
-					"thumb" => [
-						"url" =>
-							$video
-							->thumbnail
-							->thumbnails[0]
-							->url,
-						"ratio" => "16:9"
-					],
-					"url" =>
-						"https://www.youtube.com/watch?v=" .
-						$video
-						->navigationEndpoint
-						->watchEndpoint
-						->videoId
-				]
-			);
-			
-		}elseif(isset($video->reelShelfRenderer)){
-			
-			foreach(
-				$video
-				->reelShelfRenderer
-				->items
-				as $reel
-			){
-				
-				$reel =
-					$reel
-					->shortsLockupViewModel;
-				
-				array_push(
-					$this->out["reel"],
-					[
-						"title" =>
-							$reel
-							->overlayMetadata
-							->primaryText
-							->content,
-						"description" => null,
-						"author" => [
-							"name" => null,
-							"url" => null,
-							"avatar" => null
-						],
-						"date" => null,
-						"duration" => null,
-						"views" => null,
-						"thumb" => [
-							"url" =>
-								$reel
-								->thumbnail
-								->sources[0]
-								->url,
-							"ratio" => "9:16"
-						],
-						"url" =>
-							"https://www.youtube.com/watch?v=" .
-							$reel
-							->onTap
-							->innertubeCommand
-							->reelWatchEndpoint
-							->videoId
-					]
-				);
-			}
-		}
-		
-		elseif(isset($video->channelRenderer)){
-			
-			$video = $video->channelRenderer;
-			
-			$description = null;
-			
-			if(isset($video->descriptionSnippet)){
-				
-				foreach(
-					$video
-					->descriptionSnippet
-					->runs
-					as $description_part
-				){
-					
-					$description .= $description_part->text;
-				}
-			}
-			
-			array_push(
-				$this->out["author"],
-				[
-					"title" =>
-						$video
-						->title
-						->simpleText,
-					"followers" =>
-						isset(
-							$video
-							->videoCountText
-							->simpleText
-						) ?
-						$this->truncatedcount2int(
-							$video
-							->videoCountText
-							->simpleText
-						) :
-						0,
-					"description" => $this->titledots($description),
-					"thumb" =>
-						[
-							"url" =>
-								$this->checkhttpspresence(
-									$video
-									->thumbnail
-									->thumbnails[
-										count(
-											$video
-											->thumbnail
-											->thumbnails
-										) - 1
-									]
-									->url
-								),
-							"ratio" => "1:1"
-						],
-					"url" =>
-						"https://www.youtube.com/channel/" .
-						$video
-						->channelId
-				]
-			);
-		}
-		
-		elseif(isset($video->shelfRenderer)){
-			
-			if(
-				!is_object(
-					$video
-					->shelfRenderer
-					->content
-					->verticalListRenderer
+				in_array(
+					$key,
+					$search
 				)
 			){
-				return;
-			}
-			
-			foreach(
-				$video
-				->shelfRenderer
-				->content
-				->verticalListRenderer
-				->items
-				as $shelfvideo
-			){
 				
-				$this->parsevideoobject($shelfvideo);
-			}
-			
-		}elseif(isset($video->radioRenderer)){
-			
-			$video = $video->radioRenderer;
-			
-			$description =
-				$video
-				->videoCountText
-				->runs[0]
-				->text
-				. ".";
-			
-			$tmp = [];
-			foreach(
-				$video->videos
-				as $childvideo
-			){
+				// found interesting item
+				$items[$key][] = $value;
 				
-				$tmp[] =
-					$childvideo
-					->childVideoRenderer
-					->title
-					->simpleText;
-			}
-			
-			if(count($tmp) !== 0){
+			}elseif(is_array($value)){
 				
-				$description .=
-					" " . implode(", ", $tmp);
+				$this->recursive_search($search, $items, $value);
 			}
-			
-			array_push(
-				$this->out["playlist"],
-				[
-					"title" =>
-						$video
-						->title
-						->simpleText,
-					"description" => $description,
-					"author" => [
-						"name" =>
-							$video
-							->longBylineText
-							->simpleText,
-						"url" => null,
-						"avatar" => null
-					],
-					"date" => null,
-					"duration" => null,
-					"views" => null,
-					"thumb" => [
-						"url" =>
-							$video
-							->thumbnail
-							->thumbnails[
-								count(
-									$video
-									->thumbnail
-									->thumbnails
-								) - 1
-							]
-							->url,
-						"ratio" => "16:9"
-					],
-					"url" =>
-						"https://www.youtube.com/watch?v=" .
-						$video
-						->videos[0]
-						->childVideoRenderer
-						->videoId .
-						"&list=" .
-						$video
-						->playlistId .
-						"&start_radio=1"
-				]
-			);
-			
-		}elseif(isset($video->playlistRenderer)){
-			
-			$video = $video->playlistRenderer;
-			
-			$description = $video->videoCount . " videos.";
-			
-			$tmp = [];
-			foreach(
-				$video
-				->videos
-				as $childvideo
-			){
-				
-				$tmp[] =
-					$childvideo
-					->childVideoRenderer
-					->title
-					->simpleText;
-			}
-			
-			if(count($tmp) !== 0){
-				
-				$description .=
-					" " . implode(", ", $tmp);
-			}
-			
-			array_push(
-				$this->out["playlist"],
-				[
-					"title" =>
-						$video
-						->title
-						->simpleText,
-					"description" => $description,
-					"author" => [
-						"name" =>
-							$video
-							->longBylineText
-							->runs[0]
-							->text,
-						"url" =>
-							"https://www.youtube.com/channel/" .
-							$video
-							->longBylineText
-							->runs[0]
-							->navigationEndpoint
-							->browseEndpoint
-							->browseId,
-						"picture" => null
-					],
-					"date" => null,
-					"duration" => null,
-					"views" => null,
-					"thumb" =>
-						[
-							"url" =>
-								$video
-								->thumbnails[0]
-								->thumbnails[
-									count(
-										$video
-										->thumbnails[0]
-										->thumbnails
-									) - 1
-								]
-								->url,
-							"ratio" => "16:9"
-						],
-					"url" =>
-						"https://www.youtube.com/watch?v=" .
-						$video
-						->videos[0]
-						->childVideoRenderer
-						->videoId .
-						"&list=" .
-						$video
-						->playlistId .
-						"&start_radio=1"
-				]
-			);
-			
-		}/*else{
-			if(!isset($video->searchPyvRenderer)){
-			echo json_encode($video);
-			die();}
-		}*/
+		}
 	}
 	
 	private function textualdate2unix($number){
@@ -1719,9 +1291,26 @@ class yt{
 			$substr == "…"
 		){
 			
-			return trim(substr($title, 0, -3), " \n\r\t\v\x00\0\x0B\xc2\xa0");
+			return str_replace(["\r", "\n"], " ", trim(substr($title, 0, -3), " \n\r\t\v\x00\0\x0B\xc2\xa0"));
 		}
 		
-		return trim($title, " \n\r\t\v\x00\0\x0B\xc2\xa0");
+		return str_replace(["\r", "\n"], " ", trim($title, " \n\r\t\v\x00\0\x0B\xc2\xa0"));
+	}
+	
+	private function assemble_runs($runs){
+		
+		if(!isset($runs["runs"])){ return ""; }
+		
+		$text = "";
+		
+		foreach($runs["runs"] as $run){
+			
+			if(isset($run["text"])){
+				
+				$text .= $run["text"];
+			}
+		}
+		
+		return $text;
 	}
 }
