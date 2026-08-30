@@ -15,13 +15,11 @@ class autocomplete{
 			"yandex" => "https://suggest.yandex.com/suggest-ff.cgi?part={searchTerms}&uil=en&v=3&sn=5&lr=21276&yu=4861394161661655015",
 			"google" => "https://www.google.com/complete/search?client=mobile-gws-lite&q={searchTerms}",
 			"qwant" => "https://api.qwant.com/v3/suggest/?q={searchTerms}&client=opensearch",
-			"yep" => "https://api.yep.com/ac/?query={searchTerms}",
 			"marginalia" => "https://search.marginalia.nu/suggest/?partial={searchTerms}",
 			"yt" => "https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&q={searchTerms}",
 			"sc" => "",
 			"startpage" => "https://www.startpage.com/suggestions?q={searchTerms}&format=opensearch&segment=startpage.defaultffx&lui=english",
-			"kagi" => "https://kagi.com/api/autosuggest?q={searchTerms}",
-			"ghostery" => "https://ghosterysearch.com/suggest?q={searchTerms}"
+			"kagi" => "https://kagi.com/api/autosuggest?q={searchTerms}"
 		];
 		
 		/*

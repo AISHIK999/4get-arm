@@ -37,21 +37,20 @@ tl;dr 4get is the best way to browse for shit.
 | Brave        | Yandex       | Vimeo        | Brave        | Swisscows  | DuckDuckGo   |
 | Yandex       | Brave        | Sepia Search | Google       |            | Yandex       |
 | Google       | Google       | DuckDuckGo   | Yahoo! JAPAN |            | Google       |
-| Google API   | Google API   | Brave        | Startpage    |            | Startpage    |
-| Google CSE   | Google CSE   | Yandex       | Qwant        |            | Kagi         |
-| Yahoo! JAPAN | Yahoo! JAPAN | Google       | Mojeek       |            | Qwant        |
-| Startpage    | Startpage    | Yahoo! JAPAN | Baidu        |            | Ghostery     |
-| Qwant        | Qwant        | Startpage    |              |            | Yep          |
-| Ghostery     | Baidu        | Qwant        |              |            | Marginalia   |
-| Yep          | Solofield    | Baidu        |              |            | YouTube      |
-| Mwmbl        | Pinterest    | Coc Coc      |              |            | SoundCloud   |
-| Mojeek       | Cara         | Solofield    |              |            |              |
-| Baidu        | Flickr       |              |              |            |              |
-| Coc Coc      | Pexels       |              |              |            |              |
+| Google API   | Google API   | Brave        | Startpage    |            | Qwant        |
+| Google CSE   | Google CSE   | Yandex       | Baidu        |            | Marginalia   |
+| Yahoo! JAPAN | Yahoo! JAPAN | Google       |              |            | YouTube      |
+| Startpage    | Startpage    | Yahoo! JAPAN |              |            | SoundCloud   |
+| Yep          | Naver        | Startpage    |              |            | Startpage    |
+| Mwmbl        | Baidu        | Naver        |              |            | Kagi         |
+| Mojeek       | Solofield    | Baidu        |              |            |              |
+| Naver        | Pinterest    | Cốc Cốc      |              |            |              |
+| Baidu        | Flickr       | Purili       |              |            |              |
+| Cốc Cốc      | Pexels       | Solofield    |              |            |              |
 | Solofield    | Pixabay      |              |              |            |              |
 | Marginalia   | Unsplash     |              |              |            |              |
-| wiby         | 500px        |              |              |            |              |
-|              | VSCO         |              |              |            |              |
+| Purili       | 500px        |              |              |            |              |
+| wiby         | VSCO         |              |              |            |              |
 |              | Imgur        |              |              |            |              |
 |              | FindThatMeme |              |              |            |              |
 
