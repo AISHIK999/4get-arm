@@ -587,6 +587,25 @@ class yt{
 				}
 			}
 			
+			$thumbnail =
+				$video["thumbnail"]
+				["thumbnails"]
+				[0]
+				["url"];
+			
+			$filename = basename(parse_url($thumbnail, PHP_URL_PATH));
+			
+			if(
+				$filename == "hq720.jpg" ||
+				$filename == "mqdefault.jpg"
+			){
+				
+				// fetch trackerless version
+				// its bigger and consumes more bandwidth, but it wont serve
+				// blurred out thumbnails
+				$thumbnail = "https://i.ytimg.com/vi/{$video["videoId"]}/{$filename}";
+			}
+			
 			$out[$type][] = [
 				"title" =>
 					$this->assemble_runs(
@@ -666,11 +685,7 @@ class yt{
 					) : null,
 				"thumb" => [
 					"ratio" => "16:9",
-					"url" =>
-						$video["thumbnail"]
-						["thumbnails"]
-						[0]
-						["url"]
+					"url" => $thumbnail
 				],
 				"url" => "https://www.youtube.com/watch?v=" . $video["videoId"]
 			];
