@@ -533,7 +533,8 @@ class yt{
 			"videoRenderer" => [],
 			"shortsLockupViewModel" => [],
 			"lockupViewModel" => [], // playlists
-			"continuationItemRenderer" => [] // pagination
+			"continuationItemRenderer" => [], // pagination
+			"backgroundPromoRenderer" => [] // errors
 		];
 		
 		$search = [
@@ -541,10 +542,49 @@ class yt{
 			"videoRenderer",
 			"shortsLockupViewModel",
 			"lockupViewModel",
-			"continuationItemRenderer"
+			"continuationItemRenderer",
+			"backgroundPromoRenderer"
 		];
 		
 		$this->recursive_search($search, $items, $json);
+		
+		// check for errors
+		if(count($items["backgroundPromoRenderer"]) !== 0){
+			
+			foreach($items["backgroundPromoRenderer"] as $popup){
+				
+				if(
+					isset(
+						$popup
+						["title"]
+						["runs"]
+					) &&
+					isset(
+						$popup
+						["bodyText"]
+						["runs"]
+					)
+				){
+					
+					$error =
+						$this->assemble_runs($popup["title"]) . ". " .
+						$this->assemble_runs($popup["bodyText"]);
+					
+					if(str_contains(strtolower($error), "no results found")){
+						
+						// no results
+						return $out;
+					}
+					
+					// other error
+					throw new Exception(
+						"YouTube returned an error: " .
+						$this->assemble_runs($popup["title"]) . ". " .
+						$this->assemble_runs($popup["bodyText"])
+					);
+				}
+			}
+		}
 		
 		// add normal videos
 		foreach($items["videoRenderer"] as $video){
