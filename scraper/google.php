@@ -721,7 +721,7 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			
+			/*
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
@@ -730,10 +730,11 @@ class google{
 			);
 			
 			$html = &$data["data"];
-			$container = &$data["container"];
+			$container = &$data["container"];*/
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			//$html = file_get_contents("scraper/google-softcaptcha.html");
+			$html = file_get_contents("scraper/dmca.html");
+			$container = "";
 		}
 		
 		$out = [
@@ -914,14 +915,34 @@ class google{
 						$a["attributes"]["href"]
 					);
 				
+				$link_text =
+					strtolower(
+						$this->fuckhtml
+						->getTextContent($a)
+					);
+				
 				if(
-					preg_match(
-						'/^https?:\/\/lumendatabase\.org/',
-						$link
+					str_contains(
+						$link_text,
+						"complaint"
 					)
 				){
 					
-					$notices[] = $link;
+					// sometimes the link is an encrypted redirect, handle redirection securely
+					if(
+						preg_match(
+							'/^\/goto\?url=(.*)/',
+							$link,
+							$payload
+						)
+					){
+						
+						$notices[] = "/resolver?scraper=google&target=" . $payload[1];
+					}else{
+						
+						// normal link
+						$notices[] = $link;
+					}
 				}
 			}
 			
