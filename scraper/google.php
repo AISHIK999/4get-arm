@@ -721,7 +721,7 @@ class google{
 				
 				$params["tbs"] = rtrim($params["tbs"], ",");
 			}
-			/*
+			
 			$data = $this->get(
 				$proxy,
 				"https://www.google.com/search",
@@ -730,11 +730,11 @@ class google{
 			);
 			
 			$html = &$data["data"];
-			$container = &$data["container"];*/
+			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			$html = file_get_contents("scraper/dmca.html");
-			$container = "";
+			//$html = file_get_contents("scraper/dmca.html");
+			//$container = "";
 		}
 		
 		$out = [
