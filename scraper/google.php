@@ -733,7 +733,7 @@ class google{
 			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			//$html = file_get_contents("scraper/dmca.html");
+			//$html = file_get_contents("scraper/sublink.html");
 			//$container = "";
 		}
 		
@@ -772,8 +772,9 @@ class google{
 			$html = &$data2["data"];
 						
 			$this->fuckhtml->load($html);
-			$this->parsestyles();
 		}
+		
+		$this->parsestyles();
 		
 		$this->scrape_dimg($html);
 		$this->scrape_imagearr($html);
@@ -1268,6 +1269,47 @@ class google{
 			}
 			
 			$sublinks = [];
+			
+			// get sublinks (rare)
+			$as =
+				$this->fuckhtml
+				->getElementsByClassName(
+					$this->getstyle([
+						"padding-right" => "6px",
+						"margin-top" => "4px",
+						"display" => "inline-block"
+					]),
+					"a"
+				);
+			
+			foreach($as as $sublink){
+				
+				$sublink_url =
+					$this->fuckhtml
+					->getTextContent(
+						$sublink["attributes"]["href"]
+					);
+				
+				if(
+					preg_match(
+						'/^\/goto\?url=(.*)/',
+						$sublink_url,
+						$piece_of_shit
+					)
+				){
+					
+					// encrypted piece of shit url
+					$sublink_url = "/resolver?scraper=google&target=" . $piece_of_shit[1];
+				}
+				
+				$sublinks[] = [
+					"title" =>
+						$this->fuckhtml
+						->getTextContent($sublink),
+					"date" => null,
+					"url" => $sublink_url
+				];
+			}
 			
 			$out["web"][] = [
 				"title" => $title,
