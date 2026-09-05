@@ -5,7 +5,7 @@ class config{
 	// any parameters.
 	
 	// 4get version. Please keep this updated
-	const VERSION = 8;
+	const VERSION = 9;
 	
 	// Will be shown pretty much everywhere.
 	const SERVER_NAME = "4get";
@@ -134,7 +134,7 @@ class config{
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0";
 	
 	// User agent to use with 4get-friendly APIs
 	const USER_AGENT_FRIENDLY = "4get-scrapist (+https://4get.ca)";

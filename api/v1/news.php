@@ -27,6 +27,9 @@ new bot_protection($null, $null, $null, "news", false);
 
 $get = $frontend->parsegetfilters($_GET, $filters);
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	echo json_encode(
 		$scraper->news($get),

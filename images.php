@@ -32,6 +32,9 @@ try{
 	$frontend->drawscrapererror($error->getMessage(), $get, "images", $payload["timetaken"]);
 }
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 if(count($results["image"]) === 0){
 	
 	$payload["images"] =

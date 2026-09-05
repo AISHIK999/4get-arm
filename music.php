@@ -34,6 +34,9 @@ try{
 	$frontend->drawscrapererror($error->getMessage(), $get, "music", $payload["timetaken"]);
 }
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 $categories = [
 	"song" => "",
 	"author" => "",

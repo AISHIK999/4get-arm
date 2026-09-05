@@ -5,8 +5,20 @@ header("Access-Control-Allow-Origin: *");
 
 include "data/config.php";
 
-$real_requests = apcu_fetch("real_requests");
-$bot_requests = apcu_fetch("captcha_gen");
+// get request count in last 24 hours
+$bot_requests = 0;
+$real_requests = 0;
+$time = time();
+
+for($i=0; $i<24; $i++){
+	
+	$bot_requests += apcu_fetch(intdiv($time - (3600 * $i), 3600) . ".bot_requests");
+}
+
+for($i=0; $i<24; $i++){
+	
+	$real_requests += apcu_fetch(intdiv($time - (3600 * $i), 3600) . ".real_requests");
+}
 
 echo json_encode(
 	[
@@ -16,8 +28,8 @@ echo json_encode(
 			"name" => config::SERVER_NAME,
 			"description" => config::SERVER_LONG_DESCRIPTION,
 			"bot_protection" => config::BOT_PROTECTION,
-			"real_requests" => $real_requests === false ? 0 : $real_requests,
-			"bot_requests" => $bot_requests === false ? 0 : $bot_requests,
+			"real_requests" => $real_requests,
+			"bot_requests" => $bot_requests,
 			"api_enabled" => config::API_ENABLED,
 			"alt_addresses" => config::ALT_ADDRESSES,
 			"version" => config::VERSION

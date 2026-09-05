@@ -22,7 +22,7 @@ var list = [];
 var pinged_list = [];
 var reqs = 0;
 var errors = 0;
-var sort = 6; // highest version first
+var sort = 12;
 
 // check for instance redirect stuff
 var redir = [];
@@ -68,8 +68,8 @@ table.innerHTML =
 		'<th class="extend">Server</th>' +
 		'<th>Address</th>' +
 		'<th>Bot protection</th>' +
-		'<th title="Amount of legit requests processed since the last APCU cache clear (usually happens at midnight)">Real reqs (?)</th>' +
-		'<th title="Amount of filtered requests processed since the last APCU cache clear (usually happens at midnight)">Bot reqs (?)</th>' +
+		'<th title="Amount of legit requests processed within the last 24 hours">Real reqs (?)</th>' +
+		'<th title="Amount of filtered requests processed within the last 24 hours">Bot reqs (?)</th>' +
 		'<th>API</th>' +
 		'<th><div class="arrow up"></div>Version</th>' +
 	'</tr>' +

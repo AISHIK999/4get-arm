@@ -177,7 +177,7 @@ class frontend{
 		){
 			
 			// bot detected !!
-			apcu_inc("captcha_gen");
+			apcu_inc(intdiv(time(), 3600) . ".bot_requests", 1, $s, 262800);
 			
 			$this->drawerror(
 				"Tshh, blocked!",
@@ -221,7 +221,7 @@ class frontend{
 			'This scraper returned an error:' .
 			'<div class="code">' . htmlspecialchars($error) . '</div>' .
 			'Things you can try:' .
-			'<ul>' . 
+			'<ul>' .
 				'<li>Use a different scraper</li>' .
 				'<li>Remove keywords that could cause errors</li>' .
 				'<li><a href="/instances?target=' . $target . "&" . $this->buildquery($get, false) . '">Try your search on another 4get instance</a></li>' .
@@ -1050,6 +1050,12 @@ class frontend{
 		}
 		
 		return http_build_query($out);
+	}
+	
+	public function increment_real_reqs($scraper){
+		
+		apcu_inc(intdiv(time(), 3600) . ".real_requests", 1, $s, 262800);
+		apcu_inc(intdiv(time(), 3600) . ".$scraper.requests", 1, $s, 262800);
 	}
 	
 	public function htmlimage($image, $format){
