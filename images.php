@@ -24,6 +24,9 @@ $payload = [
 	"nextpage" => ""
 ];
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	$results = $scraper->image($get);
 	
@@ -31,9 +34,6 @@ try{
 	
 	$frontend->drawscrapererror($error->getMessage(), $get, "images", $payload["timetaken"]);
 }
-
-// increment request count
-$frontend->increment_real_reqs($get["scraper"]);
 
 if(count($results["image"]) === 0){
 	

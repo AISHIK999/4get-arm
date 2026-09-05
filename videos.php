@@ -26,6 +26,9 @@ $payload = [
 	"left" => ""
 ];
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	$results = $scraper->video($get);
 	
@@ -33,9 +36,6 @@ try{
 	
 	$frontend->drawscrapererror($error->getMessage(), $get, "videos", $payload["timetaken"]);
 }
-
-// increment request count
-$frontend->increment_real_reqs($get["scraper"]);
 
 $categories = [
 	"video" => "",

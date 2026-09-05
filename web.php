@@ -26,6 +26,9 @@ $payload = [
 	"left" => ""
 ];
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	$results = $scraper->web($get);
 	
@@ -33,9 +36,6 @@ try{
 	
 	$frontend->drawscrapererror($error->getMessage(), $get, "web", $payload["timetaken"]);
 }
-
-// increment request count
-$frontend->increment_real_reqs($get["scraper"]);
 
 /*
 	Prepend Oracle output, if applicable

@@ -249,7 +249,8 @@ class bot_protection{
 		$frontend->loadheader(
 			$get,
 			$filters,
-			$page
+			$page,
+			false
 		);
 		
 		echo $frontend->load("search.html", $payload);

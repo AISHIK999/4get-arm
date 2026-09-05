@@ -118,7 +118,7 @@ class frontend{
 		return trim($html);
 	}
 	
-	public function loadheader(array $get, array $filters, string $page){
+	public function loadheader(array $get, array $filters, string $page, bool $increment_bot_counter = true){
 		
 		echo
 			$this->load("header.html", [
@@ -177,13 +177,15 @@ class frontend{
 		){
 			
 			// bot detected !!
-			apcu_inc(intdiv(time(), 3600) . ".bot_requests", 1, $s, 262800);
+			if($increment_bot_counter){
+				
+				apcu_inc(intdiv(time(), 3600) . ".bot_requests", 1, $s, 262800);
+			}
 			
 			$this->drawerror(
 				"Tshh, blocked!",
 				'Your browser, IP or IP range has been blocked from this 4get instance. If this is an error, please <a href="/about">contact the administrator</a>.'
 			);
-			die();
 		}
 	}
 	
