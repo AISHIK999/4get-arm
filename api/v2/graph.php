@@ -1,6 +1,7 @@
 <?php
 
 date_default_timezone_set('America/Toronto');
+include "../../data/config.php";
 
 function get_requests($slug){
 	
@@ -64,7 +65,7 @@ $graph = new graph();
 
 echo $graph->render([
 	"title" => "Number of requests within the last 72 hours (non-cummulative)",
-	"subtitle" => date("jS M y @ g:ia", time()) . " || 24h=" . number_format($real_reqs_24h) . ", 72h=" . number_format($real_reqs_72h) . " || localhost:8000",
+	"subtitle" => date("jS M y @ g:ia", time()) . " || 24h=" . number_format($real_reqs_24h) . ", 72h=" . number_format($real_reqs_72h) . " || " . config::SERVER_NAME,
 	"x_label" => "<= Hours passed =>",
 	"y_label" => "<= Request count/hour =>",
 	"grad_x" => 25,
