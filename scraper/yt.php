@@ -526,6 +526,8 @@ class yt{
 			}
 			
 			$json = json_decode($json[1], true);
+			/*$first_page = true;
+			$json = json_decode(file_get_contents("scraper/yt.html"), true);*/
 		}
 		
 		$items = [
@@ -692,7 +694,7 @@ class yt{
 						$video["publishedTimeText"]
 						["simpleText"]
 					) ?
-					strtotime(
+					$this->parse_date(
 						trim(
 							str_replace(
 								"Streamed", "",
@@ -1350,6 +1352,38 @@ class yt{
 		}
 		
 		return str_replace(["\r", "\n"], " ", trim($title, " \n\r\t\v\x00\0\x0B\xc2\xa0"));
+	}
+	
+	private function parse_date($date){
+		
+		if(
+			preg_match(
+				'/^([0-9]+)(s|m|h|d|w|mo|y) ago$/',
+				$date,
+				$control_chars
+			)
+		){
+			
+			switch($control_chars[2]){
+				
+				case "s": $selection = "seconds"; break;
+				case "m": $selection = "minutes"; break;
+				case "h": $selection = "hours"; break;
+				case "d": $selection = "days"; break;
+				case "w": $selection = "weeks"; break;
+				case "mo": $selection = "months"; break;
+				case "y": $selection = "years"; break;
+				default: return null;
+			}
+			
+			$date = "{$control_chars[1]} {$selection} ago";
+		}
+		
+		$out = strtotime($date);
+		
+		if($out === false){ $out = null; }
+		
+		return $out;
 	}
 	
 	private function assemble_runs($runs){
