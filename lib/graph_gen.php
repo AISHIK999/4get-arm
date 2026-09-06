@@ -64,7 +64,7 @@ class graph{
 			
 			foreach($graph["data"] as $datapoint => $value){
 				
-				if(count($value) < 1){
+				if(count($value) < 2){
 					
 					$not_enough_data = true;
 				}else{
