@@ -595,6 +595,13 @@ class frontend{
 	
 	public function getscraperfilters($page){
 		
+		// hack: enable error reporting if configured
+		if(config::DISPLAY_ERRORS === true){
+			
+			ini_set('display_errors', 1);
+			ini_set('display_startup_errors', 1);
+		}
+		
 		$get_scraper = isset($_COOKIE["scraper_$page"]) ? $_COOKIE["scraper_$page"] : null;
 		
 		if(
