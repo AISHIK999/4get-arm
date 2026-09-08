@@ -884,9 +884,9 @@ class frontend{
 						],
 						[
 							"url" => "https://arquivo.pt/wayback/" . htmlspecialchars($link),
-							"favicon" => "archivo.pt",
+							"favicon" => "arquivo.pt",
 							"favicon_alt" => "ar",
-							"title" => "Archivo.pt"
+							"title" => "Arquivo.pt"
 						],
 						[
 							"url" => "https://megalodon.jp/?url=" . $urlencode,
