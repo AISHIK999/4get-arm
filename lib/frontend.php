@@ -630,6 +630,7 @@ class frontend{
 					}
 					break;
 				
+				case "m.twitch.tv":
 				case "twitch.tv":
 				case "player.twitch.tv":
 				case "www.twitch.tv":
