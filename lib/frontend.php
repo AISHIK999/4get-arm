@@ -606,7 +606,8 @@ class frontend{
 							'/^\/([A-Za-z0-9_.]+)/',
 							$host["path"],
 							$username
-						)
+						) &&
+						$username[1] != "videos"
 					){
 						
 						$archives[] = [
