@@ -823,7 +823,7 @@ class frontend{
 						// https://ihsoyct.github.io/index.html?author=google&mode=comments&backend=pullpush
 						elseif(
 							preg_match(
-								'/^\/(?:u|user)\/([^\/]+)\//',
+								'/^\/(?:u|user)\/([^\/]+)\/(?:(?:comments|submitted)\/?)?(?:$|\?|&)/',
 								$host["path"],
 								$slug
 							)
