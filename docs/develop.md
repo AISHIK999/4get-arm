@@ -13,24 +13,24 @@ If, for some reason, you're in an environment where accessing the debug logs is 
 # Debug guide for docker
 
 Install:
-```
+```sh
 git clone git.lolcat.ca/lolcat/4get
 make changes to docker/apache/http/httpd.conf (comment out the lines that disable logging)
 docker build -t luuul/4get .
 ```
 
 Run:
-```
+```sh
 docker run --name 4get -p 80:80 -p 443:443 luuul/4get 
 ```
 
 Get debug logs:
-```
+```sh
 docker exec -it `docker ps -qf ancestor=luuul/4get:latest` sh # browse the container
 docker exec -it `docker ps -qf ancestor=luuul/4get:latest` tail -f /var/log/apache2/error_log
 ```
 
-need to restart container?
-```
+Restart the container:
+```sh
 docker restart 4get
 ```
