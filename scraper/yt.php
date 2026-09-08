@@ -6,6 +6,9 @@ class yt{
 		
 		include "lib/backend.php";
 		$this->backend = new backend("yt");
+		
+		include "lib/fuckhtml.php";
+		$this->fuckhtml = new fuckhtml();
 	}
 	
 	public function getfilters($page){
@@ -495,6 +498,8 @@ class yt{
 				
 				throw new Exception("Could not fetch search page");
 			}
+			
+			$this->detect_sorry($json);
 			
 			//$json = file_get_contents("scraper/yt.html");
 			
@@ -1401,5 +1406,34 @@ class yt{
 		}
 		
 		return $text;
+	}
+	
+	private function detect_sorry($html){
+		
+		$this->fuckhtml->load($html);
+		
+		$as =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"a"
+			);
+		
+		foreach($as as $a){
+			
+			// https://www.google.com/sorry/index?continue=https://www.youtube.com/results%3Fsearch_query%3Dhigurashi&q=EhAmBm0ADxn8AAAAAAAAAAEBGOuP_tQGIjDfNp10wvoKdz1WVrgH0F9RjWm2DrJNrPEJl642dSbds6QXWka0rtTlh2s8o0_c5nwyBz5qY25kclJaAUM
+						
+			if(
+				stripos(
+					$this->fuckhtml
+					->getTextContent(
+						$a["attributes"]["href"]
+					),
+					"https://www.google.com/sorry/index?continue="
+				) !== false
+			){
+				
+				throw new Exception("YouTube returned a captcha");
+			}
+		}
 	}
 }

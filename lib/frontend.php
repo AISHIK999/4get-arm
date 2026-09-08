@@ -535,14 +535,380 @@ class frontend{
 					'</button>' .
 					'<div class="favicon-dropdown">';
 			
-			$payload .=
-					'<a href="https://web.archive.org/web/' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://archive.org" alt="ar">Archive.org</a>' .
-					'<a href="https://archive.ph/newest/' . htmlspecialchars($link) . '" class="list" target="_BLANK"><img src="/favicon?s=https://archive.is" alt="ar">Archive.is</a>' .
-					'<a href="https://ghostarchive.org/search?term=' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://ghostarchive.org" alt="gh">Ghostarchive</a>' .
-					'<a href="https://arquivo.pt/wayback/' . htmlspecialchars($link) . '" class="list" target="_BLANK"><img src="/favicon?s=https://arquivo.pt" alt="ar">Arquivo.pt</a>' .
-					'<a href="https://www.bing.com/search?q=url%3A' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://bing.com" alt="bi">Bing cache</a>' .
-					'<a href="https://megalodon.jp/?url=' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://megalodon.jp" alt="me">Megalodon</a>' .
-				'</div>';
+			$archives = [];
+			
+			// add website-specific archives
+			switch($host["host"]){
+				
+				case "www.youtube.com":
+				case "music.youtube.com":
+				case "youtube.com":
+				case "m.youtube.com":
+				case "youtu.be":
+					
+					if(
+						(
+							$host["host"] == "youtu.be" &&
+							isset($host["path"]) &&
+							preg_match(
+								'/^\/([A-Za-z0-9_-]+)/',
+								$host["path"],
+								$slug
+							)
+						) ||
+						(
+							isset($host["query"]) &&
+							preg_match(
+								'/v=([A-Za-z0-9_-]+)/',
+								$host["query"],
+								$slug
+							)
+						)
+					){
+						
+						// for watch?v=slug
+						$archives[] = [
+							"url" => "https://findyoutubevideo.thetechrobo.ca/?q=" . $slug[1],
+							"favicon" => "findyoutubevideo.thetechrobo.ca",
+							"favicon_alt" => "fi",
+							"title" => "FindYouTubeVideo"
+						];
+						
+						$archives[] = [
+							"url" => "https://filmot.com/video/" . $slug[1] . "/",
+							"favicon" => "filmot.com",
+							"favicon_alt" => "fi",
+							"title" => "Filmot (metadata only)"
+						];
+					}elseif(
+						preg_match(
+							'/^\/(?:channel)\/@?([A-Za-z0-9_-]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://filmot.com/channel/" . $username[1] . "/",
+							"favicon" => "filmot.com",
+							"favicon_alt" => "fi",
+							"title" => "Filmot (metadata only)"
+						];
+					}
+					break;
+				
+				case "twitch.tv":
+				case "player.twitch.tv":
+				case "www.twitch.tv":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://vodvod.top/channels/@" . $username[1],
+							"favicon" => "vodvod.top",
+							"favicon_alt" => "vo",
+							"title" => "vodvod"
+						];
+						
+						$archives[] = [
+							"url" => "https://twitchtracker.com/" . $username[1],
+							"favicon" => "twitchtracker.com",
+							"favicon_alt" => "tw",
+							"title" => "TwitchTracker"
+						];
+					}
+					
+					break;
+				
+				case "kick.com":
+				case "player.kick.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://lick.lolcat.ca/channel?name=" . $username[1],
+							"favicon" => "lick.lolcat.ca",
+							"favicon_alt" => "li",
+							"title" => "lick"
+						];
+						
+						$archives[] = [
+							"url" => "https://kicktracker.net/" . $username[1],
+							"favicon" => "kicktracker.net",
+							"favicon_alt" => "ki",
+							"title" => "Kick tracker"
+						];
+					}
+					break;
+				
+				case "x.com":
+				case "twitter.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://web.archive.org/web/*/https://x.com/" . $username[1] . "/status*",
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org: Tweets &gt;2023"
+						];
+						
+						$archives[] = [
+							"url" => "https://web.archive.org/web/*/https://twitter.com/" . $username[1] . "/status*",
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org: Tweets &lt;2023"
+						];
+					}
+					break;
+				
+				case "www.instagram.com":
+				case "instagram.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						) &&
+						$username[1] != "p"
+					){
+						
+						$archives[] = [
+							"url" => "https://instarchiver.net/users?q=" . $username[1],
+							"favicon" => "instarchiver.net",
+							"favicon_alt" => "in",
+							"title" => "Instarchiver"
+						];
+						
+						$archives[] = [
+							"url" => "https://www.storiesdb.ch/" . $username[1],
+							"favicon" => "www.storiesdb.ch",
+							"favicon_alt" => "st",
+							"title" => "StoriesDB"
+						];
+					}
+					break;
+				
+				case "reddit.com":
+				case "old.reddit.com":
+				case "www.reddit.com":
+					if(isset($host["path"])){
+						// direct thread lookup
+						// https://ihsoyct.github.io/r/selfhosted/comments/16emfv0/4get_a_proxy_search_engine_that_doesnt_suck/?backend=pullpush
+						// https://ihsoyct.github.io/r/selfhosted/comments/16emfv0/4get_a_proxy_search_engine_that_doesnt_suck/?backend=artic_shift
+						if(
+							preg_match(
+								'/^\/r\/[^\/]+\/comments\/[^?&]+/',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io{$slug[0]}?backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io{$slug[0]}?backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush"
+							];
+						}
+						
+						// subreddit thread search
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=artic_shift&mode=submissions&sort=desc
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=pullpush&mode=submissions&sort=desc
+						// subreddit comment search
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=artic_shift&mode=comments&sort=desc
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=pullpush&mode=comments&sort=desc
+						elseif(
+							preg_match(
+								'/^\/r\/([^\/]+)\/(?:$|\?|&|search|wiki)/',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=artic_shift&mode=submissions&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=pullpush&mode=submissions&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=artic_shift&mode=comments&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search comments)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=pullpush&mode=comments&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search comments)"
+							];
+						}
+						
+						// user thread lookup
+						// https://ihsoyct.github.io/index.html?author=google&mode=submissions&backend=artic_shift
+						// https://ihsoyct.github.io/index.html?author=google&mode=submissions&backend=pullpush
+						// user comment lookup
+						// https://ihsoyct.github.io/index.html?author=google&mode=comments&backend=artic_shift
+						// https://ihsoyct.github.io/index.html?author=google&mode=comments&backend=pullpush
+						elseif(
+							preg_match(
+								'/^\/(?:u|user)\/([^\/]+)\//',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=submissions&backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=submissions&backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=comments&backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search comments)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=comments&backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search comments)"
+							];
+						}
+					}
+					break;
+			}
+			
+			// detect git
+			if(
+				(
+					stripos(
+						$host["host"],
+						"git."
+					) !== false ||
+					$host["host"] == "codeberg.org" ||
+					$host["host"] == "sourceforge.net" ||
+					$host["host"] == "github.com"
+				) &&
+				isset($host["path"]) &&
+				preg_match(
+					'/^(\/[^\/]+\/[^\/]+\/?)/',
+					$host["path"],
+					$edge
+				)
+			){
+				
+				$archives[] = [
+					"url" => "https://archive.softwareheritage.org/browse/origin/directory/?origin_url=" . urlencode($host["scheme"] . "://" . $host["host"] . $edge[1]),
+					"favicon" => "www.softwareheritage.org",
+					"favicon_alt" => "so",
+					"title" => "SoftwareHeritage"
+				];
+			}
+			
+			$archives =
+				array_merge(
+					$archives,
+					[
+						[
+							"url" => "https://web.archive.org/web/" . $urlencode,
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org"
+						],
+						[
+							"url" => "https://archive.ph/newest/" . htmlspecialchars($link),
+							"favicon" => "archive.ph",
+							"favicon_alt" => "ar",
+							"title" => "Archive.ph"
+						],
+						[
+							"url" => "https://yandex.com/search/?text=" . urlencode("url:" . $link),
+							"favicon" => "yandex.com",
+							"favicon_alt" => "ya",
+							"title" => "Yandex cache"
+						],
+						[
+							"url" => "https://ghostarchive.org/search?term=" . $urlencode,
+							"favicon" => "ghostarchive.org",
+							"favicon_alt" => "gh",
+							"title" => "Ghostarchive"
+						],
+						[
+							"url" => "https://arquivo.pt/wayback/" . htmlspecialchars($link),
+							"favicon" => "archivo.pt",
+							"favicon_alt" => "ar",
+							"title" => "Archivo.pt"
+						],
+						[
+							"url" => "https://megalodon.jp/?url=" . $urlencode,
+							"favicon" => "megalodon.jp",
+							"favicon_alt" => "me",
+							"title" => "Megalodon"
+						],
+						[
+							"url" => "https://www.webcitation.org/query?url=" . $urlencode,
+							"favicon" => "webcitation.org",
+							"favicon_alt" => "we",
+							"title" => "Webcitation"
+						]
+					]
+				);
+			
+			foreach($archives as $archive){
+				
+				$payload .= '<a href="' . $archive["url"] . '" class="list" target="_BLANK"><img src="/favicon?s=https://' . $archive["favicon"] . '" alt="' . $archive["favicon_alt"] . '">' . $archive["title"] . '</a>';
+			}
+			
+			$payload .=	'</div>';
 		}
 		
 		/*
@@ -701,6 +1067,7 @@ class frontend{
 					"option" => [
 						"yt" => "YouTube",
 						//"archiveorg" => "Archive.org",
+						//"dailymotion" => "Dailymotion",
 						"vimeo" => "Vimeo",
 						//"odysee" => "Odysee",
 						"sepiasearch" => "Sepia Search",
