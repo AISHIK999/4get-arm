@@ -537,6 +537,39 @@ class frontend{
 			
 			$archives = [];
 			
+			$fansites = [
+				[
+					"url" => "https://cum.st/creators?cq=",
+					"favicon" => "cum.st",
+					"favicon_alt" => "cu",
+					"title" => "OnlyHaven"
+				],
+				[
+					"url" => "https://pawchive.pw/artists?q=",
+					"favicon" => "pawchive.pw",
+					"favicon_alt" => "pa",
+					"title" => "Pawchive"
+				],
+				[
+					"url" => "https://bakemono.app/creators?q=",
+					"favicon" => "bakemono.app",
+					"favicon_alt" => "ba",
+					"title" => "Bakemono"
+				],
+				[
+					"url" => "https://kemono.cr/artists?q=",
+					"favicon" => "kemono.cr",
+					"favicon_alt" => "ke",
+					"title" => "Kemono"
+				],
+				[
+					"url" => "https://coomer.st/artists?q=",
+					"favicon" => "coomer.st",
+					"favicon_alt" => "co",
+					"title" => "Coomer"
+				]
+			];
+			
 			// add website-specific archives
 			switch($host["host"]){
 				
@@ -826,6 +859,80 @@ class frontend{
 						}
 					}
 					break;
+				
+				// https://cum.st/creators?cq=			onlyfans fansly patreon
+				// https://pawchive.pw/artists?q=		patreon pixiv/fanbox discord
+				// https://bakemono.app/creators?q= 	pixiv/fanbox fansly onlyfans patreon
+				// https://kemono.cr/artists?q=			patreon pixiv/fanbox fantia afdian boosty gumroad subscribestar dlsite
+				// https://coomer.st/artists?q=			onlyfans fansly candfans
+				
+				// cant look up
+				/*
+				case "fantia.jp":				// https://fantia.jp/fanclubs/ <integer>
+				*/
+				
+				// normal
+				case "onlyfans.com":			// https://onlyfans.com/ <username>
+				case "fansly.com":				// https://fansly.com/ <username>
+				case "fanbox.cc":
+				case "patreon.com":				// https://www.patreon.com/ <username>
+				case "boosty.to":				// https://boosty.to/ <username>
+				case "www.subscribestar.com":	// https://www.subscribestar.com/ <username>
+				case "subscribestar.com":
+				case "www.dlsite.com":			// https://www.dlsite.com/ <username> /
+				case "dlsite.com":
+				case "candfans.com":			// https://candfans.com/ <username>
+				case "afdian.com":				// https://afdian.com/a/ <username>
+					if(
+						isset($host["path"]) &&
+						(
+							(
+								$host["host"] == "afdian.com" &&
+								preg_match(
+									'/^\/a\/([A-Za-z0-9-_.]+)/',
+									$host["path"],
+									$username
+								)
+							) ||
+							preg_match(
+								'/^\/([A-Za-z0-9-_.]+)/',
+								$host["path"],
+								$username
+							)
+						)
+					){
+						
+						foreach($fansites as $fansite){
+							
+							$archives[] = [
+								"url" => $fansite["url"] . $this->sanitize_slug($username[1]),
+								"favicon" =>  $fansite["favicon"],
+								"favicon_alt" =>  $fansite["favicon_alt"],
+								"title" =>  $fansite["title"]
+							];
+						}
+					}
+					break;
+			}
+			
+			// special fansite cases
+			if(
+				preg_match(
+					'/^([A-Za-z0-9_]+)\.(?:fanbox\.cc|gumroad\.com)/',
+					$host["host"],
+					$username
+				)
+			){
+				
+				foreach($fansites as $fansite){
+					
+					$archives[] = [
+						"url" => $fansite["url"] . $this->sanitize_slug($username[1]),
+						"favicon" =>  $fansite["favicon"],
+						"favicon_alt" =>  $fansite["favicon_alt"],
+						"title" =>  $fansite["title"]
+					];
+				}
 			}
 			
 			// detect git
@@ -1427,6 +1534,11 @@ class frontend{
 		}
 		
 		return http_build_query($out);
+	}
+	
+	private function sanitize_slug($username){
+		
+		return urlencode(preg_replace('/[-_]/', " ", $username));
 	}
 	
 	public function increment_real_reqs($scraper){
