@@ -6,6 +6,10 @@ Start the PHP webserver like this, assuming you have curl-impersonate installed 
 LD_PRELOAD=/usr/local/lib/libcurl-impersonate-ff.so CURL_IMPERSONATE=ff117 php -S localhost:8000
 ```
 
+Make sure to add `.php` to paths, the embedded PHP webserver doesnt support `mod_rewrite`-like directives.
+
+If, for some reason, you're in an environment where accessing the debug logs is impossible (like those shitty shared webhosts), you can set `DISPLAY_ERRORS` to `true` in `data/config.php`.
+
 # Debug guide for docker
 
 Install:
