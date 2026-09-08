@@ -780,7 +780,7 @@ class frontend{
 						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=pullpush&mode=comments&sort=desc
 						elseif(
 							preg_match(
-								'/^\/r\/([^\/]+)\/(?:search|wiki|about)?(?:$|\?|&)/',
+								'/^\/r\/([^\/]+)\/(?:(?:search|wiki|about)\/?)?(?:$|\?|&)/',
 								$host["path"],
 								$slug
 							)
