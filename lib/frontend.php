@@ -876,6 +876,7 @@ class frontend{
 				case "fansly.com":				// https://fansly.com/ <username>
 				case "fanbox.cc":
 				case "patreon.com":				// https://www.patreon.com/ <username>
+				case "www.patreon.com":
 				case "boosty.to":				// https://boosty.to/ <username>
 				case "www.subscribestar.com":	// https://www.subscribestar.com/ <username>
 				case "subscribestar.com":
