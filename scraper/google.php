@@ -930,20 +930,7 @@ class google{
 				){
 					
 					// sometimes the link is an encrypted redirect, handle redirection securely
-					if(
-						preg_match(
-							'/^\/goto\?url=(.*)/',
-							$link,
-							$payload
-						)
-					){
-						
-						$notices[] = "/resolver?scraper=google&target=" . $payload[1];
-					}else{
-						
-						// normal link
-						$notices[] = $link;
-					}
+					$notices[] = $this->unshit_url($payload[1]);
 				}
 			}
 			
@@ -1290,31 +1277,19 @@ class google{
 						$sublink["attributes"]["href"]
 					);
 				
-				if(
-					preg_match(
-						'/^\/goto\?url=(.*)/',
-						$sublink_url,
-						$piece_of_shit
-					)
-				){
-					
-					// encrypted piece of shit url
-					$sublink_url = "/resolver?scraper=google&target=" . $piece_of_shit[1];
-				}
-				
 				$sublinks[] = [
 					"title" =>
 						$this->fuckhtml
 						->getTextContent($sublink),
 					"date" => null,
-					"url" => $sublink_url
+					"url" => $this->unshit_url($sublink_url)
 				];
 			}
 			
 			$out["web"][] = [
 				"title" => $title,
 				"description" => $description,
-				"url" => $url,
+				"url" => $this->unshit_url($url),
 				"date" => $date,
 				"type" => "web",
 				"thumb" => $thumb,
@@ -1533,9 +1508,11 @@ class google{
 					),
 				"source" => $source,
 				"url" =>
-					$this->fuckhtml
-					->getTextContent(
-						$div["attributes"]["data-lpage"]
+					$this->unshit_url(
+						$this->fuckhtml
+						->getTextContent(
+							$div["attributes"]["data-lpage"]
+						)
 					)
 			];
 		}
@@ -1962,7 +1939,7 @@ class google{
 				"duration" => $duration,
 				"views" => null,
 				"thumb" => $thumb,
-				"url" => $url
+				"url" => $this->unshit_url($url)
 			];
 		}
 		
@@ -2915,5 +2892,20 @@ class google{
 		}
 		
 		return false; // no need to bypass
+	}
+	
+	private function unshit_url($url){
+		
+		if(
+			preg_match(
+				'/^\/goto\?url=([^&]+)/',
+				$url,
+				$piece_of_shit
+			)
+		){
+			
+			// encrypted piece of shit url
+			return "/resolver?scraper=google&target=" . rawurlencode($piece_of_shit[1]);
+		}
 	}
 }

@@ -94,7 +94,7 @@ class google{
 		
 		if(
 			preg_match(
-				'/^https?/',
+				'/^(https?:|)\/\//',
 				$link
 			)
 		){
