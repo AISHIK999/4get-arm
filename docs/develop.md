@@ -15,7 +15,7 @@ If, for some reason, you're in an environment where accessing the debug logs is 
 Install:
 ```sh
 git clone git.lolcat.ca/lolcat/4get
-make changes to docker/apache/http/httpd.conf (comment out the lines that disable logging)
+make changes to docker/apache/http/httpd.conf # (comment out the lines that disable logging)
 docker build -t luuul/4get .
 ```
 
