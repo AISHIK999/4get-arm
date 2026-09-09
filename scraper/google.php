@@ -9,6 +9,9 @@ class google{
 		
 		include "lib/backend.php";
 		$this->backend = new backend("google");
+		
+		$this->proc = curl_multi_init();
+		$this->handles = [];
 	}
 	
 	public function getfilters($page){
@@ -614,6 +617,145 @@ class google{
 		];
 	}
 	
+	private function redirect_add_url($url){
+		
+		if(
+			preg_match(
+				'/^\/goto\?url=([^&]+)/',
+				$url,
+				$slug
+			) === 0
+		){
+			
+			// not a google redirect
+			return $url;
+		}
+		
+		$curlproc = curl_init();
+		
+		curl_setopt($curlproc, CURLOPT_URL, "https://www.google.com/goto?url=" . urlencode($slug[1]));
+		
+		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
+		curl_setopt($curlproc, CURLOPT_HTTPHEADER,
+			["User-Agent: " . config::USER_AGENT,
+			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"Accept-Language: en-US,en;q=0.5",
+			"Accept-Encoding: gzip, deflate, br, zstd",
+			"DNT: 1",
+			"Sec-GPC: 1",
+			"Connection: keep-alive",
+			"Upgrade-Insecure-Requests: 1",
+			"Sec-Fetch-Dest: document",
+			"Sec-Fetch-Mode: navigate",
+			"Sec-Fetch-Site: none",
+			"Sec-Fetch-User: ?1",
+			"Priority: u=0, i"]
+		);
+		
+		curl_setopt($curlproc, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curlproc, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curlproc, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($curlproc, CURLOPT_CONNECTTIMEOUT, 30);
+		curl_setopt($curlproc, CURLOPT_TIMEOUT, 30);
+		
+		//$this->backend->assign_proxy($curlproc, $proxy);
+		
+		curl_multi_add_handle($this->proc, $curlproc);
+		$this->handles[] = [
+			"replacement" => $url,
+			"handle" => $curlproc
+		];
+		
+		return $url;
+	}
+	
+	private function resolve_urls(&$scraped_data){
+		
+		do{
+			do{
+				$status = curl_multi_exec($this->proc, $active);
+			}while($status === CURLM_CALL_MULTI_PERFORM);
+
+			if($active){
+				curl_multi_select($this->proc);
+			}
+
+		}while($active && $status === CURLM_OK);
+		
+		//
+		// if we reach this, we're done downloading garbage
+		//
+		
+		// parse redirect values & create data shit
+		$keys = [];
+		$replacements = [];
+		
+		for($i=0; $i<count($this->handles); $i++){
+			
+			$this->fuckhtml->load(
+				curl_multi_getcontent(
+					$this->handles[$i]["handle"]
+				)
+			);
+			
+			$a =
+				$this->fuckhtml
+				->getElementsByTagName(
+					"a"
+				);
+			
+			if(count($a) === 0){
+				
+				throw new Exception("Failed to find link");
+			}
+			
+			$link =
+				$this->fuckhtml
+				->getTextContent(
+					$a[0]["attributes"]["href"]
+				);
+			
+			if(
+				preg_match(
+					'/^(https?:|)\/\//',
+					$link
+				)
+			){
+				
+				$keys[] = $this->handles[$i]["replacement"];
+				$replacements[] = $link;
+			}
+		}
+		
+		$this->recursive_replace($keys, $replacements, $scraped_data);
+		
+		curl_multi_close($this->proc);
+	}
+	
+	private function recursive_replace(&$keys, &$replacements, &$pointer){
+		
+		foreach($pointer as $key => &$value){
+			
+			if($key == "url"){
+				
+				$search =
+					array_search(
+						$value,
+						$keys
+					);
+				
+				if($search !== false){
+					
+					// replace url
+					$value = $replacements[$search];
+				}
+				
+			}elseif(is_array($value)){
+				
+				$this->recursive_replace($keys, $replacements, $value);
+			}
+		}
+	}
 	
 	public function web($get){
 		
@@ -930,7 +1072,7 @@ class google{
 				){
 					
 					// sometimes the link is an encrypted redirect, handle redirection securely
-					$notices[] = $this->unshit_url($payload[1]);
+					$notices[] = $this->redirect_add_url($link);
 				}
 			}
 			
@@ -1282,14 +1424,14 @@ class google{
 						$this->fuckhtml
 						->getTextContent($sublink),
 					"date" => null,
-					"url" => $this->unshit_url($sublink_url)
+					"url" => $this->redirect_add_url($sublink_url)
 				];
 			}
 			
 			$out["web"][] = [
 				"title" => $title,
 				"description" => $description,
-				"url" => $this->unshit_url($url),
+				"url" => $this->redirect_add_url($url),
 				"date" => $date,
 				"type" => "web",
 				"thumb" => $thumb,
@@ -1297,6 +1439,8 @@ class google{
 				"table" => $table
 			];
 		}
+		
+		$this->resolve_urls($out);
 		
 		return $out;
 	}
@@ -1508,7 +1652,7 @@ class google{
 					),
 				"source" => $source,
 				"url" =>
-					$this->unshit_url(
+					$this->redirect_add_url(
 						$this->fuckhtml
 						->getTextContent(
 							$div["attributes"]["data-lpage"]
@@ -1536,6 +1680,8 @@ class google{
 					$proxy
 				);
 		}
+		
+		$this->resolve_urls($out);
 		
 		return $out;
 	}
@@ -1939,9 +2085,11 @@ class google{
 				"duration" => $duration,
 				"views" => null,
 				"thumb" => $thumb,
-				"url" => $this->unshit_url($url)
+				"url" => $this->redirect_add_url($url)
 			];
 		}
+		
+		$this->resolve_urls($out);
 		
 		return $out;
 	}
@@ -2306,6 +2454,8 @@ class google{
 					)
 			];
 		}
+		
+		$this->resolve_urls($out);
 		
 		return $out;
 	}
@@ -2892,20 +3042,5 @@ class google{
 		}
 		
 		return false; // no need to bypass
-	}
-	
-	private function unshit_url($url){
-		
-		if(
-			preg_match(
-				'/^\/goto\?url=([^&]+)/',
-				$url,
-				$piece_of_shit
-			)
-		){
-			
-			// encrypted piece of shit url
-			return "/resolver?scraper=google&target=" . rawurlencode($piece_of_shit[1]);
-		}
 	}
 }
