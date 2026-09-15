@@ -1073,7 +1073,7 @@ class google{
 					) ||
 					str_contains(
 						$link_text,
-						"read more about the request"
+						"request"
 					)
 				){
 					
