@@ -875,7 +875,7 @@ class google{
 			$container = &$data["container"];
 			
 			//file_put_contents("scraper/google-jp.html", $html);
-			//$html = file_get_contents("scraper/sublink.html");
+			//$html = file_get_contents("scraper/google.html");
 			//$container = "";
 		}
 		
@@ -1048,6 +1048,8 @@ class google{
 				$this->fuckhtml
 				->getElementsByTagName("a");
 			
+			$illegal = false;
+			
 			foreach($as as $a){
 				
 				if(!isset($a["attributes"]["href"])){ continue; }
@@ -1068,8 +1070,22 @@ class google{
 					str_contains(
 						$link_text,
 						"complaint"
+					) ||
+					str_contains(
+						$link_text,
+						"read more about the request"
 					)
 				){
+					
+					if(
+						str_contains(
+							$link_text,
+							"read more about the request"
+						)
+					){
+						
+						$illegal = true;
+					}
 					
 					// sometimes the link is an encrypted redirect, handle redirection securely
 					$notices[] = $this->redirect_add_url($link);
@@ -1083,13 +1099,24 @@ class google{
 				
 				$i = 0;
 				$c = count($notices);
-								
-				$notices_dom = [
-					[
-						"type" => "text",
-						"value" => "Google removed results from this page, but you can get them anyways by consulting these takedown notices: "
-					]
-				];
+				
+				if($illegal === false){
+					
+					$notices_dom = [
+						[
+							"type" => "text",
+							"value" => "Google removed results from this page, but you can get them anyways by consulting these takedown notices: "
+						]
+					];
+				}else{
+					
+					$notices_dom = [
+						[
+							"type" => "text",
+							"value" => "Google removed results from this page because they were illegal. You can view the takedown requests here: "
+						]
+					];
+				}
 				
 				foreach($notices as $n){
 					
