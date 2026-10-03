@@ -230,17 +230,18 @@ class brave{
 				
 				$data =
 					explode(
-						"data:",
-						$discs["innerHTML"],
-						2
+						"function(",
+						$discs["innerHTML"]
 					);
 				
-				if(count($data) !== 2){
-					
-					throw new Exception("Failed to split up data field");
-				}
+				$data = $data[count($data) - 1];
 				
-				$data = $data[1];
+				$data =
+					explode(
+						"return ",
+						$data,
+						2
+					)[1];
 				break;
 			}
 		}
@@ -449,12 +450,12 @@ class brave{
 			throw new Exception("Brave returned a PoW captcha");
 		}
 		
-		if(!isset($data[1]["data"]["body"]["response"])){
+		if(!isset($data["data"]["body"]["response"])){
 			
 			throw new Exception("Brave did not return a result object");
 		}
 		
-		$data = $data[1]["data"]["body"]["response"];
+		$data = $data["data"]["body"]["response"];
 		
 		/*
 			Get web results
