@@ -3053,7 +3053,7 @@ class google{
 			
 			if(
 				preg_match(
-					'/var eid ?= ?\'(.*)\'[\S\s]*, ?([0-9]+)\);/U',
+					'/var eid ?= ?\'([^\']*)\'/',
 					$sc["innerHTML"],
 					$matches
 				)
