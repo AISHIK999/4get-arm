@@ -1195,7 +1195,7 @@ class brave{
 		$json = $this->get_js();
 		
 		foreach(
-			$json[1]["data"]["body"]["response"]["news"]["results"]
+			$json["data"]["response"]["news"]["results"]
 			as $news
 		){
 			
@@ -1281,7 +1281,7 @@ class brave{
 		$json = $this->get_js();
 		
 		foreach(
-			$json[1]
+			$json
 			["data"]
 			["body"]
 			["response"]
@@ -1415,7 +1415,6 @@ class brave{
 		
 		foreach(
 			$json
-			[1]
 			["data"]
 			["body"]
 			["response"]
