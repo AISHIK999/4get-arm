@@ -3052,6 +3052,10 @@ class google{
 		foreach($scripts as $sc){
 			
 			if(
+				str_contains(
+					$this->fuckhtml->getloadedhtml(),
+					"<title>Google</title>"
+				) &&
 				preg_match(
 					'/var eid ?= ?\'([^\']*)\'/',
 					$sc["innerHTML"],
