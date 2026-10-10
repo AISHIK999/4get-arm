@@ -104,7 +104,7 @@ Now, edit the following file: `/etc/apache2/sites-available/000-default.conf`, r
 	</Directory>
 	
 	# deny access to private resources
-	<DirectoryMatch "^/var/www/4get/(data|lib|scraper|template|oracles|docs|docker|extra)/">
+	<DirectoryMatch "^/var/www/4get/(data|lib|scraper|template|oracles|docs|docker|extra|resolve)/">
 		Require all denied
 	</DirectoryMatch>
 

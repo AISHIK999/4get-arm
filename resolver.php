@@ -5,7 +5,8 @@ $resolver = new resolver();
 class resolver{
 	
 	public const resolvers = [
-		"sc"
+		"sc",
+		"google"
 	];
 	
 	public function __construct(){
@@ -40,9 +41,13 @@ class resolver{
 			$resolver = new $scraper();
 			$link = $resolver->resolve($target);
 			
-			if(is_string($link)){
+			if(
+				is_string($link) &&
+				!empty($link)
+			){
 				
 				header("Location: {$link}");
+				echo 'If your ass is not getting redirected, <a href="' . htmlspecialchars($link) . '">click here</a>.';
 			}
 		}catch(Exception $error){
 			
@@ -54,13 +59,13 @@ class resolver{
 		
 		header("Content-Type: text/plain");
 		http_response_code(400);
-		echo $message;
+		echo htmlspecialchars($message);
 	}
 	
 	public function do404($message){
 		
 		header("Content-Type: text/plain");
 		http_response_code(404);
-		echo $message;
+		echo htmlspecialchars($message);
 	}
 }

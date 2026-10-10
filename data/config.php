@@ -5,7 +5,7 @@ class config{
 	// any parameters.
 	
 	// 4get version. Please keep this updated
-	const VERSION = 8;
+	const VERSION = 9;
 	
 	// Will be shown pretty much everywhere.
 	const SERVER_NAME = "4get";
@@ -23,15 +23,24 @@ class config{
 	// Enable the API?
 	const API_ENABLED = true;
 	
-	//
-	// 4play (session provider)
-	//
-	// Enable 4play API?
-	const FPLAY_ENABLE_API = true;
+	// Display errors. This should ONLY be enabled for debugging and constitutes a security risk.
+	const DISPLAY_ERRORS = false;
 	
-	// 4play password. Please set this to something secure if you enable the 4play API.
+	//
+	// 4play settings
+	//
+	// Enable 4get's /api/v2/provide_sesh endpoint
+	const FPLAY_ENABLE_API = false;
+	
+	// 4play password. Please set this to something secure if you use this extension.
 	// This password is used to POST sessions to /api/v2/provide_sesh
+	// It's also used as the external endpoint password.
 	const FPLAY_PASSWORD = "cnc";
+	
+	// Endpoint 4get hits to render webpages
+	// Eg: null=no endpoint provided
+	// Or "https://your-endpoint.com/my-endpoint" (excluding get parameters like &pw)
+	const FPLAY_EXTERNAL_ENDPOINT = null;
 	
 	//
 	// BOT PROTECTION
@@ -100,35 +109,31 @@ class config{
 	// eachother your serber should appear everywhere.
 	const INSTANCES = [
 		"https://4get.ca",
-		"https://4get.zzls.xyz",
-		"https://4getus.zzls.xyz",
+		"https://search.fischbytes.de",
+		"https://4get.nadeko.net",
 		"https://4get.silly.computer",
-		"https://4get.konakona.moe",
-		"https://4get.lvkaszus.pl",
-		"https://4g.ggtyler.dev",
-		"https://4get.perennialte.ch",
 		"https://4get.sijh.net",
 		"https://4get.hbubli.cc",
-		"https://4get.plunked.party",
-		"https://4get.etenie.pl",
 		"https://4get.lunar.icu",
 		"https://4get.dcs0.hu",
-		"https://4get.kizuki.lol",
-		"https://4get.psily.garden",
-		"https://search.milivojevic.in.rs",
-		"https://4get.snine.nl",
-		"https://4get.datura.network",
 		"https://4get.neco.lol",
-		"https://4get.lol",
-		"https://4get.ch",
 		"https://4get.edmateo.site",
 		"https://4get.sudovanilla.org",
-		"https://search.mint.lgbt"
+		"https://search.mint.lgbt",
+		"https://4get.aishiteiru.moe",
+		"https://4.nboeck.de",
+		"https://search.yonderly.org",
+		"https://4get.lurx.net",
+		"https://4get.canine.tools",
+		"https://4get.sny.sh",
+		"https://4g.opnxng.com",
+		"https://s.307200.xyz",
+		"https://4get.privadency.com/"
 	];
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0";
 	
 	// User agent to use with 4get-friendly APIs
 	const USER_AGENT_FRIENDLY = "4get-scrapist (+https://4get.ca)";

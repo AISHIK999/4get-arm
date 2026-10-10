@@ -26,6 +26,9 @@ $payload = [
 	"left" => ""
 ];
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	$results = $scraper->video($get);
 	

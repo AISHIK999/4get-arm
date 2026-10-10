@@ -24,6 +24,9 @@ $payload = [
 	"nextpage" => ""
 ];
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	$results = $scraper->image($get);
 	

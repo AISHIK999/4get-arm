@@ -38,6 +38,9 @@ if(
 	$get["extendedsearch"] = "no";
 }
 
+// increment request count
+$frontend->increment_real_reqs($get["scraper"]);
+
 try{
 	
 	echo

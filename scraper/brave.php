@@ -230,17 +230,18 @@ class brave{
 				
 				$data =
 					explode(
-						"data:",
-						$discs["innerHTML"],
-						2
+						"function(",
+						$discs["innerHTML"]
 					);
 				
-				if(count($data) !== 2){
-					
-					throw new Exception("Failed to split up data field");
-				}
+				$data = $data[count($data) - 1];
 				
-				$data = $data[1];
+				$data =
+					explode(
+						"return ",
+						$data,
+						2
+					)[1];
 				break;
 			}
 		}
@@ -383,19 +384,21 @@ class brave{
 		// load html
 		$this->fuckhtml->load($html);
 		
+		$this->detect_captcha($html);
+		
 		/*
 			Get next page "token"
 		*/
 		$nextpage =
 			$this->fuckhtml
-			->getElementById(
+			->getElementsByClassName(
 				"pagination",
 				"div"
 			);
 		
-		if($nextpage){
+		if(count($nextpage) !== 0){
 			
-			$this->fuckhtml->load($nextpage);
+			$this->fuckhtml->load($nextpage[0]);
 			
 			$nextpage =
 				$this->fuckhtml
@@ -447,12 +450,12 @@ class brave{
 			throw new Exception("Brave returned a PoW captcha");
 		}
 		
-		if(!isset($data[1]["data"]["body"]["response"])){
+		if(!isset($data["data"]["body"]["response"])){
 			
 			throw new Exception("Brave did not return a result object");
 		}
 		
-		$data = $data[1]["data"]["body"]["response"];
+		$data = $data["data"]["body"]["response"];
 		
 		/*
 			Get web results
@@ -1175,6 +1178,8 @@ class brave{
 		// load html
 		$this->fuckhtml->load($html);
 		
+		$this->detect_captcha($html);
+		
 		// get npt
 		$out["npt"] =
 			$this->generatenextpagetoken(
@@ -1190,7 +1195,7 @@ class brave{
 		$json = $this->get_js();
 		
 		foreach(
-			$json[1]["data"]["body"]["response"]["news"]["results"]
+			$json["data"]["response"]["news"]["results"]
 			as $news
 		){
 			
@@ -1270,10 +1275,13 @@ class brave{
 		fclose($handle);*/
 		
 		$this->fuckhtml->load($html);
+		
+		$this->detect_captcha($html);
+		
 		$json = $this->get_js();
 		
 		foreach(
-			$json[1]
+			$json
 			["data"]
 			["body"]
 			["response"]
@@ -1374,6 +1382,8 @@ class brave{
 		
 		$this->fuckhtml->load($html);
 		
+		$this->detect_captcha($html);
+		
 		$out = [
 			"status" => "ok",
 			"npt" => null,
@@ -1405,7 +1415,6 @@ class brave{
 		
 		foreach(
 			$json
-			[1]
 			["data"]
 			["body"]
 			["response"]
@@ -1773,14 +1782,14 @@ class brave{
 		
 		$nextpage =
 			$this->fuckhtml
-			->getElementById(
+			->getElementsByClassName(
 				"pagination",
 				"div"
 			);
 		
-		if($nextpage){
+		if(count($nextpage) !== 0){
 			
-			$this->fuckhtml->load($nextpage);
+			$this->fuckhtml->load($nextpage[0]);
 			
 			$nextpage =
 				$this->fuckhtml
@@ -1852,5 +1861,35 @@ class brave{
 					)[0]
 				)
 			);
+	}
+	
+	private function detect_captcha(){
+		
+		$title =
+			$this->fuckhtml
+			->getElementsByTagName(
+				"title"
+			);
+		
+		if(count($title) === 0){
+			
+			if(strtolower($this->fuckhtml->getloadedhtml()) == "this service is not available in your region"){
+				
+				throw new Exception("Brave rangebanned the IP range");
+			}
+			
+			throw new Exception("Brave returned a malformed page");
+		}
+		
+		$title =
+			strtolower(
+				$this->fuckhtml
+				->getTextContent($title[0])
+			);
+		
+		if($title == "human verification"){
+			
+			throw new Exception("Brave returned a Captcha");
+		}
 	}
 }

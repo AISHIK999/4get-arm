@@ -118,7 +118,7 @@ class frontend{
 		return trim($html);
 	}
 	
-	public function loadheader(array $get, array $filters, string $page){
+	public function loadheader(array $get, array $filters, string $page, bool $increment_bot_counter = true){
 		
 		echo
 			$this->load("header.html", [
@@ -177,13 +177,15 @@ class frontend{
 		){
 			
 			// bot detected !!
-			apcu_inc("captcha_gen");
+			if($increment_bot_counter){
+				
+				apcu_inc(intdiv(time(), 3600) . ".bot_requests", 1, $s, 262800);
+			}
 			
 			$this->drawerror(
 				"Tshh, blocked!",
 				'Your browser, IP or IP range has been blocked from this 4get instance. If this is an error, please <a href="/about">contact the administrator</a>.'
 			);
-			die();
 		}
 	}
 	
@@ -221,7 +223,7 @@ class frontend{
 			'This scraper returned an error:' .
 			'<div class="code">' . htmlspecialchars($error) . '</div>' .
 			'Things you can try:' .
-			'<ul>' . 
+			'<ul>' .
 				'<li>Use a different scraper</li>' .
 				'<li>Remove keywords that could cause errors</li>' .
 				'<li><a href="/instances?target=' . $target . "&" . $this->buildquery($get, false) . '">Try your search on another 4get instance</a></li>' .
@@ -533,14 +535,490 @@ class frontend{
 					'</button>' .
 					'<div class="favicon-dropdown">';
 			
-			$payload .=
-					'<a href="https://web.archive.org/web/' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://archive.org" alt="ar">Archive.org</a>' .
-					'<a href="https://archive.ph/newest/' . htmlspecialchars($link) . '" class="list" target="_BLANK"><img src="/favicon?s=https://archive.is" alt="ar">Archive.is</a>' .
-					'<a href="https://ghostarchive.org/search?term=' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://ghostarchive.org" alt="gh">Ghostarchive</a>' .
-					'<a href="https://arquivo.pt/wayback/' . htmlspecialchars($link) . '" class="list" target="_BLANK"><img src="/favicon?s=https://arquivo.pt" alt="ar">Arquivo.pt</a>' .
-					'<a href="https://www.bing.com/search?q=url%3A' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://bing.com" alt="bi">Bing cache</a>' .
-					'<a href="https://megalodon.jp/?url=' . $urlencode . '" class="list" target="_BLANK"><img src="/favicon?s=https://megalodon.jp" alt="me">Megalodon</a>' .
-				'</div>';
+			$archives = [];
+			
+			$fansites = [
+				[
+					"url" => "https://cum.st/creators?cq=",
+					"favicon" => "cum.st",
+					"favicon_alt" => "cu",
+					"title" => "OnlyHaven"
+				],
+				[
+					"url" => "https://pawchive.pw/artists?q=",
+					"favicon" => "pawchive.pw",
+					"favicon_alt" => "pa",
+					"title" => "Pawchive"
+				],
+				[
+					"url" => "https://bakemono.app/creators?q=",
+					"favicon" => "bakemono.app",
+					"favicon_alt" => "ba",
+					"title" => "Bakemono"
+				],
+				[
+					"url" => "https://kemono.cr/artists?q=",
+					"favicon" => "kemono.cr",
+					"favicon_alt" => "ke",
+					"title" => "Kemono"
+				],
+				[
+					"url" => "https://coomer.st/artists?q=",
+					"favicon" => "coomer.st",
+					"favicon_alt" => "co",
+					"title" => "Coomer"
+				]
+			];
+			
+			// add website-specific archives
+			switch($host["host"]){
+				
+				case "www.youtube.com":
+				case "music.youtube.com":
+				case "youtube.com":
+				case "m.youtube.com":
+				case "youtu.be":
+					
+					if(
+						(
+							$host["host"] == "youtu.be" &&
+							isset($host["path"]) &&
+							preg_match(
+								'/^\/([A-Za-z0-9_-]+)/',
+								$host["path"],
+								$slug
+							)
+						) ||
+						(
+							isset($host["query"]) &&
+							preg_match(
+								'/v=([A-Za-z0-9_-]+)/',
+								$host["query"],
+								$slug
+							)
+						)
+					){
+						
+						// for watch?v=slug
+						$archives[] = [
+							"url" => "https://findyoutubevideo.thetechrobo.ca/?q=" . $slug[1],
+							"favicon" => "findyoutubevideo.thetechrobo.ca",
+							"favicon_alt" => "fi",
+							"title" => "FindYouTubeVideo"
+						];
+						
+						$archives[] = [
+							"url" => "https://filmot.com/video/" . $slug[1] . "/",
+							"favicon" => "filmot.com",
+							"favicon_alt" => "fi",
+							"title" => "Filmot (metadata only)"
+						];
+					}elseif(
+						preg_match(
+							'/^\/(?:channel)\/@?([A-Za-z0-9_-]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://filmot.com/channel/" . $username[1] . "/",
+							"favicon" => "filmot.com",
+							"favicon_alt" => "fi",
+							"title" => "Filmot (metadata only)"
+						];
+					}
+					break;
+				
+				case "m.twitch.tv":
+				case "twitch.tv":
+				case "player.twitch.tv":
+				case "www.twitch.tv":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						) &&
+						$username[1] != "videos"
+					){
+						
+						$archives[] = [
+							"url" => "https://vodvod.top/channels/@" . $username[1],
+							"favicon" => "vodvod.top",
+							"favicon_alt" => "vo",
+							"title" => "vodvod"
+						];
+						
+						$archives[] = [
+							"url" => "https://twitchtracker.com/" . $username[1],
+							"favicon" => "twitchtracker.com",
+							"favicon_alt" => "tw",
+							"title" => "TwitchTracker"
+						];
+					}
+					
+					break;
+				
+				case "kick.com":
+				case "player.kick.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://lick.lolcat.ca/channel?name=" . $username[1],
+							"favicon" => "lick.lolcat.ca",
+							"favicon_alt" => "li",
+							"title" => "lick"
+						];
+						
+						$archives[] = [
+							"url" => "https://kicktracker.net/" . $username[1],
+							"favicon" => "kicktracker.net",
+							"favicon_alt" => "ki",
+							"title" => "Kick tracker"
+						];
+					}
+					break;
+				
+				case "x.com":
+				case "twitter.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						)
+					){
+						
+						$archives[] = [
+							"url" => "https://web.archive.org/web/*/https://x.com/" . $username[1] . "/status*",
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org: Tweets &gt;2023"
+						];
+						
+						$archives[] = [
+							"url" => "https://web.archive.org/web/*/https://twitter.com/" . $username[1] . "/status*",
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org: Tweets &lt;2023"
+						];
+					}
+					break;
+				
+				case "www.instagram.com":
+				case "instagram.com":
+					if(
+						isset($host["path"]) &&
+						preg_match(
+							'/^\/([A-Za-z0-9_.]+)/',
+							$host["path"],
+							$username
+						) &&
+						$username[1] != "p"
+					){
+						
+						$archives[] = [
+							"url" => "https://instarchiver.net/users?q=" . $username[1],
+							"favicon" => "instarchiver.net",
+							"favicon_alt" => "in",
+							"title" => "Instarchiver"
+						];
+						
+						$archives[] = [
+							"url" => "https://www.storiesdb.ch/" . $username[1],
+							"favicon" => "www.storiesdb.ch",
+							"favicon_alt" => "st",
+							"title" => "StoriesDB"
+						];
+					}
+					break;
+				
+				case "reddit.com":
+				case "old.reddit.com":
+				case "www.reddit.com":
+					if(isset($host["path"])){
+						// direct thread lookup
+						// https://ihsoyct.github.io/r/selfhosted/comments/16emfv0/4get_a_proxy_search_engine_that_doesnt_suck/?backend=pullpush
+						// https://ihsoyct.github.io/r/selfhosted/comments/16emfv0/4get_a_proxy_search_engine_that_doesnt_suck/?backend=artic_shift
+						if(
+							preg_match(
+								'/^\/r\/[^\/]+\/comments\/[^?&]+/',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io{$slug[0]}?backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io{$slug[0]}?backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush"
+							];
+						}
+						
+						// subreddit thread search
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=artic_shift&mode=submissions&sort=desc
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=pullpush&mode=submissions&sort=desc
+						// subreddit comment search
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=artic_shift&mode=comments&sort=desc
+						// https://ihsoyct.github.io/?subreddit=selfhosted&backend=pullpush&mode=comments&sort=desc
+						elseif(
+							preg_match(
+								'/^\/r\/([^\/]+)\/(?:(?:search|wiki|about)\/?)?(?:$|\?|&)/',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=artic_shift&mode=submissions&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=pullpush&mode=submissions&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=artic_shift&mode=comments&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search comments)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/?subreddit={$slug[1]}&backend=pullpush&mode=comments&sort=desc",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search comments)"
+							];
+						}
+						
+						// user thread lookup
+						// https://ihsoyct.github.io/index.html?author=google&mode=submissions&backend=artic_shift
+						// https://ihsoyct.github.io/index.html?author=google&mode=submissions&backend=pullpush
+						// user comment lookup
+						// https://ihsoyct.github.io/index.html?author=google&mode=comments&backend=artic_shift
+						// https://ihsoyct.github.io/index.html?author=google&mode=comments&backend=pullpush
+						elseif(
+							preg_match(
+								'/^\/(?:u|user)\/([^\/]+)\/(?:(?:comments|submitted)\/?)?(?:$|\?|&)/',
+								$host["path"],
+								$slug
+							)
+						){
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=submissions&backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=submissions&backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search threads)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=comments&backend=artic_shift",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "Artic Shift (Search comments)"
+							];
+							
+							$archives[] = [
+								"url" => "https://ihsoyct.github.io/index.html?author={$slug[1]}&mode=comments&backend=pullpush",
+								"favicon" => "reddit.com",
+								"favicon_alt" => "re",
+								"title" => "PullPush (Search comments)"
+							];
+						}
+					}
+					break;
+				
+				// https://cum.st/creators?cq=			onlyfans fansly patreon
+				// https://pawchive.pw/artists?q=		patreon pixiv/fanbox discord
+				// https://bakemono.app/creators?q= 	pixiv/fanbox fansly onlyfans patreon
+				// https://kemono.cr/artists?q=			patreon pixiv/fanbox fantia afdian boosty gumroad subscribestar dlsite
+				// https://coomer.st/artists?q=			onlyfans fansly candfans
+				
+				// cant look up
+				/*
+				case "fantia.jp":				// https://fantia.jp/fanclubs/ <integer>
+				*/
+				
+				// normal
+				case "onlyfans.com":			// https://onlyfans.com/ <username>
+				case "fansly.com":				// https://fansly.com/ <username>
+				case "fanbox.cc":
+				case "patreon.com":				// https://www.patreon.com/ <username>
+				case "www.patreon.com":
+				case "boosty.to":				// https://boosty.to/ <username>
+				case "www.subscribestar.com":	// https://www.subscribestar.com/ <username>
+				case "subscribestar.com":
+				case "www.dlsite.com":			// https://www.dlsite.com/ <username> /
+				case "dlsite.com":
+				case "candfans.com":			// https://candfans.com/ <username>
+				case "afdian.com":				// https://afdian.com/a/ <username>
+					if(
+						isset($host["path"]) &&
+						(
+							(
+								$host["host"] == "afdian.com" &&
+								preg_match(
+									'/^\/a\/([A-Za-z0-9-_.]+)/',
+									$host["path"],
+									$username
+								)
+							) ||
+							preg_match(
+								'/^\/([A-Za-z0-9-_.]+)/',
+								$host["path"],
+								$username
+							)
+						)
+					){
+						
+						foreach($fansites as $fansite){
+							
+							$archives[] = [
+								"url" => $fansite["url"] . $this->sanitize_slug($username[1]),
+								"favicon" =>  $fansite["favicon"],
+								"favicon_alt" =>  $fansite["favicon_alt"],
+								"title" =>  $fansite["title"]
+							];
+						}
+					}
+					break;
+			}
+			
+			// special fansite cases
+			if(
+				preg_match(
+					'/^([A-Za-z0-9_]+)\.(?:fanbox\.cc|gumroad\.com)/',
+					$host["host"],
+					$username
+				)
+			){
+				
+				foreach($fansites as $fansite){
+					
+					$archives[] = [
+						"url" => $fansite["url"] . $this->sanitize_slug($username[1]),
+						"favicon" =>  $fansite["favicon"],
+						"favicon_alt" =>  $fansite["favicon_alt"],
+						"title" =>  $fansite["title"]
+					];
+				}
+			}
+			
+			// detect git
+			if(
+				(
+					stripos(
+						$host["host"],
+						"git."
+					) !== false ||
+					$host["host"] == "codeberg.org" ||
+					$host["host"] == "sourceforge.net" ||
+					$host["host"] == "github.com"
+				) &&
+				isset($host["path"]) &&
+				preg_match(
+					'/^(\/[^\/]+\/[^\/]+\/?)/',
+					$host["path"],
+					$edge
+				)
+			){
+				
+				$archives[] = [
+					"url" => "https://archive.softwareheritage.org/browse/origin/directory/?origin_url=" . urlencode($host["scheme"] . "://" . $host["host"] . $edge[1]),
+					"favicon" => "www.softwareheritage.org",
+					"favicon_alt" => "so",
+					"title" => "SoftwareHeritage"
+				];
+			}
+			
+			$archives =
+				array_merge(
+					$archives,
+					[
+						[
+							"url" => "https://web.archive.org/web/" . $urlencode,
+							"favicon" => "archive.org",
+							"favicon_alt" => "ar",
+							"title" => "Archive.org"
+						],
+						[
+							"url" => "https://archive.ph/newest/" . htmlspecialchars($link),
+							"favicon" => "archive.ph",
+							"favicon_alt" => "ar",
+							"title" => "Archive.ph"
+						],
+						[
+							"url" => "https://yandex.com/search/?text=" . urlencode("url:" . $link),
+							"favicon" => "yandex.com",
+							"favicon_alt" => "ya",
+							"title" => "Yandex cache"
+						],
+						[
+							"url" => "https://ghostarchive.org/search?term=" . $urlencode,
+							"favicon" => "ghostarchive.org",
+							"favicon_alt" => "gh",
+							"title" => "Ghostarchive"
+						],
+						[
+							"url" => "https://arquivo.pt/wayback/" . htmlspecialchars($link),
+							"favicon" => "arquivo.pt",
+							"favicon_alt" => "ar",
+							"title" => "Arquivo.pt"
+						],
+						[
+							"url" => "https://megalodon.jp/?url=" . $urlencode,
+							"favicon" => "megalodon.jp",
+							"favicon_alt" => "me",
+							"title" => "Megalodon"
+						],
+						[
+							"url" => "https://www.webcitation.org/query?url=" . $urlencode,
+							"favicon" => "webcitation.org",
+							"favicon_alt" => "we",
+							"title" => "Webcitation"
+						]
+					]
+				);
+			
+			foreach($archives as $archive){
+				
+				$payload .= '<a href="' . $archive["url"] . '" class="list" target="_BLANK"><img src="/favicon?s=https://' . $archive["favicon"] . '" alt="' . $archive["favicon_alt"] . '">' . $archive["title"] . '</a>';
+			}
+			
+			$payload .=	'</div>';
 		}
 		
 		/*
@@ -593,6 +1071,13 @@ class frontend{
 	
 	public function getscraperfilters($page){
 		
+		// hack: enable error reporting if configured
+		if(config::DISPLAY_ERRORS === true){
+			
+			ini_set('display_errors', 1);
+			ini_set('display_startup_errors', 1);
+		}
+		
 		$get_scraper = isset($_COOKIE["scraper_$page"]) ? $_COOKIE["scraper_$page"] : null;
 		
 		if(
@@ -644,7 +1129,6 @@ class frontend{
 						"google_cse" => "Google CSE",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"yep" => "Yep",
 						"mwmbl" => "Mwmbl",
 						"mojeek" => "Mojeek",
@@ -671,12 +1155,10 @@ class frontend{
 						"google_cse" => "Google CSE",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"naver" => "Naver",
 						"baidu" => "Baidu",
 						"solofield" => "Solofield",
 						"pinterest" => "Pinterest",
-						"cara" => "Cara",
 						"flickr" => "Flickr",
 						"pexels" => "Pexels",
 						"pixabay" => "Pixabay",
@@ -695,6 +1177,7 @@ class frontend{
 					"option" => [
 						"yt" => "YouTube",
 						//"archiveorg" => "Archive.org",
+						//"dailymotion" => "Dailymotion",
 						"vimeo" => "Vimeo",
 						//"odysee" => "Odysee",
 						"sepiasearch" => "Sepia Search",
@@ -705,7 +1188,6 @@ class frontend{
 						"google" => "Google",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
 						"naver" => "Naver",
 						"baidu" => "Baidu",
 						"coccoc" => "Cốc Cốc",
@@ -724,8 +1206,7 @@ class frontend{
 						"google" => "Google",
 						"yahoo_japan" => "Yahoo! JAPAN",
 						"startpage" => "Startpage",
-						"qwant" => "Qwant",
-						"mojeek" => "Mojeek",
+						//"mojeek" => "Mojeek",
 						"baidu" => "Baidu"
 					]
 				];
@@ -1055,6 +1536,17 @@ class frontend{
 		}
 		
 		return http_build_query($out);
+	}
+	
+	private function sanitize_slug($username){
+		
+		return urlencode(preg_replace('/[-_]/', " ", $username));
+	}
+	
+	public function increment_real_reqs($scraper){
+		
+		apcu_inc(intdiv(time(), 3600) . ".real_requests", 1, $s, 262800);
+		apcu_inc(intdiv(time(), 3600) . ".$scraper.requests", 1, $s, 262800);
 	}
 	
 	public function htmlimage($image, $format){

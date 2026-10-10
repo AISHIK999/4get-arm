@@ -7,7 +7,6 @@ class bot_protection{
 		// check if we want captcha
 		if(config::BOT_PROTECTION !== 1){
 			
-			apcu_inc("real_requests");
 			if($output === true){
 				$frontend->loadheader(
 					$get,
@@ -32,7 +31,7 @@ class bot_protection{
 				// does key exist
 				apcu_exists($_COOKIE["pass"])
 			){
-					
+				
 				// exists, increment counter
 				$inc = apcu_inc($_COOKIE["pass"]);
 				
@@ -46,8 +45,6 @@ class bot_protection{
 				}else{
 					
 					// the cookie is OK! dont die() and give results
-					apcu_inc("real_requests");
-					
 					if($output === true){
 						$frontend->loadheader(
 							$get,
@@ -164,8 +161,7 @@ class bot_protection{
 				$key = "k" . $inc . "." . $this->randomchars();
 				
 				apcu_inc($key, 1, $stupid, 86400);
-				
-				apcu_inc("real_requests");
+				apcu_dec(intdiv(time(), 3600) . ".bot_requests", 1, $s, 262800);
 				
 				setcookie(
 					"pass",
@@ -190,6 +186,7 @@ class bot_protection{
 			}
 		}
 		
+		apcu_inc(intdiv(time(), 3600) . ".bot_requests", 1, $s, 259200);
 		$key = "c" . apcu_inc("captcha_gen", 1) . "." . $this->randomchars();
 		
 		$payload = [
@@ -252,7 +249,8 @@ class bot_protection{
 		$frontend->loadheader(
 			$get,
 			$filters,
-			$page
+			$page,
+			false
 		);
 		
 		echo $frontend->load("search.html", $payload);

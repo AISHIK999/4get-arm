@@ -919,8 +919,8 @@ class baidu{
 				$description =
 					$this->fuckhtml
 					->getElementsByAttributeValue(
-						"data-sanssr-cmpt",
-						"card/www-summary-1",
+						"data-module",
+						"abstract",
 						$div
 					);
 				

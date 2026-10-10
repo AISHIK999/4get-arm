@@ -4,6 +4,9 @@ class backend{
 	public function __construct($scraper){
 		
 		$this->scraper = $scraper;
+		$this->db = null;
+		$this->db_path_prefix = "data/sessions/";
+		$this->db_path = "{$this->db_path_prefix}{$scraper}.sqlite";
 	}
 	
 	/*
@@ -207,5 +210,128 @@ class backend{
 			$payload[2], // data
 			$payload[1] // proxy
 		];
+	}
+	
+	//
+	// Sessions
+	//
+	public function session_init_db($force_init = false){
+		
+		if(
+			$force_init ||
+			$this->db === null
+		){
+			
+			$this->db = new SQLite3($this->db_path);
+			
+			// create table if it doesnt exist	
+			$this->db->exec(
+				"CREATE TABLE IF NOT EXISTS sessions ( " .
+					"id INTEGER PRIMARY KEY AUTOINCREMENT, " .
+					"created_at INTEGER NOT NULL, " .
+					"proxy TEXT NOT NULL, " .
+					"headers_json TEXT NOT NULL" .
+				")"
+			);
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public function session_count(){
+		
+		$this->session_init_db();
+		
+		$stmt = $this->db->prepare(
+			"SELECT COUNT(*) as count FROM sessions"
+		);
+		
+		$result = $stmt->execute();
+		$row = $result->fetchArray(SQLITE3_ASSOC);
+		
+		return (int)($row["count"] ?? 0);
+	}
+	
+	public function session_write($proxy, $headers){
+		
+		$this->session_init_db();
+		
+		$stmt = $this->db->prepare(
+			"INSERT INTO sessions ( " .
+				"created_at, " .
+				"proxy, " .
+				"headers_json " .
+			") VALUES ( " .
+				":created_at, " .
+				":proxy, " .
+				":headers_json" .
+			")"
+		);
+		
+		$stmt->bindValue(':created_at', time(), SQLITE3_INTEGER);
+		$stmt->bindValue(':proxy', $proxy, SQLITE3_TEXT);
+		$stmt->bindValue(':headers_json', json_encode($headers), SQLITE3_TEXT);
+		
+		$stmt->execute();
+		
+		return $this->db->lastInsertRowID();
+	}
+	
+	public function session_get(){
+		
+		$count = $this->session_count();
+		
+		if($count === 0){
+			
+			return false;
+		}
+		
+		$offset = apcu_inc("d." . $this->scraper) % $count;
+		
+		$stmt = $this->db->prepare(
+			"SELECT * " .
+			"FROM sessions " .
+			"ORDER BY id ASC " .
+			"LIMIT 1 OFFSET :offset"
+		);
+		
+		$stmt->bindValue(':offset', $offset, SQLITE3_INTEGER);
+		
+		$result = $stmt->execute();
+		$row = $result->fetchArray(SQLITE3_ASSOC);
+		
+		return [
+			"id" => $row["id"],
+			"created_at" => $row["created_at"],
+			"proxy" => $row["proxy"],
+			"headers" => json_decode($row["headers_json"], true)
+		];
+	}
+	
+	public function session_destroy_list(){
+		
+		if(
+			!preg_match(
+				'/^[A-Za-z0-9-]+$/',
+				$this->scraper
+			)
+		){
+			
+			// path traversal
+			return false;
+		}
+		
+		if(
+			file_exists("{$this->db_path_prefix}{$this->scraper}.sqlite") &&
+			is_file("{$this->db_path_prefix}{$this->scraper}.sqlite")
+		){
+			
+			unlink("{$this->db_path_prefix}{$this->scraper}.sqlite");
+			return true;
+		}
+		
+		return false;
 	}
 }

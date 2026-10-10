@@ -9,6 +9,10 @@ class startpage{
 		
 		include "lib/fuckhtml.php";
 		$this->fuckhtml = new fuckhtml();
+		
+		include "lib/anubis.php";
+		$this->anubis = new anubis();
+		$this->anubis_error = "all gucci";
 	}
 	
 	public function getfilters($page){
@@ -244,7 +248,7 @@ class startpage{
 		}
 	}
 	
-	private function get($proxy, $url, $get = [], $post = false, $is_xhr = false){
+	private function get($proxy, $url, $get = [], $post = false, $is_xhr = false, $return_cookies = false, $passed_cookies = []){
 		
 		$curlproc = curl_init();
 		
@@ -259,12 +263,42 @@ class startpage{
 			$url .= "?" . $get;
 		}
 		
+		if($return_cookies){
+			
+			$cookies = [];
+			curl_setopt($curlproc, CURLOPT_HEADERFUNCTION, function($curlproc, $header) use (&$cookies){
+				
+				$length = strlen($header);
+				
+				$header = explode(":", $header, 2);
+				
+				if(trim(strtolower($header[0])) == "set-cookie"){
+					
+					$cookie_tmp = explode("=", trim($header[1]), 2);
+					
+					$cookies[trim($cookie_tmp[0])] =
+						explode(";", $cookie_tmp[1], 2)[0];
+				}
+				
+				return $length;
+			});
+		}
+		
 		curl_setopt($curlproc, CURLOPT_URL, $url);
 		
 		// http2 bypass
 		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
 		
 		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
+		
+		$passed_cookies["preferences"] = "date_timeEEEworldN1Ndisable_family_filterEEE1N1Ndisable_open_in_new_windowEEE0N1Nenable_post_methodEEE1N1Nenable_proxy_safety_suggestEEE0N1Nenable_stay_controlEEE0N1Ninstant_answersEEE1N1Nlang_homepageEEEs%2Fdevice%2FenN1NlanguageEEEenglishN1Nlanguage_uiEEEenglishN1Nnum_of_resultsEEE20N1Nsearch_results_regionEEEallN1NsuggestionsEEE1N1Nwt_unitEEEcelsius";
+		
+		foreach($passed_cookies as $name => $val){
+			
+			$header_cookies[] = "$name=$val";
+		}
+		
+		$header_cookies = rtrim(implode("; ", $header_cookies));
 		
 		if($is_xhr === true){
 			
@@ -279,7 +313,7 @@ class startpage{
 				"Origin: https://www.startpage.com/",
 				"DNT: 1",
 				"Connection: keep-alive",
-				"Cookie: preferences=date_timeEEEworldN1Ndisable_family_filterEEE1N1Ndisable_open_in_new_windowEEE0N1Nenable_post_methodEEE1N1Nenable_proxy_safety_suggestEEE0N1Nenable_stay_controlEEE0N1Ninstant_answersEEE1N1Nlang_homepageEEEs%2Fdevice%2FenN1NlanguageEEEenglishN1Nlanguage_uiEEEenglishN1Nnum_of_resultsEEE20N1Nsearch_results_regionEEEallN1NsuggestionsEEE1N1Nwt_unitEEEcelsius",
+				"Cookie: $header_cookies",
 				"Sec-Fetch-Dest: empty",
 				"Sec-Fetch-Mode: cors",
 				"Sec-Fetch-Site: same-origin",
@@ -298,7 +332,7 @@ class startpage{
 				"Content-Length: " . strlen($get),
 				"DNT: 1",
 				"Connection: keep-alive",
-				"Cookie: preferences=date_timeEEEworldN1Ndisable_family_filterEEE1N1Ndisable_open_in_new_windowEEE0N1Nenable_post_methodEEE1N1Nenable_proxy_safety_suggestEEE0N1Nenable_stay_controlEEE0N1Ninstant_answersEEE1N1Nlang_homepageEEEs%2Fdevice%2FenN1NlanguageEEEenglishN1Nlanguage_uiEEEenglishN1Nnum_of_resultsEEE20N1Nsearch_results_regionEEEallN1NsuggestionsEEE1N1Nwt_unitEEEcelsius",
+				"Cookie: $header_cookies",
 				"Upgrade-Insecure-Requests: 1",
 				"Sec-Fetch-Dest: document",
 				"Sec-Fetch-Mode: navigate",
@@ -316,7 +350,7 @@ class startpage{
 				"Accept-Encoding: gzip",
 				"DNT: 1",
 				"Connection: keep-alive",
-				"Cookie: preferences=date_timeEEEworldN1Ndisable_family_filterEEE1N1Ndisable_open_in_new_windowEEE0N1Nenable_post_methodEEE1N1Nenable_proxy_safety_suggestEEE0N1Nenable_stay_controlEEE0N1Ninstant_answersEEE1N1Nlang_homepageEEEs%2Fdevice%2FenN1NlanguageEEEenglishN1Nlanguage_uiEEEenglishN1Nnum_of_resultsEEE20N1Nsearch_results_regionEEEallN1NsuggestionsEEE1N1Nwt_unitEEEcelsius",
+				"Cookie: $header_cookies",
 				"Sec-Fetch-Dest: document",
 				"Sec-Fetch-Mode: navigate",
 				"Sec-Fetch-Site: none",
@@ -342,6 +376,15 @@ class startpage{
 		}
 		
 		curl_close($curlproc);
+		
+		if($return_cookies){
+			
+			return [
+				"cookies" => $cookies,
+				"data" => $data
+			];
+		}
+		
 		return $data;
 	}
 	
@@ -349,14 +392,22 @@ class startpage{
 		
 		if($get["npt"]){
 			
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "web");
+			
+			$post = json_decode($post, true);
+			$query = $post["query"];
+			$cookies = $post["cookies"];
 			
 			try{
 				$html = $this->get(
 					$proxy,
 					"https://www.startpage.com/sp/search",
-					$post,
-					true
+					$query,
+					true,
+					false,
+					false,
+					$cookies
 				);
 			}catch(Exception $error){
 				
@@ -398,7 +449,11 @@ class startpage{
 				$html = $this->get(
 					$proxy,
 					"https://www.startpage.com/sp/search",
-					$params
+					$params,
+					false,
+					false,
+					true,
+					[]
 				);
 			}catch(Exception $error){
 				
@@ -406,11 +461,40 @@ class startpage{
 			}
 			
 			//$html = file_get_contents("scraper/startpage.html");
+			
+			// detect captcha on that page
+			$this->detect_captcha($html["data"]);
+			
+			// solve anubis if need be
+			$cookies = $this->solve_anubis($proxy, $html);
+			
+			if($cookies === false){
+				
+				$cookies = [];
+				$html = $html["data"];
+			}else{
+				
+				try{
+					$html = $this->get(
+						$proxy,
+						"https://www.startpage.com/sp/search",
+						$params,
+						false,
+						false,
+						false,
+						$cookies
+					);
+				}catch(Exception $error){
+					
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
+				}
+			}
 		}
 		
-		//echo htmlspecialchars($html);
-		
+		// detect captcha even if we passed anubis challenge
 		$this->detect_captcha($html);
+		
+		//echo htmlspecialchars($html);
 		
 		if(
 			preg_match(
@@ -420,14 +504,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to grep JSON object");
+			throw new Exception("Failed to grep JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON");
+			throw new Exception("Failed to decode JSON. Anubis error: {$this->anubis_error}");
 		}
 		
 		//print_r($json);
@@ -449,7 +533,7 @@ class startpage{
 		];
 		
 		// get npt
-		$out["npt"] = $this->parse_npt($json, "web", $proxy);
+		$out["npt"] = $this->parse_npt($json, "web", $proxy, $cookies);
 		
 		foreach($json["render"]["presenter"]["regions"]["mainline"] as $category){
 			
@@ -658,14 +742,22 @@ class startpage{
 		
 		if($get["npt"]){
 			
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "images");
+			
+			$post = json_decode($post, true);
+			$query = $post["query"];
+			$cookies = $post["cookies"];
 			
 			try{
 				$html = $this->get(
 					$proxy,
 					"https://www.startpage.com/sp/search",
-					$post,
-					true
+					$query,
+					true,
+					false,
+					false,
+					$cookies
 				);
 			}catch(Exception $error){
 				
@@ -680,76 +772,102 @@ class startpage{
 				throw new Exception("Search term is empty!");
 			}
 			
+			$proxy = $this->backend->get_ip();
+			
+			$params = [
+				"query" => $get["s"],
+				"cat" => "images",
+				"pl" => "opensearch"
+			];
+			
+			if($get["nsfw"] == "no"){
+				
+				$params["qadf"] = "heavy";
+			}
+			
+			if($get["size"] != "any"){
+				
+				if(
+					$get["size"] == "Small" ||
+					$get["size"] == "Medium" ||
+					$get["size"] == "Large" ||
+					$get["size"] == "Wallpaper"
+				){
+					
+					$params["flimgsize"] = $get["size"];
+				}else{
+					
+					$params["image-size-select"] = "isz:lt,islt:" . $get["size"];
+				}
+			}
+			
+			if($get["color"] != "any"){
+				
+				if($get["color"] == "color"){
+					
+					$params["flimgcolor"] = "ic:color";
+				}elseif($get["color"] == "bnw"){
+					
+					$params["flimgcolor"] = "ic:gray";
+				}else{
+					
+					$params["flimgcolor"] = "ic:specific,isc:" . $get["color"];
+				}
+			}
+			
+			if($get["type"] != "any"){
+				
+				$params["flimgtype"] = $get["type"];
+			}
+			
+			if($get["license"] != "any"){
+				
+				$params["flimglicense"] = $get["license"];
+			}
+			
 			try{
+				$html = $this->get(
+					$proxy,
+					"https://www.startpage.com/sp/search",
+					$params,
+					false,
+					false,
+					true,
+					[]
+				);
+			}catch(Exception $error){
 				
-				$proxy = $this->backend->get_ip();
+				throw new Exception("Failed to fetch search page");
+			}
+			
+			//$html = file_get_contents("scraper/startpage.html");
+			
+			// detect captcha on that page
+			$this->detect_captcha($html["data"]);
+			
+			// solve anubis if need be
+			$cookies = $this->solve_anubis($proxy, $html);
+			
+			if($cookies === false){
 				
-				$params = [
-					"query" => $get["s"],
-					"cat" => "images",
-					"pl" => "opensearch"
-				];
-				
-				if($get["nsfw"] == "no"){
-					
-					$params["qadf"] = "heavy";
-				}
-				
-				if($get["size"] != "any"){
-					
-					if(
-						$get["size"] == "Small" ||
-						$get["size"] == "Medium" ||
-						$get["size"] == "Large" ||
-						$get["size"] == "Wallpaper"
-					){
-						
-						$params["flimgsize"] = $get["size"];
-					}else{
-						
-						$params["image-size-select"] = "isz:lt,islt:" . $get["size"];
-					}
-				}
-				
-				if($get["color"] != "any"){
-					
-					if($get["color"] == "color"){
-						
-						$params["flimgcolor"] = "ic:color";
-					}elseif($get["color"] == "bnw"){
-						
-						$params["flimgcolor"] = "ic:gray";
-					}else{
-						
-						$params["flimgcolor"] = "ic:specific,isc:" . $get["color"];
-					}
-				}
-				
-				if($get["type"] != "any"){
-					
-					$params["flimgtype"] = $get["type"];
-				}
-				
-				if($get["license"] != "any"){
-					
-					$params["flimglicense"] = $get["license"];
-				}
+				$cookies = [];
+				$html = $html["data"];
+			}else{
 				
 				try{
 					$html = $this->get(
 						$proxy,
 						"https://www.startpage.com/sp/search",
-						$params
+						$params,
+						false,
+						false,
+						false,
+						$cookies
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
-				//$html = file_get_contents("scraper/startpage.html");
-				
-			}catch(Exception $error){
-				
-				throw new Exception("Failed to fetch search page");
 			}
 		}
 		
@@ -769,18 +887,18 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to grep JSON object");
+			throw new Exception("Failed to grep JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		// get npt
-		$out["npt"] = $this->parse_npt($json, "images", $proxy);
+		$out["npt"] = $this->parse_npt($json, "images", $proxy, $cookies);
 		
 		// get images
 		foreach($json["render"]["presenter"]["regions"]["mainline"] as $category){
@@ -819,14 +937,22 @@ class startpage{
 		
 		if($get["npt"]){
 			
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "videos");
+			
+			$post = json_decode($post, true);
+			$query = $post["query"];
+			$cookies = $post["cookies"];
 			
 			try{
 				$html = $this->get(
 					$proxy,
 					"https://www.startpage.com/sp/search",
-					$post,
-					true
+					$query,
+					true,
+					false,
+					false,
+					$cookies
 				);
 			}catch(Exception $error){
 				
@@ -841,46 +967,72 @@ class startpage{
 				throw new Exception("Search term is empty!");
 			}
 			
+			$proxy = $this->backend->get_ip();
+			
+			$params = [
+				"query" => $get["s"],
+				"cat" => "video",
+				"pl" => "opensearch"
+			];
+			
+			if($get["nsfw"] == "no"){
+				
+				$params["qadf"] = "heavy";
+			}
+			
+			if($get["sort"] != "relevance"){
+				
+				$params["sort_by"] = $get["sort"];
+			}
+			
+			if($get["duration"] != "any"){
+				
+				$params["with_duration"] = $get["duration"];
+			}
+			
 			try{
+				$html = $this->get(
+					$proxy,
+					"https://www.startpage.com/sp/search",
+					$params,
+					false,
+					false,
+					true,
+					[]
+				);
+			}catch(Exception $error){
 				
-				$proxy = $this->backend->get_ip();
+				throw new Exception("Failed to fetch search page");
+			}
+			
+			//$html = file_get_contents("scraper/startpage.html");
+			
+			// detect captcha on that page
+			$this->detect_captcha($html["data"]);
+			
+			// solve anubis if need be
+			$cookies = $this->solve_anubis($proxy, $html);
+			
+			if($cookies === false){
 				
-				$params = [
-					"query" => $get["s"],
-					"cat" => "video",
-					"pl" => "opensearch"
-				];
-				
-				if($get["nsfw"] == "no"){
-					
-					$params["qadf"] = "heavy";
-				}
-				
-				if($get["sort"] != "relevance"){
-					
-					$params["sort_by"] = $get["sort"];
-				}
-				
-				if($get["duration"] != "any"){
-					
-					$params["with_duration"] = $get["duration"];
-				}
+				$cookies = [];
+				$html = $html["data"];
+			}else{
 				
 				try{
 					$html = $this->get(
 						$proxy,
 						"https://www.startpage.com/sp/search",
-						$params
+						$params,
+						false,
+						false,
+						false,
+						$cookies
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
-				//$html = file_get_contents("scraper/startpage.html");
-				
-			}catch(Exception $error){
-				
-				throw new Exception("Failed to fetch search page");
 			}
 		}
 		
@@ -894,14 +1046,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to get JSON object");
+			throw new Exception("Failed to get JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$out = [
@@ -915,7 +1067,7 @@ class startpage{
 		];
 		
 		// get npt
-		$out["npt"] = $this->parse_npt($json, "video", $proxy);
+		$out["npt"] = $this->parse_npt($json, "video", $proxy, $cookies);
 		
 		// get results
 		foreach($json["render"]["presenter"]["regions"]["mainline"] as $category){
@@ -971,14 +1123,22 @@ class startpage{
 		
 		if($get["npt"]){
 			
+			$this->anubis_error = "Not ran on pagination";
 			[$post, $proxy] = $this->backend->get($get["npt"], "news");
+			
+			$post = json_decode($post, true);
+			$query = $post["query"];
+			$cookies = $post["cookies"];
 			
 			try{
 				$html = $this->get(
 					$proxy,
 					"https://www.startpage.com/sp/search",
-					$post,
-					true
+					$query,
+					true,
+					false,
+					false,
+					$cookies
 				);
 			}catch(Exception $error){
 				
@@ -993,41 +1153,67 @@ class startpage{
 				throw new Exception("Search term is empty!");
 			}
 			
+			$proxy = $this->backend->get_ip();
+			
+			$params = [
+				"query" => $get["s"],
+				"cat" => "news",
+				"pl" => "opensearch"
+			];
+							
+			if($get["nsfw"] == "no"){
+				
+				$params["qadf"] = "heavy";
+			}
+			
+			if($get["time"] != "any"){
+				
+				$params["with_date"] = $get["time"];
+			}
+			
 			try{
+				$html = $this->get(
+					$proxy,
+					"https://www.startpage.com/sp/search",
+					$params,
+					false,
+					false,
+					true,
+					[]
+				);
+			}catch(Exception $error){
 				
-				$proxy = $this->backend->get_ip();
+				throw new Exception("Failed to fetch search page. Anubis error: {$this->anubis_error}");
+			}
+			
+			//$html = file_get_contents("scraper/startpage.html");
+			
+			// detect captcha on that page
+			$this->detect_captcha($html["data"]);
+			
+			// solve anubis if need be
+			$cookies = $this->solve_anubis($proxy, $html);
+			
+			if($cookies === false){
 				
-				$params = [
-					"query" => $get["s"],
-					"cat" => "news",
-					"pl" => "opensearch"
-				];
-								
-				if($get["nsfw"] == "no"){
-					
-					$params["qadf"] = "heavy";
-				}
-				
-				if($get["time"] != "any"){
-					
-					$params["with_date"] = $get["time"];
-				}
+				$cookies = [];
+				$html = $html["data"];
+			}else{
 				
 				try{
 					$html = $this->get(
 						$proxy,
 						"https://www.startpage.com/sp/search",
-						$params
+						$params,
+						false,
+						false,
+						false,
+						$cookies
 					);
 				}catch(Exception $error){
 					
-					throw new Exception("Failed to fetch search page");
+					throw new Exception("Failed to re-fetch search page. Anubis error: {$this->anubis_error}");
 				}
-				//$html = file_get_contents("scraper/startpage.html");
-				
-			}catch(Exception $error){
-				
-				throw new Exception("Failed to fetch search page");
 			}
 		}
 		
@@ -1041,14 +1227,14 @@ class startpage{
 			) === 0
 		){
 			
-			throw new Exception("Failed to get JSON object");
+			throw new Exception("Failed to get JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$json = json_decode($matches[1], true);
 		
 		if($json === null){
 			
-			throw new Exception("Failed to decode JSON object");
+			throw new Exception("Failed to decode JSON object. Anubis error: {$this->anubis_error}");
 		}
 		
 		$out = [
@@ -1058,7 +1244,7 @@ class startpage{
 		];
 		
 		// get npt
-		$out["npt"] = $this->parse_npt($json, "news", $proxy);
+		$out["npt"] = $this->parse_npt($json, "news", $proxy, $cookies);
 		
 		foreach($json["render"]["presenter"]["regions"]["mainline"] as $category){
 			
@@ -1101,7 +1287,7 @@ class startpage{
 		return $out;
 	}
 	
-	private function parse_npt($json, $pagetype, $proxy){
+	private function parse_npt($json, $pagetype, $proxy, $cookies){
 		
 		foreach($json["render"]["presenter"]["pagination"]["pages"] as $page){
 			
@@ -1109,22 +1295,27 @@ class startpage{
 				
 				return
 					$this->backend->store(
-						http_build_query(
-							[
-								"lui" => "english",
-								"language" => "english",
-								"sc" => $json["render"]["search_sc"],
-								"t" => "device",
-								"cat" => $pagetype,
-								"segment" => "organic",
-								"abd" => "0",
-								"abe" => "0",
-								"query" => rawurldecode($json["render"]["query"]),
-								"page" => $page["number"],
-								"qsr" => "all",
-								"qadf" => "none" // @ todo fix (??)
-							]
-						),
+						json_encode([
+							"query" =>
+								http_build_query(
+									[
+										"lui" => "english",
+										"language" => "english",
+										"sc" => $json["render"]["search_sc"],
+										"t" => "device",
+										"cat" => $pagetype,
+										"segment" => "startpage.udog", // "original" sometimes
+										"abd" => "0",
+										"abe" => "0",
+										"query" => rawurldecode($json["render"]["query"]),
+										"page" => $page["number"],
+										"qsr" => "all",
+										"qadf" => "none", // @ todo fix (??)
+										...(isset($page["token"]) ? ["page_token" => $page["token"]] : [])
+									]
+								),
+							"cookies" => $cookies
+						]),
 						$pagetype,
 						$proxy
 					);
@@ -1269,5 +1460,57 @@ class startpage{
 			
 			throw new Exception("Startpage redirected the scraper to an unhandled page");
 		}
+	}
+	
+	private function solve_anubis($proxy, $html){
+		
+		//
+		// solve anubis challenge, if theres one
+		//
+		$res = null;
+		$cookies = [];
+		
+		try{
+			$res = $this->anubis->scrape($html["data"]);
+			
+		}catch(Exception $error){
+			
+			// do nothang
+			$this->anubis_error = $error->getMessage();
+		}
+		
+		if($res !== null){
+			
+			// https://www.startpage.com/.within.website/x/cmd/anubis/api/pass-challenge
+			// ?id=01a00241-da22-7d62-b64f-e7a6a0e8bda8
+			// &response=0000460826adc23e0363e97e713e4aa36ca46e1a7cd933184442772f3d6b994c
+			// &nonce=3098
+			// &redir=https%3A%2F%2Fwww.startpage.com%2Fsp%2Fsearch
+			// &elapsedTime=111
+			
+			$anubis_response =
+				$this->get(
+					$proxy,
+					"https://www.startpage.com/.within.website/x/cmd/anubis/api/pass-challenge",
+					[
+						"id" => $res["id"],
+						"response" => $res["response"],
+						"nonce" => $res["nonce"],
+						"redir" => "https://www.startpage.com/sp/search",
+						"elapsedTime" => $res["elapsedTime"]
+					],
+					false,
+					false,
+					true,
+					$html["cookies"]
+				);
+			
+			// re-fetch search page AGAIN with the anubis bullshit
+			$cookies = array_merge($anubis_response["cookies"], $html["cookies"]);
+			
+			return $cookies;
+		}
+		
+		return false;
 	}
 }

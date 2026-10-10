@@ -9,10 +9,13 @@ class coccoc{
 		
 		include "lib/fuckhtml.php";
 		$this->fuckhtml = new fuckhtml();
+		
+		$this->proc = curl_multi_init();
+		$this->handles = [];
 	}
 	
 	
-	private function get($proxy, $url, $get = []){
+	private function get($proxy, $url, $cookie = false, $get = []){
 		
 		$curlproc = curl_init();
 		
@@ -26,20 +29,43 @@ class coccoc{
 		// http2 bypass
 		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
 		
-		curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
-			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			"Accept-Language: en-US,en;q=0.5",
-			"Accept-Encoding: gzip, deflate, br, zstd",
-			"DNT: 1",
-			"Sec-GPC: 1",
-			"Connection: keep-alive",
-			//"Cookie: _contentAB_15040_vi=V-06_01; split_test_search=new_search; uid=L_bauXyZBY1B; vid=uCVQJQSTgb9QGT3o; ls=1753742684; serp_version=29223843/7621a70; savedS=direct",
-			"Upgrade-Insecure-Requests: 1",
-			"Sec-Fetch-Dest: document",
-			"Sec-Fetch-Mode: navigate",
-			"Sec-Fetch-Site: cross-site",
-			"Priority: u=0, i"
-		]);
+		if($cookie === false){
+			
+			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
+				"User-Agent: " . config::USER_AGENT,
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				"Accept-Language: en-CA,en-US;q=0.9,en;q=0.8",
+				"Accept-Encoding: gzip, deflate, br, zstd",
+				"DNT: 1",
+				"Sec-GPC: 1",
+				"Connection: keep-alive",
+				"Upgrade-Insecure-Requests: 1",
+				"Sec-Fetch-Dest: document",
+				"Sec-Fetch-Mode: navigate",
+				"Sec-Fetch-Site: none",
+				"Sec-Fetch-User: ?1",
+				"Priority: u=0, i"
+			]);
+		}else{
+			
+			curl_setopt($curlproc, CURLOPT_HTTPHEADER, [
+				"User-Agent: " . config::USER_AGENT,
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				"Accept-Language: en-CA,en-US;q=0.9,en;q=0.8",
+				"Accept-Encoding: gzip, deflate, br, zstd",
+				"DNT: 1",
+				"Sec-GPC: 1",
+				"Connection: keep-alive",
+				"Referer: https://coccoc.com/search",
+				"Cookie: {$cookie}",
+				"Upgrade-Insecure-Requests: 1",
+				"Sec-Fetch-Dest: document",
+				"Sec-Fetch-Mode: navigate",
+				"Sec-Fetch-Site: same-origin",
+				"Priority: u=0, i",
+				"TE: trailers"
+			]);
+		}
 		
 		$this->backend->assign_proxy($curlproc, $proxy);
 		
@@ -93,6 +119,212 @@ class coccoc{
 		];
 	}
 	
+	private function handle_redir($proxy, $html){
+		
+		$this->fuckhtml->load($html);
+		
+		$title =
+			$this->fuckhtml
+			->getElementsByTagName("title");
+		
+		if(
+			count($title) !== 0 &&
+			$this->fuckhtml
+			->getTextContent(
+				$title[0]
+			) == "Redirecting..."
+		){
+			
+			// get cookie
+			if(
+				preg_match(
+					'/document\.cookie ?= ?"([^;"]+).*"/',
+					$html,
+					$cookie
+				) === 0
+			){
+				
+				throw new Exception("Failed to grep cookie");
+			}
+			
+			// get redirect URL
+			if(
+				preg_match(
+					'/window\.location\.replace\("([^"]+)"\)/',
+					$html,
+					$redir
+				) === 0
+			){
+				
+				throw new Exception("Failed to grep redirection URL");
+			}
+			
+			try{
+				
+				$html =
+					$this->get(
+						$proxy,
+						$redir[1],
+						$cookie[1],
+						[]
+					);
+			}catch(Exception $error){
+				
+				throw new Exception("Failed to get redirection page");
+			}
+		}
+		
+		return $html;
+	}
+	
+	private function redirect_add_url($url){
+		
+		// https://coccoc.com/composer/goto?url=0AWtXcuK-mJVvFl8Qhny9LZdMOyEd08nFmTtpg82bmuqtp8p8G_OnTebNhPtNyIXMGQ1TZZ-ADMz0QEiFJhsTLIFkkPDXnJjHo3kqsobmyntiOhFag-2aqTs
+		
+		if(
+			preg_match(
+				'/\/goto\?url=([^&]+)/',
+				$url,
+				$slug
+			) === 0
+		){
+			
+			// not a coccoc redirect
+			return $url;
+		}
+		
+		$curlproc = curl_init();
+		
+		curl_setopt($curlproc, CURLOPT_URL, "https://coccoc.com/composer/goto?url=" . urlencode($slug[1]));
+		
+		curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
+		curl_setopt($curlproc, CURLOPT_HTTPHEADER,
+			["User-Agent: " . config::USER_AGENT,
+			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"Accept-Language: en-US,en;q=0.5",
+			"Accept-Encoding: gzip, deflate, br, zstd",
+			"DNT: 1",
+			"Sec-GPC: 1",
+			"Connection: keep-alive",
+			"Upgrade-Insecure-Requests: 1",
+			"Sec-Fetch-Dest: document",
+			"Sec-Fetch-Mode: navigate",
+			"Sec-Fetch-Site: none",
+			"Sec-Fetch-User: ?1",
+			"Priority: u=0, i"]
+		);
+		
+		curl_setopt($curlproc, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curlproc, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curlproc, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($curlproc, CURLOPT_CONNECTTIMEOUT, 30);
+		curl_setopt($curlproc, CURLOPT_TIMEOUT, 30);
+		
+		// funny
+		curl_setopt($curlproc, CURLOPT_HEADER, true);
+		
+		//$this->backend->assign_proxy($curlproc, $proxy);
+		
+		curl_multi_add_handle($this->proc, $curlproc);
+		$this->handles[] = [
+			"replacement" => $url,
+			"handle" => $curlproc
+		];
+		
+		return $url;
+	}
+	
+	private function resolve_urls(&$scraped_data){
+		
+		do{
+			do{
+				$status = curl_multi_exec($this->proc, $active);
+			}while($status === CURLM_CALL_MULTI_PERFORM);
+
+			if($active){
+				curl_multi_select($this->proc);
+			}
+
+		}while($active && $status === CURLM_OK);
+		
+		//
+		// if we reach this, we're done downloading garbage
+		//
+		
+		// parse redirect values & create data shit
+		$keys = [];
+		$replacements = [];
+		
+		for($i=0; $i<count($this->handles); $i++){
+			
+			$headers =
+				curl_multi_getcontent(
+					$this->handles[$i]["handle"]
+				);
+			
+			if(
+				!preg_match(
+					'/^location: ?([^ ]+)/im',
+					$headers,
+					$link
+				)
+			){
+				
+				// failed to extract redirect location
+				continue;
+			}
+			
+			// theyre too retarded to encode shit properly apparently.
+			// this is the best i can do, it will still yield errors when searching for "higurashi"
+			// example: https://coccoc.com/composer/goto?url=0AWtXcuIKWPOkxvarGvy3GJ36XipRirzzqAvltMM5QUfB1RPu49LrNB9qmuAQyvvI0eCTwf-FpjRjxUN8XbruhA0rvCHNNlhVNEozMUqgRcjzsdhyUMCEgwLCXVTQkXnLXqrUw8celcIZdfmZ1geOvioUcg
+			// redirects to https://vi.wikipedia.org/wiki/Higurashi_no_Naku_Koro_ni#C%E1ch_ch?i
+			// notice the encoding errors after #
+			// retards
+			
+			$link = mb_convert_encoding($link[1], "UTF-8", "ISO-8859-1");
+			
+			if(
+				preg_match(
+					'/^(https?:|)\/\//',
+					$link
+				)
+			){
+				
+				$keys[] = $this->handles[$i]["replacement"];
+				$replacements[] = $link;
+			}
+		}
+		
+		$this->recursive_replace($keys, $replacements, $scraped_data);
+		
+		curl_multi_close($this->proc);
+	}
+	
+	private function recursive_replace(&$keys, &$replacements, &$pointer){
+		
+		foreach($pointer as $key => &$value){
+			
+			if($key == "url"){
+				
+				$search =
+					array_search(
+						$value,
+						$keys
+					);
+				
+				if($search !== false){
+					
+					// replace url
+					$value = $replacements[$search];
+				}
+				
+			}elseif(is_array($value)){
+				
+				$this->recursive_replace($keys, $replacements, $value);
+			}
+		}
+	}
+	
 	public function web($get){
 		
 		if($get["npt"]){
@@ -135,6 +367,7 @@ class coccoc{
 				$this->get(
 					$proxy,
 					"https://coccoc.com/search",
+					false,
 					$query
 				);
 		}catch(Exception $error){
@@ -143,6 +376,7 @@ class coccoc{
 		}
 		//$html = file_get_contents("scraper/coccoc.html");
 		
+		$html = $this->handle_redir($proxy, $html);
 		
 		$html = explode("window.composerResponse", $html, 2);
 		
@@ -313,7 +547,7 @@ class coccoc{
 								)
 							),
 						"date" => null,
-						"url" => $sub["url"]
+						"url" => $this->redirect_add_url($sub["url"])
 					];
 				}
 			}
@@ -380,7 +614,7 @@ class coccoc{
 							$result["content"]
 						)
 					),
-				"url" => $result["url"],
+				"url" => $this->redirect_add_url($result["url"]),
 				"date" => $date,
 				"type" => "web",
 				"thumb" => $thumb,
@@ -446,19 +680,23 @@ class coccoc{
 					}
 				}
 				
-				foreach($wiki["profiles"] as $sitename => $url){
+				if(isset($wiki["profiles"])){
 					
-					$sitename = explode("_", $sitename);
-					$sitename = ucfirst($sitename[count($sitename) - 1]);
-					
-					$sublinks[$sitename] = $url;
+					foreach($wiki["profiles"] as $sitename => $url){
+						
+						$sitename = explode("_", $sitename);
+						$sitename = ucfirst($sitename[count($sitename) - 1]);
+						
+						$sublinks[$sitename] = $url;
+					}
 				}
 				
 				$out["answer"][] = [
 					"title" =>
-						$this->titledots(
-							$wiki["title"]
-						),
+						isset($wiki["title"]) ?
+							$this->titledots(
+								$wiki["title"]
+							) : null,
 					"description" => $description,
 					"url" => null,
 					"thumb" => isset($wiki["image"]["contentUrl"]) ? $wiki["image"]["contentUrl"] : null,
@@ -491,6 +729,7 @@ class coccoc{
 				);
 		}
 		
+		$this->resolve_urls($out);
 		return $out;
 	}
 	
@@ -538,12 +777,15 @@ class coccoc{
 				$this->get(
 					$proxy,
 					"https://coccoc.com/search",
+					false,
 					$query
 				);
 		}catch(Exception $error){
 			
 			throw new Exception("Failed to get search page");
 		}
+		
+		$html = $this->handle_redir($proxy, $html);
 		
 		$html = explode("window.composerResponse", $html, 2);
 		
@@ -637,7 +879,7 @@ class coccoc{
 						(int)$video["rich"]["data"]["duration"] : null,
 				"views" => null,
 				"thumb" => $thumb,
-				"url" => $video["url"]
+				"url" => $this->redirect_add_url($video["url"])
 			];
 		}
 		
@@ -661,6 +903,7 @@ class coccoc{
 				);
 		}
 		
+		$this->resolve_urls($out);
 		return $out;
 	}
 	
