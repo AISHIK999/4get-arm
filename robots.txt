@@ -13,4 +13,11 @@
 #           44
 
 User-agent: *
-Disallow:
+Disallow: /web
+Disallow: /images
+Disallow: /videos
+Disallow: /news
+Disallow: /music
+Disallow: /proxy
+Disallow: /api/v1/ac
+Allow: /

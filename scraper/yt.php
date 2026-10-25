@@ -678,6 +678,15 @@ class yt{
 							$video["longBylineText"]
 						),
 					"url" =>
+						isset(
+							$video["ownerText"]
+							["runs"]
+							[0]
+							["navigationEndpoint"]
+							["commandMetadata"]
+							["webCommandMetadata"]
+							["url"]
+						) ?
 						"https://www.youtube.com" .
 						$video["ownerText"]
 						["runs"]
@@ -685,7 +694,7 @@ class yt{
 						["navigationEndpoint"]
 						["commandMetadata"]
 						["webCommandMetadata"]
-						["url"],
+						["url"] : null,
 					"avatar" =>
 						$video["channelThumbnailSupportedRenderers"]
 						["channelThumbnailWithLinkRenderer"]

@@ -261,9 +261,10 @@ class naver{
 			
 			$filters = [
 				"nso" => "",
+				"page" => 2, // page 2 is repeat of page 1
 				"query" => $search,
 				"sm" => "tab_pge",
-				"where" => "web",
+				"ssc" => "tab.ur.all",
 				"start" => 1 // increment by number of results each time (16??)
 			];
 			
@@ -304,13 +305,13 @@ class naver{
 		
 		$this->fuckhtml->load($html);
 		
-		$results =
+		$jsons =
 			preg_split(
 				'/entry\.bootstrap\(document\.getElementById\("[a-f0-9-r]+"\), ?/',
 				$html
 			);
 		
-		if(count($results) !== 2){
+		if(count($jsons) <= 1){
 			
 			// this is thrown when no results are found
 			
@@ -342,119 +343,169 @@ class naver{
 			//throw new Exception("Failed to grep results entrypoint");
 		}
 		
-		$json =
-			json_decode(
-				$this->fuckhtml
-				->extract_json(
-					$results[1]
-				),
-				true
-			);
-		
-		if(!isset($json["body"]["props"]["children"][0]["props"]["children"])){
+		foreach($jsons as $json){
 			
-			throw new Exception("Failed to access nested children");
-		}
-		
-		foreach($json["body"]["props"]["children"][0]["props"]["children"] as $result){
+			$json =
+				json_decode(
+					$this->fuckhtml
+					->extract_json(
+						$json
+					),
+					true
+				);
 			
-			if(
-				!isset($result["templateId"]) ||
-				$result["templateId"] != "webItem"
-			){
+			if($json === null){
 				
-				// should not happen
 				continue;
 			}
 			
-			$result = $result["props"];
-			
-			// get sublinks
-			$sublinks = [];
-			
-			if(isset($result["subLinks"])){
+			if(!isset($json["data"]["state"]["items"])){
 				
-				foreach($result["subLinks"] as $s){
+				//throw new Exception("Failed to access nested children");
+				continue;
+			}
+			
+			foreach($json["data"]["state"]["items"] as $result){
+				
+				// get sublinks
+				$sublinks = [];
+				
+				if(isset($result["subLinks"])){
 					
-					$sublinks[] = [
-						"title" => $s["text"],
-						"description" => null,
-						"url" => $s["href"],
-						"date" => null
+					foreach($result["subLinks"] as $s){
+						
+						$sublinks[] = [
+							"title" => $s["text"],
+							"description" => null,
+							"url" => $s["href"],
+							"date" => null
+						];
+					}
+				}
+				
+				if(isset($result["linkBtns"])){
+					
+					foreach($result["linkBtns"] as $s){
+						
+						$sublinks[] = [
+							"title" => $s["text"],
+							"description" => null,
+							"url" => $s["href"],
+							"date" => null
+						];
+					}
+				}
+				
+				// get image (thumbnail, i guess)
+				if(isset($result["images"][0]["imageSrc"])){
+					
+					$thumb = [
+						"ratio" => "16:9",
+						"url" => $this->unshit_thumb($result["images"][0]["imageSrc"])
+					];
+				}else{
+					
+					$thumb = [
+						"ratio" => null,
+						"url" => null
 					];
 				}
-			}
-			
-			if(isset($result["linkBtns"])){
 				
-				foreach($result["linkBtns"] as $s){
+				// get table elements
+				$table = [];
+				
+				if(isset($result["keyValue"]["contents"])){
 					
-					$sublinks[] = [
-						"title" => $s["text"],
-						"description" => null,
-						"url" => $s["href"],
-						"date" => null
-					];
+					foreach($result["keyValue"]["contents"] as $s){
+						
+						if(!isset($s["valueData"]["text"])){ continue; }
+						
+						$table[$s["key"]] = $s["valueData"]["text"];
+					}
 				}
-			}
-			
-			// get image (thumbnail, i guess)
-			if(isset($result["images"][0]["imageSrc"])){
 				
-				$thumb = [
-					"ratio" => "16:9",
-					"url" => $this->unshit_thumb($result["images"][0]["imageSrc"])
+				// get date
+				$time = null;
+				
+				if(isset($result["profile"]["createdDate"])){
+					
+					$time = $result["profile"]["createdDate"];
+				}elseif(isset($result["sourceProfile"]["createdDate"])){
+					
+					$time = $result["sourceProfile"]["createdDate"];
+				}
+				
+				if($time !== null){
+					$date =
+						strtotime(
+							substr(
+								$time,
+								-1
+							)
+						);
+					
+					if($date !== false){
+						
+						$time = $date;
+					}else{
+						
+						$time = null;
+					}
+				}
+				
+				// get title
+				if(isset($result["title"])){
+					
+					$title = $result["title"];
+				}elseif(isset($result["questionTitle"])){
+					
+					$title = $result["questionTitle"];
+				}else{
+					
+					continue;
+				}
+				
+				// get url
+				if(isset($result["titleHref"])){
+					
+					$href = $result["titleHref"];
+				}elseif(isset($result["href"])){
+					
+					$href = $result["href"];
+				}elseif(isset($result["answerHref"])){
+					
+					$href = $result["answerHref"];
+				}else{
+					
+					continue;
+				}
+				
+				// get description
+				if(isset($result["bodyText"])){
+					
+					$description = $result["bodyText"];
+				}elseif(isset($result["content"])){
+					
+					$description = $result["content"];
+				}elseif(isset($result["questionContent"])){
+					
+					$description = $result["questionContent"];
+				}else{
+					
+					$description = null;
+				}
+				
+				$out["web"][] = [
+					"title" => $this->decode_html($title),
+					"description" => $this->decode_html($description),
+					"url" => $href,
+					"date" => $time,
+					"type" => "web",
+					"thumb" => $thumb,
+					"sublink" => $sublinks,
+					"table" => $table
 				];
-			}else{
-				
-				$thumb = [
-					"ratio" => null,
-					"url" => null
-				];
 			}
-			
-			// get table elements
-			$table = [];
-			
-			if(isset($result["keyValue"]["contents"])){
-				
-				foreach($result["keyValue"]["contents"] as $s){
-					
-					if(!isset($s["valueData"]["text"])){ continue; }
-					
-					$table[$s["key"]] = $s["valueData"]["text"];
-				}
-			}
-			
-			// get date
-			$time = null;
-			
-			if(isset($result["bodyPrefixes"][0]["text"])){
-				
-				$date =
-					strtotime(
-						substr(
-							$result["bodyPrefixes"][0]["text"],
-							-1
-						)
-					);
-				
-				if($date !== false){
-					
-					$time = $date;
-				}
-			}
-			
-			$out["web"][] = [
-				"title" => $this->decode_html($result["title"]),
-				"description" => $this->decode_html($result["bodyText"]),
-				"url" => $result["href"],
-				"date" => $time,
-				"type" => "web",
-				"thumb" => $thumb,
-				"sublink" => $sublinks,
-				"table" => $table
-			];
 		}
 		
 		// get next page

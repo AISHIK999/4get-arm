@@ -817,7 +817,7 @@ class google{
 			// country
 			if($get["country"] != "any"){
 				
-				$params["gl"] = $country;
+				$params["gl"] = $get["country"];
 			}
 			
 			// nsfw
@@ -873,7 +873,6 @@ class google{
 			
 			$html = &$data["data"];
 			$container = &$data["container"];
-			
 			//file_put_contents("scraper/google-jp.html", $html);
 			//$html = file_get_contents("scraper/google.html");
 			//$container = "";
@@ -3053,8 +3052,8 @@ class google{
 			
 			if(
 				str_contains(
-					$this->fuckhtml->getloadedhtml(),
-					"<title>Google</title>"
+					str_replace(" ", "", $this->fuckhtml->getloadedhtml()),
+					"setTimeout(function(){if(spinner){spinner.style.visibility='hidden';}"
 				) &&
 				preg_match(
 					'/var eid ?= ?\'([^\']*)\'/',
@@ -3067,7 +3066,7 @@ class google{
 				
 				return [
 					"sei" => $matches[1],
-					"timeout" => (int)$matches[2] // set to 10000 usually
+					"timeout" => 10000 // set to 10000 usually
 				];
 			}
 		}

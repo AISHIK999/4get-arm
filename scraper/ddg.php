@@ -29,14 +29,14 @@ class ddg{
 		curl_setopt($curlproc, CURLOPT_URL, $url);
 		
 		// http2 bypass
-		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+		curl_setopt($curlproc, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2);
 		
 		switch($reqtype){
 			case self::req_web:
 				$headers =
 					["User-Agent: " . config::USER_AGENT,
 					"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-					"Accept-Language: en-US,en;q=0.5",
+					"Accept-Language: en-US,en;q=0.9",
 					"Accept-Encoding: gzip",
 					"DNT: 1",
 					"Sec-GPC: 1",
@@ -46,8 +46,7 @@ class ddg{
 					"Sec-Fetch-Mode: navigate",
 					"Sec-Fetch-Site: same-origin",
 					"Sec-Fetch-User: ?1",
-					"Priority: u=0, i",
-					"TE: trailers"];
+					"Priority: u=0, i"];
 				break;
 			
 			case self::req_xhr:
@@ -371,6 +370,7 @@ class ddg{
 			
 			// we have $get["s"]
 			if(
+				strpos($get["s"], "email") !== false || // contains word "email" ?? lol
 				strpos($get["s"], "\"") !== false || // contains quotes
 				strpos($get["s"], ":") !== false // contains potential site: operator or whatever the fuck
 			){
@@ -484,7 +484,7 @@ class ddg{
 		$this->fuckhtml->load($html);
 		
 		//
-		// Get next page token
+		// Detect captcha
 		//
 		$forms =
 			$this->fuckhtml
@@ -509,8 +509,9 @@ class ddg{
 			
 			$input_probe =
 				$this->fuckhtml
-				->getElementsByClassName(
-					"btn--alt",
+				->getElementsByAttributeValue(
+					"value",
+					"Next",
 					"input"
 				);
 			

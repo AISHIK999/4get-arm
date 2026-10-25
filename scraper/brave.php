@@ -212,60 +212,43 @@ class brave{
 	
 	private function get_js(){
 		
-		$script_disc =
+		$script_bodies =
 			$this->fuckhtml
 			->getElementsByTagName(
 				"script"
 			);
 		
-		$data = null;
-		foreach($script_disc as &$discs){
+		$datas = [];
+		foreach($script_bodies as &$script){
 			
-			if(
-				preg_match(
-					'/kit\.start\(/',
-					$discs["innerHTML"]
-				)
-			){
+			$jsons = explode("{type:\"data\"", $script["innerHTML"]);
+			array_shift($jsons);
+			
+			foreach($jsons as $json){
 				
 				$data =
-					explode(
-						"function(",
-						$discs["innerHTML"]
+					$this->fuckhtml
+					->parseJsObject(
+						$this->fuckhtml
+						->extract_json(
+							"{type:\"data\"" .
+							$json
+						)
 					);
 				
-				$data = $data[count($data) - 1];
-				
-				$data =
-					explode(
-						"return ",
-						$data,
-						2
-					)[1];
-				break;
+				if($data !== []){
+					
+					$datas[] = $data;
+				}
 			}
 		}
 		
-		if($data === null){
+		if(count($datas) === 0){
 			
-			throw new Exception("Could not grep JavaScript object");
+			throw new Exception("Could not grep any JavaScript object");
 		}
 		
-		$data =
-			$this->fuckhtml
-			->parseJsObject(
-				$this->fuckhtml
-				->extract_json(
-					$data
-				)
-			);
-		
-		if($data === null){
-			
-			throw new Exception("Failed to decode JavaScript object");
-		}
-		
-		return $data;
+		return $datas;
 	}
 	
 	public function web($get){
@@ -440,790 +423,698 @@ class brave{
 		
 		// do some magic
 		$this->fuckhtml->load($html);
-		$data = $this->get_js();
+		$datas = $this->get_js();
 		
-		if(
-			isset($data[2]["data"]["title"]) &&
-			stripos($data[2]["data"]["title"], "PoW Captcha") !== false
-		){
-			
-			throw new Exception("Brave returned a PoW captcha");
-		}
+		$has_found_body = false;
 		
-		if(!isset($data["data"]["body"]["response"])){
-			
-			throw new Exception("Brave did not return a result object");
-		}
-		
-		$data = $data["data"]["body"]["response"];
-		
-		/*
-			Get web results
-		*/
-		if(!isset($data["web"]["results"])){
-			
-			return $out;
-		}
-		
-		foreach($data["web"]["results"] as $result){
-			
+		foreach($datas as $data){
 			if(
-				isset($result["thumbnail"]) &&
-				is_array($result["thumbnail"])
+				isset($data[2]["data"]["title"]) &&
+				stripos($data[2]["data"]["title"], "PoW Captcha") !== false
 			){
 				
-				$thumb = [
-					"ratio" => $result["thumbnail"]["logo"] == "false" ? "16:9" : "1:1",
-					"url" => $result["thumbnail"]["original"]
-				];
-			}else{
-				
-				$thumb = [
-					"ratio" => null,
-					"url" => null
-				];
+				throw new Exception("Brave returned a PoW captcha");
 			}
 			
-			// get sublinks
-			$sublink = [];
-			if(
-				isset($result["cluster"]) &&
-				is_array($result["cluster"])
-			){
+			if(!isset($data["data"]["body"]["response"])){
 				
-				foreach($result["cluster"] as $cluster){
-					
-					$sublink[] = [
-						"title" => $this->titledots($cluster["title"]),
-						"description" =>
-							$this->titledots(
-								$this->fuckhtml
-								->getTextContent(
-									$cluster["description"]
-								)
-							),
-						"url" => $cluster["url"],
-						"date" => null
-					];
-				}
+				continue;
 			}
 			
-			// more sublinks
-			if(
-				isset($result["deep_results"]) &&
-				is_array($result["deep_results"])
-			){
-				
-				foreach($result["deep_results"]["buttons"] as $r){
-					
-					$sublink[] = [
-						"title" => $this->titledots($r["title"]),
-						"description" => null,
-						"url" => $r["url"],
-						"date" => null
-					];
-				}
-			}
-			
-			// parse table elements
-			$table = [];
+			$has_found_body = true;
+			$data = $data["data"]["body"]["response"];
 			
 			/*
-			[locations] => void 0			Done
-			[video] => void 0				Done
-			[movie] => void 0				Done
-			[faq] => void 0
-			[recipe] => void 0
-			[qa] => void 0					Not needed
-			[book] => void 0
-			[rating] => void 0
-			[article] => void 0
-			[product] => void 0				Done
-			[product_cluster] => void 0
-			[cluster_type] => void 0
-			[cluster] => void 0				Done
-			[creative_work] => void 0		Done
-			[music_recording] => void 0
-			[review] => void 0				Done
-			[software] => void 0			Done
-			[content_type] => void 0
-			[descriptionLength] => 271
+				Get web results
 			*/
-			
-			// product
-			// creative_work
-			$ref = null;
-			
-			if(isset($result["product"])){
+			if(!isset($data["web"]["results"])){
 				
-				$ref = &$result["product"];
-			}elseif(isset($result["creative_work"])){
-				
-				$ref = &$result["creative_work"];
+				return $out;
 			}
 			
-			if($ref !== null){
-				
-				if(isset($ref["offers"])){
-					
-					foreach($ref["offers"] as $offer){
-						
-						$price = null;
-						
-						if(isset($offer["price"])){
-							
-							if((float)$offer["price"] == 0){
-								
-								$price = "Free";
-							}else{
-								
-								$price = $offer["price"];
-							}
-						}
-						
-						if($price !== "Free"){
-							if(isset($offer["priceCurrency"])){
-								
-								$price .= " " . $offer["priceCurrency"];
-							}
-						}
-						
-						if($price !== null){
-							
-							$table["Price"] = trim($price);
-						}
-					}
-				}
-				
-				if(isset($ref["rating"])){
-					
-					$rating = null;
-					if(isset($ref["rating"]["ratingValue"])){
-						
-						$rating = $ref["rating"]["ratingValue"];
-						
-						if(isset($ref["rating"]["bestRating"])){
-							
-							$rating .= "/" . $ref["rating"]["bestRating"];
-						}
-					}
-					
-					if(isset($ref["rating"]["reviewCount"])){
-						
-						$isnull = $rating === null ? false : true;
-						
-						if($isnull){
-							
-							$rating .= " (";
-						}
-						
-						$rating .= number_format($ref["rating"]["reviewCount"]) . " hits";
-						
-						if($isnull){
-							
-							$rating .= ")";
-						}
-					}
-					
-					if($rating !== null){
-						
-						$table["Rating"] = $rating;
-					}
-				}
-			}
-			
-			// review
-			if(
-				isset($result["review"]) &&
-				is_array($result["review"])
-			){
-				
-				if(isset($result["review"]["rating"]["ratingValue"])){
-					
-					$table["Rating"] =
-						$result["review"]["rating"]["ratingValue"] . "/" .
-						$result["review"]["rating"]["bestRating"];
-				}
-			}
-			
-			// software
-			if(
-				isset($result["software"]) &&
-				is_array($result["software"])
-			){
-				
-				if(isset($result["software"]["author"])){
-					$table["Author"] = $result["software"]["author"];
-				}
-				
-				if(isset($result["software"]["stars"])){
-					$table["Stars"] = number_format($result["software"]["stars"]);
-				}
-				
-				if(isset($result["software"]["forks"])){
-					$table["Forks"] = number_format($result["software"]["forks"]);
-				}
+			foreach($data["web"]["results"] as $result){
 				
 				if(
-					isset($result["software"]["programmingLanguage"]) &&
-					$result["software"]["programmingLanguage"] != ""
-				){
-					$table["Programming languages"] = $result["software"]["programmingLanguage"];
-				}
-			}
-			
-			// location
-			if(
-				isset($result["location"]) &&
-				is_array($result["location"])
-			){
-				
-				if(isset($result["location"]["postal_address"]["displayAddress"])){
-					
-					$table["Address"] = $result["location"]["postal_address"]["displayAddress"];
-				}
-				
-				if(
-					isset($result["location"]["rating"]) &&
-					$result["location"]["rating"] != "void 0"
+					isset($result["thumbnail"]) &&
+					is_array($result["thumbnail"])
 				){
 					
-					$table["Rating"] =
-						$result["location"]["rating"]["ratingValue"] . "/" .
-						$result["location"]["rating"]["bestRating"] . " (" .
-						number_format($result["location"]["rating"]["reviewCount"]) . " votes)";
-				}
-				
-				if(
-					isset($result["location"]["contact"]["telephone"]) &&
-					$result["location"]["contact"]["telephone"] != "void 0"
-				){
-					
-					$table["Phone number"] =
-						$result["location"]["contact"]["telephone"];
-				}
-				
-				if(
-					isset($result["location"]["price_range"]) &&
-					$result["location"]["price_range"] != "void 0"
-				){
-					
-					$table["Price"] =
-						$result["location"]["price_range"];
-				}
-			}
-			
-			// video
-			if(
-				isset($result["video"]) &&
-				is_array($result["video"])
-			){
-				
-				foreach($result["video"] as $key => $value){
-					
-					if(is_string($result["video"][$key]) === false){
-						
-						continue;
-					}
-					
-					$table[ucfirst($key)] = $value;
-				}
-			}
-			
-			// movie
-			if(
-				isset($result["video"]) &&
-				is_array($result["movie"])
-			){
-				
-				if(isset($result["movie"]["release"])){
-					
-					$table["Release date"] = $result["movie"]["release"];
-				}
-				
-				if(isset($result["movie"]["directors"])){
-					
-					$directors = [];
-					
-					foreach($result["movie"]["directors"] as $director){
-						
-						$directors[] = $director["name"];
-					}
-					
-					if(count($directors) !== 0){
-						
-						$table["Directors"] = implode(", ", $directors);
-					}
-				}
-				
-				if(isset($result["movie"]["actors"])){
-					
-					$actors = [];
-					
-					foreach($result["movie"]["actors"] as $actor){
-						
-						$actors[] = $actor["name"];
-					}
-					
-					if(count($actors) !== 0){
-						$table["Actors"] = implode(", ", $actors);
-					}
-				}
-				
-				if(isset($result["movie"]["rating"])){
-					
-					$table["Rating"] =
-						$result["movie"]["rating"]["ratingValue"] . "/" .
-						$result["movie"]["rating"]["bestRating"] . " (" .
-						number_format($result["movie"]["rating"]["reviewCount"]) . " votes)";
-				}
-				
-				if(isset($result["movie"]["duration"])){
-					
-					$table["Duration"] =
-						$result["movie"]["duration"];
-				}
-				
-				if(isset($result["movie"]["genre"])){
-					
-					$genres = [];
-					
-					foreach($result["movie"]["genre"] as $genre){
-						
-						$genres[] = $genre;
-					}
-					
-					if(count($genres) !== 0){
-						$table["Genre"] = implode(", ", $genres);
-					}
-				}
-			}
-			
-			if(
-				isset($result["age"]) &&
-				$result["age"] != "void 0" &&
-				$result["age"] != ""
-			){
-				
-				$date = strtotime($result["age"]);
-			}else{
-				
-				$date = null;
-			}
-			
-			$out["web"][] = [
-				"title" =>
-					$this->titledots(
-						$result["title"]
-					),
-				"description" =>
-					isset($result["review"]["description"]) ?
-					$this->limitstrlen(
-						strip_tags(
-							$result["review"]["description"]
-						)
-					) :
-					$this->titledots(
-						$this->fuckhtml
-						->getTextContent(
-							$result["description"]
-						)
-					),
-				"url" => $result["url"],
-				"date" => $date,
-				"type" => "web",
-				"thumb" => $thumb,
-				"sublink" => $sublink,
-				"table" => $table
-			];
-		}
-		
-		/*
-			Get spelling autocorrect
-		*/
-		if(
-			isset($data["query"]["bo_altered_diff"][0][0]) &&
-			$data["query"]["bo_altered_diff"][0][0] == "true"
-		){
-			$using = [];
-			
-			foreach($data["query"]["bo_altered_diff"] as $diff){
-				
-				$using[] = $diff[1];
-			}
-			
-			$out["spelling"] = [
-				"type" => "including",
-				"using" => implode(" ", $using),
-				"correction" => $get["s"]
-			];
-		}
-		
-		/*
-			Get wikipedia heads
-		*/
-		if(isset($data["infobox"]["results"][0])){
-			
-			foreach($data["infobox"]["results"] as $info){
-				
-				if($info["subtype"] == "code"){
-					
-					$description =
-						$this->stackoverflow_parse($info["data"]["answer"]["text"]);
-					
-					if(isset($info["data"]["answer"]["author"])){
-						
-						$description[] = [
-							"type" => "quote",
-							"value" => "Answer from " . $info["data"]["answer"]["author"]
-						];
-					}
+					$thumb = [
+						"ratio" => (isset($result["thumbnail"]["logo"]) && $result["thumbnail"]["logo"] == "true") ? "1:1" : "16:9",
+						"url" => $result["thumbnail"]["original"]
+					];
 				}else{
 					
-					$description = [];
+					$thumb = [
+						"ratio" => null,
+						"url" => null
+					];
+				}
+				
+				// get sublinks
+				$sublink = [];
+				if(
+					isset($result["cluster"]) &&
+					is_array($result["cluster"])
+				){
 					
-					if(
-						isset($info["description"]) &&
-						$info["description"] != ""
-					){
-						$description[] = [
-							"type" => "quote",
-							"value" => $info["description"]
+					foreach($result["cluster"] as $cluster){
+						
+						$sublink[] = [
+							"title" => $this->titledots($cluster["title"]),
+							"description" =>
+								$this->titledots(
+									$this->fuckhtml
+									->getTextContent(
+										$cluster["description"]
+									)
+								),
+							"url" => $cluster["url"],
+							"date" => null
 						];
 					}
+				}
+				
+				// more sublinks
+				if(
+					isset($result["deep_results"]) &&
+					is_array($result["deep_results"])
+				){
 					
-					if(
-						isset($info["long_desc"]) &&
-						$info["long_desc"] != ""
-					){
-						$description[] = [
-							"type" => "text",
-							"value" => $this->titledots($info["long_desc"])
+					foreach($result["deep_results"]["buttons"] as $r){
+						
+						$sublink[] = [
+							"title" => $this->titledots($r["title"]),
+							"description" => null,
+							"url" => $r["url"],
+							"date" => null
 						];
 					}
+				}
+				
+				// parse table elements
+				$table = [];
+				
+				/*
+				[locations] => void 0			Done
+				[video] => void 0				Done
+				[movie] => void 0				Done
+				[faq] => void 0
+				[recipe] => void 0
+				[qa] => void 0					Not needed
+				[book] => void 0
+				[rating] => void 0
+				[article] => void 0
+				[product] => void 0				Done
+				[product_cluster] => void 0
+				[cluster_type] => void 0
+				[cluster] => void 0				Done
+				[creative_work] => void 0		Done
+				[music_recording] => void 0
+				[review] => void 0				Done
+				[software] => void 0			Done
+				[content_type] => void 0
+				[descriptionLength] => 271
+				*/
+				
+				// product
+				// creative_work
+				$ref = null;
+				
+				if(isset($result["product"])){
 					
-					// parse ratings
-					if(
-						isset($info["ratings"]) &&
-						$info["ratings"] != "void 0" &&
-						is_array($info["ratings"]) &&
-						count($info["ratings"]) !== 0
-					){
+					$ref = &$result["product"];
+				}elseif(isset($result["creative_work"])){
+					
+					$ref = &$result["creative_work"];
+				}
+				
+				if($ref !== null){
+					
+					if(isset($ref["offers"])){
 						
-						$description[] = [
-							"type" => "title",
-							"value" => "Ratings"
-						];
+						foreach($ref["offers"] as $offer){
+							
+							$price = null;
+							
+							if(isset($offer["price"])){
+								
+								if((float)$offer["price"] == 0){
+									
+									$price = "Free";
+								}else{
+									
+									$price = $offer["price"];
+								}
+							}
+							
+							if($price !== "Free"){
+								if(isset($offer["priceCurrency"])){
+									
+									$price .= " " . $offer["priceCurrency"];
+								}
+							}
+							
+							if($price !== null){
+								
+								$table["Price"] = trim($price);
+							}
+						}
+					}
+					
+					if(isset($ref["rating"])){
 						
-						foreach($info["ratings"] as $rating){
+						$rating = null;
+						if(isset($ref["rating"]["ratingValue"])){
 							
-							$description[] = [
-								"type" => "link",
-								"url" => $rating["profile"]["url"],
-								"value" => $rating["profile"]["name"]
-							];
+							$rating = $ref["rating"]["ratingValue"];
 							
-							$description[] = [
-								"type" => "text",
-								"value" => ": " . $rating["ratingValue"] . "/" . $rating["bestRating"] . "\n"
-							];
+							if(isset($ref["rating"]["bestRating"])){
+								
+								$rating .= "/" . $ref["rating"]["bestRating"];
+							}
+						}
+						
+						if(isset($ref["rating"]["reviewCount"])){
+							
+							$isnull = $rating === null ? false : true;
+							
+							if($isnull){
+								
+								$rating .= " (";
+							}
+							
+							$rating .= number_format($ref["rating"]["reviewCount"]) . " hits";
+							
+							if($isnull){
+								
+								$rating .= ")";
+							}
+						}
+						
+						if($rating !== null){
+							
+							$table["Rating"] = $rating;
 						}
 					}
 				}
 				
-				$table = [];
-				if(isset($info["attributes"])){
+				// review
+				if(
+					isset($result["review"]) &&
+					is_array($result["review"])
+				){
 					
-					foreach($info["attributes"] as $row){
+					if(isset($result["review"]["rating"]["ratingValue"])){
 						
-						if(
-							$row[1] == "null" &&
-							count($table) !== 0
-						){
-							
-							break;
-						}
+						$table["Rating"] =
+							$result["review"]["rating"]["ratingValue"] . "/" .
+							$result["review"]["rating"]["bestRating"];
+					}
+				}
+				
+				// software
+				if(
+					isset($result["software"]) &&
+					is_array($result["software"])
+				){
+					
+					if(isset($result["software"]["author"])){
+						$table["Author"] = $result["software"]["author"];
+					}
+					
+					if(isset($result["software"]["stars"])){
+						$table["Stars"] = number_format($result["software"]["stars"]);
+					}
+					
+					if(isset($result["software"]["forks"])){
+						$table["Forks"] = number_format($result["software"]["forks"]);
+					}
+					
+					if(
+						isset($result["software"]["programmingLanguage"]) &&
+						$result["software"]["programmingLanguage"] != ""
+					){
+						$table["Programming languages"] = $result["software"]["programmingLanguage"];
+					}
+				}
+				
+				// location
+				if(
+					isset($result["location"]) &&
+					is_array($result["location"])
+				){
+					
+					if(isset($result["location"]["postal_address"]["displayAddress"])){
 						
-						if($row[1] == "null"){
+						$table["Address"] = $result["location"]["postal_address"]["displayAddress"];
+					}
+					
+					if(
+						isset($result["location"]["rating"]) &&
+						$result["location"]["rating"] != "void 0"
+					){
+						
+						$table["Rating"] =
+							$result["location"]["rating"]["ratingValue"] . "/" .
+							$result["location"]["rating"]["bestRating"] . " (" .
+							number_format($result["location"]["rating"]["reviewCount"]) . " votes)";
+					}
+					
+					if(
+						isset($result["location"]["contact"]["telephone"]) &&
+						$result["location"]["contact"]["telephone"] != "void 0"
+					){
+						
+						$table["Phone number"] =
+							$result["location"]["contact"]["telephone"];
+					}
+					
+					if(
+						isset($result["location"]["price_range"]) &&
+						$result["location"]["price_range"] != "void 0"
+					){
+						
+						$table["Price"] =
+							$result["location"]["price_range"];
+					}
+				}
+				
+				// video
+				if(
+					isset($result["video"]) &&
+					is_array($result["video"])
+				){
+					
+					foreach($result["video"] as $key => $value){
+						
+						if(is_string($result["video"][$key]) === false){
 							
 							continue;
 						}
 						
-						$table[
-							$this->fuckhtml->getTextContent($row[0])
-						] =
-							$this->fuckhtml->getTextContent($row[1]);
+						$table[ucfirst($key)] = $value;
 					}
 				}
 				
-				$sublink = [];
-				if(isset($info["profiles"])){
+				// movie
+				if(
+					isset($result["video"]) &&
+					is_array($result["movie"])
+				){
 					
-					foreach($info["profiles"] as $row){
+					if(isset($result["movie"]["release"])){
 						
-						$name = $this->fuckhtml->getTextContent($row["name"]);
+						$table["Release date"] = $result["movie"]["release"];
+					}
+					
+					if(isset($result["movie"]["directors"])){
 						
-						if(strtolower($name) == "steampowered"){
+						$directors = [];
+						
+						foreach($result["movie"]["directors"] as $director){
 							
-							$name = "Steam";
+							$directors[] = $director["name"];
 						}
 						
-						$sublink[
-							$this->fuckhtml->getTextContent($name)
-						] =
-							$this->fuckhtml->getTextContent($row["url"]);
+						if(count($directors) !== 0){
+							
+							$table["Directors"] = implode(", ", $directors);
+						}
+					}
+					
+					if(isset($result["movie"]["actors"])){
+						
+						$actors = [];
+						
+						foreach($result["movie"]["actors"] as $actor){
+							
+							$actors[] = $actor["name"];
+						}
+						
+						if(count($actors) !== 0){
+							$table["Actors"] = implode(", ", $actors);
+						}
+					}
+					
+					if(isset($result["movie"]["rating"])){
+						
+						$table["Rating"] =
+							$result["movie"]["rating"]["ratingValue"] . "/" .
+							$result["movie"]["rating"]["bestRating"] . " (" .
+							number_format($result["movie"]["rating"]["reviewCount"]) . " votes)";
+					}
+					
+					if(isset($result["movie"]["duration"])){
+						
+						$table["Duration"] =
+							$result["movie"]["duration"];
+					}
+					
+					if(isset($result["movie"]["genre"])){
+						
+						$genres = [];
+						
+						foreach($result["movie"]["genre"] as $genre){
+							
+							$genres[] = $genre;
+						}
+						
+						if(count($genres) !== 0){
+							$table["Genre"] = implode(", ", $genres);
+						}
 					}
 				}
 				
-				$out["answer"][] = [
-					"title" => $this->fuckhtml->getTextContent($info["title"]),
-					"description" => $description,
-					"url" => $info["url"],
-					"thumb" => isset($info["images"][0]["original"]) ? $info["images"][0]["original"] : null,
-					"table" => $table,
-					"sublink" => $sublink
-				];
-				
-				break; // only iterate once, we get garbage most of the time
-			}
-		}
-		
-		/*
-			Get videos
-		*/
-		if(isset($data["videos"]["results"])){
-			
-			foreach($data["videos"]["results"] as $video){
-				
-				$out["video"][] = [
-					"title" => $this->titledots($video["title"]),
-					"description" => $this->titledots($video["description"]),
-					"date" => isset($video["age"]) && $video["age"] != "void 0" ? strtotime($video["age"]) : null,
-					"duration" => isset($video["video"]["duration"]) && $video["video"]["duration"] != "void 0" ? $this->hms2int($video["video"]["duration"]) : null,
-					"views" => isset($video["video"]["views"]) && $video["video"]["views"] != "void 0" ? (int)$video["video"]["views"] : null,
-					"thumb" =>
-						isset($video["thumbnail"]["src"]) ?
-						[
-							"ratio" => "16:9",
-							"url" => $this->unshiturl($video["thumbnail"]["src"])
-						] :
-						[
-							"ratio" => null,
-							"url" => null
-						],
-					"url" => $video["url"]
-				];
-			}
-		}
-		
-		/*
-			Get news
-		*/
-		if(isset($data["news"]["results"])){
-			
-			foreach($data["news"]["results"] as $news){
-				
-				$out["news"][] = [
-					"title" => $this->titledots($news["title"]),
-					"description" => $this->titledots($news["description"]),
-					"date" => isset($news["age"]) ? strtotime($news["age"]) : null,
-					"thumb" =>
-						isset($video["thumbnail"]["src"]) ?
-						[
-							"ratio" => "16:9",
-							"url" => $this->unshiturl($video["thumbnail"]["src"])
-						] :
-						[
-							"ratio" => null,
-							"url" => null
-						],
-					"url" => $news["url"]
-				];
-			}
-		}
-		
-		/*
-			Get discussions
-		*/
-		$disc_out = [];
-		
-		if(isset($data["discussions"]["results"])){
-			
-			foreach($data["discussions"]["results"] as $disc){
-				
-				$table = [];
-				
-				if(isset($disc["data"]["num_votes"])){
+				if(
+					isset($result["age"]) &&
+					$result["age"] != "void 0" &&
+					$result["age"] != ""
+				){
 					
-					$table["Votes"] = number_format($disc["data"]["num_votes"]);
+					$date = strtotime($result["age"]);
+				}else{
+					
+					$date = null;
 				}
 				
-				if(isset($disc["data"]["num_answers"])){
-					
-					$table["Comments"] = number_format($disc["data"]["num_answers"]);
-				}
-				
-				$disc_out[] = [
+				$out["web"][] = [
 					"title" =>
 						$this->titledots(
-							$disc["title"]
+							$result["title"]
 						),
 					"description" =>
+						isset($result["review"]["description"]) ?
 						$this->limitstrlen(
-							$this->titledots(
-								$this->fuckhtml
-								->getTextContent(
-									$disc["description"]
-								)
+							strip_tags(
+								$result["review"]["description"]
+							)
+						) :
+						$this->titledots(
+							$this->fuckhtml
+							->getTextContent(
+								$result["description"]
 							)
 						),
-					"url" => $disc["url"],
-					"date" => isset($disc["age"]) ? strtotime($disc["age"]) : null,
+					"url" => $result["url"],
+					"date" => $date,
 					"type" => "web",
-					"thumb" => [
-						"ratio" => null,
-						"url" => null
-					],
-					"sublink" => [],
+					"thumb" => $thumb,
+					"sublink" => $sublink,
 					"table" => $table
 				];
 			}
-		}
-		
-		// append discussions at position 2
-		array_splice($out["web"], 1, 0, $disc_out);
-		
-		return $out;
-	}
-	
-	public function news($get){
-		
-		if($get["npt"]){
-			
-			[$req, $proxy] = $this->backend->get($get["npt"], "news");
-			
-			$req = json_decode($req, true);
-			
-			$search = $req["q"];
-			$country = $req["country"];
-			$nsfw = $req["nsfw"];
-			$offset = $req["offset"];
-			$spellcheck = $req["spellcheck"];
-			
-			try{
-				$html =
-					$this->get(
-						$proxy,
-						"https://search.brave.com/news",
-						[
-							"q" => $search,
-							"offset" => $offset,
-							"spellcheck" => $spellcheck
-						],
-						$nsfw,
-						$country
-					);
-				
-			}catch(Exception $error){
-				
-				throw new Exception("Could not fetch search page");
-			}
-			
-		}else{
-			$search = $get["s"];
-			if(strlen($search) === 0){
-				
-				throw new Exception("Search term is empty!");
-			}
-			
-			if(strlen($search) > 2048){
-				
-				throw new Exception("Search term is too long!");
-			}
-			
-			$proxy = $this->backend->get_ip();
-			$nsfw = $get["nsfw"];
-			$country = $get["country"];
-			$spellcheck = $get["spellcheck"] == "yes" ? "1" : "0";
 			
 			/*
-			$handle = fopen("scraper/brave-news.html", "r");
-			$html = fread($handle, filesize("scraper/brave-news.html"));
-			fclose($handle);*/
-			try{
-				$html =
-					$this->get(
-						$proxy,
-						"https://search.brave.com/news",
-						[
-							"q" => $search,
-							"spellcheck" => $spellcheck
-						],
-						$nsfw,
-						$country
-					);
+				Get spelling autocorrect
+			*/
+			if(
+				isset($data["query"]["bo_altered_diff"][0][0]) &&
+				$data["query"]["bo_altered_diff"][0][0] == "true"
+			){
+				$using = [];
 				
-			}catch(Exception $error){
+				foreach($data["query"]["bo_altered_diff"] as $diff){
+					
+					$using[] = $diff[1];
+				}
 				
-				throw new Exception("Could not fetch search page");
+				$out["spelling"] = [
+					"type" => "including",
+					"using" => implode(" ", $using),
+					"correction" => $get["s"]
+				];
 			}
+			
+			/*
+				Get wikipedia heads
+			*/
+			if(isset($data["infobox"]["results"][0])){
+				
+				foreach($data["infobox"]["results"] as $info){
+					
+					if($info["subtype"] == "code"){
+						
+						$description =
+							$this->stackoverflow_parse($info["data"]["answer"]["text"]);
+						
+						if(isset($info["data"]["answer"]["author"])){
+							
+							$description[] = [
+								"type" => "quote",
+								"value" => "Answer from " . $info["data"]["answer"]["author"]
+							];
+						}
+					}else{
+						
+						$description = [];
+						
+						if(
+							isset($info["description"]) &&
+							$info["description"] != ""
+						){
+							$description[] = [
+								"type" => "quote",
+								"value" => $info["description"]
+							];
+						}
+						
+						if(
+							isset($info["long_desc"]) &&
+							$info["long_desc"] != ""
+						){
+							$description[] = [
+								"type" => "text",
+								"value" => $this->titledots($info["long_desc"])
+							];
+						}
+						
+						// parse ratings
+						if(
+							isset($info["ratings"]) &&
+							$info["ratings"] != "void 0" &&
+							is_array($info["ratings"]) &&
+							count($info["ratings"]) !== 0
+						){
+							
+							$description[] = [
+								"type" => "title",
+								"value" => "Ratings"
+							];
+							
+							foreach($info["ratings"] as $rating){
+								
+								$description[] = [
+									"type" => "link",
+									"url" => $rating["profile"]["url"],
+									"value" => $rating["profile"]["name"]
+								];
+								
+								$description[] = [
+									"type" => "text",
+									"value" => ": " . $rating["ratingValue"] . "/" . $rating["bestRating"] . "\n"
+								];
+							}
+						}
+					}
+					
+					$table = [];
+					if(isset($info["attributes"])){
+						
+						foreach($info["attributes"] as $row){
+							
+							if(
+								$row[1] == "null" &&
+								count($table) !== 0
+							){
+								
+								break;
+							}
+							
+							if($row[1] == "null"){
+								
+								continue;
+							}
+							
+							$table[
+								$this->fuckhtml->getTextContent($row[0])
+							] =
+								$this->fuckhtml->getTextContent($row[1]);
+						}
+					}
+					
+					$sublink = [];
+					if(isset($info["profiles"])){
+						
+						foreach($info["profiles"] as $row){
+							
+							$name = $this->fuckhtml->getTextContent($row["name"]);
+							
+							if(strtolower($name) == "steampowered"){
+								
+								$name = "Steam";
+							}
+							
+							$sublink[
+								$this->fuckhtml->getTextContent($name)
+							] =
+								$this->fuckhtml->getTextContent($row["url"]);
+						}
+					}
+					
+					$thumb = isset($info["images"][0]["original"]) ? $info["images"][0]["original"] : null;
+					
+					if(
+						preg_match(
+							'/^\/\//',
+							$thumb
+						) !== 0
+					){
+						
+						$thumb = "https:" . $thumb;
+					}
+					
+					$out["answer"][] = [
+						"title" => $this->fuckhtml->getTextContent($info["title"]),
+						"description" => $description,
+						"url" => $info["url"],
+						"thumb" => $thumb,
+						"table" => $table,
+						"sublink" => $sublink
+					];
+					
+					break; // only iterate once, we get garbage most of the time
+				}
+			}
+			
+			/*
+				Get videos
+			*/
+			if(isset($data["videos"]["results"])){
+				
+				foreach($data["videos"]["results"] as $video){
+					
+					if(
+						$video["title"] == "" &&
+						$video["description"] == ""
+					){
+						
+						// ignore result
+						continue;
+					}
+					
+					// get thumbnails
+					$thumbs = [];
+					
+					if(isset($video["video"]["thumbnail"]["src"])){ $thumbs[] = $video["video"]["thumbnail"]["src"]; }
+					if(isset($video["video"]["thumbnail"]["original"])){ $thumbs[] = $video["video"]["thumbnail"]["original"]; }
+					if(isset($video["thumbnail"]["src"])){ $thumbs[] = $video["thumbnail"]["src"]; }
+					if(isset($video["thumbnail"]["original"])){ $thumbs[] = $video["thumbnail"]["original"]; }
+					
+					$thumb = $this->check_thumbs($thumbs);
+					
+					$out["video"][] = [
+						"title" => $this->titledots($video["title"]),
+						"description" => $this->titledots($video["description"]),
+						"date" => isset($video["age"]) && $video["age"] != "void 0" ? strtotime($video["age"]) : null,
+						"duration" => isset($video["video"]["duration"]) && $video["video"]["duration"] != "void 0" ? $this->hms2int($video["video"]["duration"]) : null,
+						"views" => isset($video["video"]["views"]) && $video["video"]["views"] != "void 0" ? (int)$video["video"]["views"] : null,
+						"thumb" =>
+							$thumb !== false ?
+							[
+								"ratio" => "16:9",
+								"url" => $this->unshiturl($thumb)
+							] :
+							[
+								"ratio" => null,
+								"url" => null
+							],
+						"url" => $video["url"]
+					];
+				}
+			}
+			
+			/*
+				Get news
+			*/
+			if(isset($data["news"]["results"])){
+				
+				foreach($data["news"]["results"] as $news){
+					
+					$out["news"][] = [
+						"title" => $this->titledots($news["title"]),
+						"description" => $this->titledots($news["description"]),
+						"date" => isset($news["age"]) ? strtotime($news["age"]) : null,
+						"thumb" =>
+							isset($video["thumbnail"]["src"]) ?
+							[
+								"ratio" => "16:9",
+								"url" => $this->unshiturl($video["thumbnail"]["src"])
+							] :
+							[
+								"ratio" => null,
+								"url" => null
+							],
+						"url" => $news["url"]
+					];
+				}
+			}
+			
+			/*
+				Get discussions
+			*/
+			$disc_out = [];
+			
+			if(isset($data["discussions"]["results"])){
+				
+				foreach($data["discussions"]["results"] as $disc){
+					
+					$table = [];
+					
+					if(isset($disc["data"]["num_votes"])){
+						
+						$table["Votes"] = number_format($disc["data"]["num_votes"]);
+					}
+					
+					if(isset($disc["data"]["num_answers"])){
+						
+						$table["Comments"] = number_format($disc["data"]["num_answers"]);
+					}
+					
+					$disc_out[] = [
+						"title" =>
+							$this->titledots(
+								$disc["title"]
+							),
+						"description" =>
+							$this->limitstrlen(
+								$this->titledots(
+									$this->fuckhtml
+									->getTextContent(
+										$disc["description"]
+									)
+								)
+							),
+						"url" => $disc["url"],
+						"date" => isset($disc["age"]) ? strtotime($disc["age"]) : null,
+						"type" => "web",
+						"thumb" => [
+							"ratio" => null,
+							"url" => null
+						],
+						"sublink" => [],
+						"table" => $table
+					];
+				}
+			}
+			
+			// append discussions at position 2
+			array_splice($out["web"], 1, 0, $disc_out);
 		}
 		
-		$out = [
-			"status" => "ok",
-			"npt" => null,
-			"news" => []
-		];
-		
-		// load html
-		$this->fuckhtml->load($html);
-		
-		$this->detect_captcha($html);
-		
-		// get npt
-		$out["npt"] =
-			$this->generatenextpagetoken(
-				$search,
-				$nsfw,
-				$country,
-				$spellcheck,
-				"news",
-				$proxy
-			);
-		
-		$this->fuckhtml->load($html);
-		$json = $this->get_js();
-		
-		foreach(
-			$json["data"]["response"]["news"]["results"]
-			as $news
-		){
+		if($has_found_body === false){
 			
-			if(
-				!isset($news["thumbnail"]["src"]) ||
-				$news["thumbnail"]["src"] == "void 0"
-			){
-								
-				$thumb = [
-					"url" => null,
-					"ratio" => null
-				];
-			}else{
-								
-				$thumb = [
-					"url" => $this->unshiturl($news["thumbnail"]["src"]),
-					"ratio" => "16:9"
-				];
-			}
-			
-			$out["news"][] = [
-				"title" => $news["title"],
-				"author" => null,
-				"description" => $news["description"],
-				"date" => !isset($news["age"]) || $news["age"] == "void 0" || $news["age"] == "null" ? null : strtotime($news["age"]),
-				"thumb" => $thumb,
-				"url" => $news["url"]
-			];
+			throw new Exception("Brave did not return a search result object");
 		}
 		
 		return $out;
@@ -1278,33 +1169,41 @@ class brave{
 		
 		$this->detect_captcha($html);
 		
-		$json = $this->get_js();
+		$jsons = $this->get_js();
 		
-		foreach(
-			$json
-			["data"]
-			["body"]
-			["response"]
-			["results"]
-			as $result
-		){
+		foreach($jsons as $json){
 			
-			$out["image"][] = [
-				"title" => $result["title"],
-				"source" => [
-					[
-						"url" => $result["properties"]["url"],
-						"width" => (int)$result["properties"]["width"],
-						"height" => (int)$result["properties"]["height"]
+			if(!isset($json["data"]["body"]["response"]["results"])){
+				
+				continue;
+			}
+			
+			foreach(
+				$json
+				["data"]
+				["body"]
+				["response"]
+				["results"]
+				as $result
+			){
+				
+				$out["image"][] = [
+					"title" => $result["title"],
+					"source" => [
+						[
+							"url" => $result["properties"]["url"],
+							"width" => (int)$result["properties"]["width"],
+							"height" => (int)$result["properties"]["height"]
+						],
+						[
+							"url" => $result["thumbnail"]["src"],
+							"width" => (int)$result["thumbnail"]["width"],
+							"height" => (int)$result["thumbnail"]["height"]
+						]
 					],
-					[
-						"url" => $result["thumbnail"]["src"],
-						"width" => (int)$result["thumbnail"]["width"],
-						"height" => (int)$result["thumbnail"]["height"]
-					]
-				],
-				"url" => $result["url"]
-			];
+					"url" => $result["url"]
+				];
+			}
 		}
 		
 		return $out;
@@ -1411,59 +1310,209 @@ class brave{
 		fclose($handle);*/
 		
 		$this->fuckhtml->load($html);
-		$json = $this->get_js();
+		$jsons = $this->get_js();
+		$error = false;
 		
-		foreach(
-			$json
-			["data"]
-			["body"]
-			["response"]
-			["results"]
-			as $result
-		){
+		foreach($jsons as $json){
 			
-			if($result["video"]["author"] != "null"){
+			if(!isset($json["data"]["body"]["response"]["results"])){
 				
-				$author = [
-					"name" => $result["video"]["author"]["name"] == "null" ? null : $result["video"]["author"]["name"],
-					"url" => $result["video"]["author"]["url"] == "null" ? null : $result["video"]["author"]["url"],
-					"avatar" => $result["video"]["author"]["img"] == "null" ? null : $result["video"]["author"]["img"]
-				];
-			}else{
-				
-				$author = [
-					"name" => null,
-					"url" => null,
-					"avatar" => null
-				];
+				continue;
 			}
 			
-			if($result["thumbnail"] != "null"){
+			foreach(
+				$json
+				["data"]
+				["body"]
+				["response"]
+				["results"]
+				as $result
+			){
 				
-				$thumb = [
-					"url" => $result["thumbnail"]["original"],
-					"ratio" => "16:9"
-				];
-			}else{
+				if($result["video"]["author"] != "null"){
+					
+					$author = [
+						"name" => $result["video"]["author"]["name"] == "null" ? null : $result["video"]["author"]["name"],
+						"url" => $result["video"]["author"]["url"] == "null" ? null : $result["video"]["author"]["url"],
+						"avatar" => $result["video"]["author"]["img"] == "null" ? null : $result["video"]["author"]["img"]
+					];
+				}else{
+					
+					$author = [
+						"name" => null,
+						"url" => null,
+						"avatar" => null
+					];
+				}
 				
-				$thumb = [
-					"url" => null,
-					"ratio" => null
+				if($result["thumbnail"] != "null"){
+					
+					$thumb = [
+						"url" => $result["thumbnail"]["original"],
+						"ratio" => "16:9"
+					];
+				}else{
+					
+					$thumb = [
+						"url" => null,
+						"ratio" => null
+					];
+				}
+				
+				$out["video"][] = [
+					"title" => $result["title"],
+					"description" => $result["description"] == "null" ? null : $this->titledots($result["description"]),
+					"author" => $author,
+					"date" => ($result["age"] == "null" || $result["age"] == "void 0") ? null : strtotime($result["age"]),
+					"duration" => $result["video"]["duration"] == "null" ? null : $this->hms2int($result["video"]["duration"]),
+					"views" => $result["video"]["views"] == "null" ? null : (int)$result["video"]["views"],
+					"thumb" => $thumb,
+					"url" => $result["url"]
 				];
 			}
-			
-			$out["video"][] = [
-				"title" => $result["title"],
-				"description" => $result["description"] == "null" ? null : $this->titledots($result["description"]),
-				"author" => $author,
-				"date" => ($result["age"] == "null" || $result["age"] == "void 0") ? null : strtotime($result["age"]),
-				"duration" => $result["video"]["duration"] == "null" ? null : $this->hms2int($result["video"]["duration"]),
-				"views" => $result["video"]["views"] == "null" ? null : (int)$result["video"]["views"],
-				"thumb" => $thumb,
-				"url" => $result["url"]
-			];
 		}
 
+		return $out;
+	}
+	
+	public function news($get){
+		
+		if($get["npt"]){
+			
+			[$req, $proxy] = $this->backend->get($get["npt"], "news");
+			
+			$req = json_decode($req, true);
+			
+			$search = $req["q"];
+			$country = $req["country"];
+			$nsfw = $req["nsfw"];
+			$offset = $req["offset"];
+			$spellcheck = $req["spellcheck"];
+			
+			try{
+				$html =
+					$this->get(
+						$proxy,
+						"https://search.brave.com/news",
+						[
+							"q" => $search,
+							"offset" => $offset,
+							"spellcheck" => $spellcheck
+						],
+						$nsfw,
+						$country
+					);
+				
+			}catch(Exception $error){
+				
+				throw new Exception("Could not fetch search page");
+			}
+			
+		}else{
+			$search = $get["s"];
+			if(strlen($search) === 0){
+				
+				throw new Exception("Search term is empty!");
+			}
+			
+			if(strlen($search) > 2048){
+				
+				throw new Exception("Search term is too long!");
+			}
+			
+			$proxy = $this->backend->get_ip();
+			$nsfw = $get["nsfw"];
+			$country = $get["country"];
+			$spellcheck = $get["spellcheck"] == "yes" ? "1" : "0";
+			
+			/*
+			$handle = fopen("scraper/brave-news.html", "r");
+			$html = fread($handle, filesize("scraper/brave-news.html"));
+			fclose($handle);*/
+			try{
+				$html =
+					$this->get(
+						$proxy,
+						"https://search.brave.com/news",
+						[
+							"q" => $search,
+							"spellcheck" => $spellcheck
+						],
+						$nsfw,
+						$country
+					);
+				
+			}catch(Exception $error){
+				
+				throw new Exception("Could not fetch search page");
+			}
+		}
+		
+		$out = [
+			"status" => "ok",
+			"npt" => null,
+			"news" => []
+		];
+		
+		// load html
+		$this->fuckhtml->load($html);
+		
+		$this->detect_captcha($html);
+		
+		// get npt
+		$out["npt"] =
+			$this->generatenextpagetoken(
+				$search,
+				$nsfw,
+				$country,
+				$spellcheck,
+				"news",
+				$proxy
+			);
+		
+		$this->fuckhtml->load($html);
+		$jsons = $this->get_js();
+		
+		foreach($jsons as $json){
+						
+			if(!isset($json["data"]["response"]["news"]["results"])){
+				
+				continue;
+			}
+			
+			foreach(
+				$json["data"]["response"]["news"]["results"]
+				as $news
+			){
+				
+				if(
+					!isset($news["thumbnail"]["src"]) ||
+					$news["thumbnail"]["src"] == "void 0"
+				){
+									
+					$thumb = [
+						"url" => null,
+						"ratio" => null
+					];
+				}else{
+									
+					$thumb = [
+						"url" => $this->unshiturl($news["thumbnail"]["src"]),
+						"ratio" => "16:9"
+					];
+				}
+				
+				$out["news"][] = [
+					"title" => $news["title"],
+					"author" => null,
+					"description" => $news["description"],
+					"date" => !isset($news["age"]) || $news["age"] == "void 0" || $news["age"] == "null" ? null : strtotime($news["age"]),
+					"thumb" => $thumb,
+					"url" => $news["url"]
+				];
+			}
+		}
+		
 		return $out;
 	}
 	
@@ -1861,6 +1910,24 @@ class brave{
 					)[0]
 				)
 			);
+	}
+	
+	private function check_thumbs($thumbs){
+		
+		foreach($thumbs as $thumb){
+			
+			if(
+				preg_match(
+					'/^http/',
+					$thumb
+				) === 1
+			){
+				
+				return $this->unshiturl($thumb);
+			}
+		}
+		
+		return false;
 	}
 	
 	private function detect_captcha(){

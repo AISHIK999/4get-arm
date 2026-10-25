@@ -13,7 +13,8 @@ $fourget_env = array_filter($env, function($v, $k) {
 
 foreach($fourget_env as $key => $val)  {
         $target_key = preg_replace('/^FOURGET_/', '', $key);
-        $from_env[$target_key] = trim($val, '\'"');
+        $val = trim($val, '\'"');
+        $from_env[$target_key] = match(strtolower($val)) { "true" => true, "false" => false, default => $val };
 };
 
 $merged_config = array_merge($from_config, $from_env);

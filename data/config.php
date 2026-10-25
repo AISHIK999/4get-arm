@@ -43,6 +43,29 @@ class config{
 	const FPLAY_EXTERNAL_ENDPOINT = null;
 	
 	//
+	// RATELIMITING
+	// Limits also applies to the captcha page
+	//
+	
+	// Amount of requests allowed before we block
+	// Set to 0 to disable ratelimiting
+	const RATELIMIT_BURST = 0;
+	
+	// IP source for ratelimiting. Choices: false for getting the IP directly,
+	// or "X-Header-Name" to get the IP from a forwarded header
+	const RATELIMIT_IP_SOURCE = false;
+	
+	// How long till the counter resets? Note: counter resets everytime
+	// a new request occurs while being blocked.
+	const RATELIMIT_TIME = 2;
+	
+	// How many seconds to add every time a new request occurs while being blocked?
+	const RATELIMIT_PUNISH = 1;
+	
+	// Add seconds of punishment time to users of the API?
+	const RATELIMIT_PUNISH_API = false;
+	
+	//
 	// BOT PROTECTION
 	//
 	
@@ -96,11 +119,9 @@ class config{
 	const MAX_SEARCHES = 100;
 	
 	// List of domains that point to your servers. Include your tor/i2p
-	// addresses here! Must be a valid URL. Won't affect links placed on
-	// the homepage.
-	const ALT_ADDRESSES = [
-		//"https://4get.alt-tld",
-		//"http://4getwebfrq5zr4sxugk6htxvawqehxtdgjrbcn2oslllcol2vepa23yd.onion"
+	// addresses here! Must be a valid URL.
+	const ADDRESSES = [
+		//"https://4get.ca",
 	];
 	
 	// Known 4get instances. MUST use the https protocol if your instance uses
@@ -133,7 +154,7 @@ class config{
 	
 	// Default user agent to use for scraper requests. Sometimes ignored to get specific webpages
 	// Changing this might break things.
-	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0";
+	const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0";
 	
 	// User agent to use with 4get-friendly APIs
 	const USER_AGENT_FRIENDLY = "4get-scrapist (+https://4get.ca)";
@@ -167,6 +188,7 @@ class config{
 	const PROXY_ARCHIVEORG = false;
 	const PROXY_SEPIASEARCH = false;
 	const PROXY_ODYSEE = false;
+	const PROXY_DAILYMOTION = false;
 	const PROXY_VIMEO = false;
 	const PROXY_YEP = false;
 	const PROXY_PINTEREST = false;

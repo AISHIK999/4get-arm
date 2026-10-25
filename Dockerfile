@@ -4,7 +4,7 @@ FROM alpine:latest
 WORKDIR /var/www/html/4get
 
 RUN apk update && apk upgrade
-RUN apk add php apache2-ssl php84-fileinfo php84-openssl php84-iconv php84-common php84-dom php84-sodium php84-curl curl php84-pecl-apcu php84-apache2 imagemagick php84-pecl-imagick php84-mbstring imagemagick-webp imagemagick-jpeg nss ca-certificates ghostscript-fonts
+RUN apk add php apache2-ssl php85-fileinfo php85-openssl php85-iconv php85-common php85-dom php85-sodium php85-curl curl php85-pecl-apcu php85-apache2 imagemagick php85-pecl-imagick php85-mbstring imagemagick-webp imagemagick-jpeg nss ca-certificates ghostscript-fonts
 
 COPY --from=curl-impersonate /usr/local/bin /usr/local/bin
 COPY --from=curl-impersonate /usr/local/lib /usr/local/lib

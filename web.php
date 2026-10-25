@@ -37,35 +37,6 @@ try{
 	$frontend->drawscrapererror($error->getMessage(), $get, "web", $payload["timetaken"]);
 }
 
-/*
-	Prepend Oracle output, if applicable
-*/
-include("oracles/encoder.php");
-include("oracles/calc.php");
-include("oracles/time.php");
-include("oracles/numerics.php");
-$oracles = [new calculator(), new encoder(), new time(), new numerics()];
-$fortune = "";
-foreach ($oracles as $oracle) {
-	if ($oracle->check_query($_GET["s"])) {
-		$resp = $oracle->generate_response($_GET["s"]);
-		if ($resp != "") {
-			$fortune .= "<div class=\"infobox\">";
-			foreach ($resp as $title => $r) {
-				if ($title) {
-					$fortune .= "<h3>".htmlspecialchars($title)."</h3><div class=\"code\">".htmlspecialchars($r)."</div>";
-				}
-				else {
-					$fortune .= "<i>".$r."</i><br>";
-				}
-			}
-			$fortune .= "<small>Answer provided by oracle: ".$oracle->info["name"]."</small></div>";
-		}
-		break;
-	}
-}
-$payload["left"] = $fortune;
-
 $answerlen = 0;
 
 /*

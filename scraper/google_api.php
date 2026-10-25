@@ -567,6 +567,8 @@ class google_api{
 		
 		foreach($json["items"] as $result){
 			
+			$date = null;
+			
 			//
 			// probe for thumbnail
 			//

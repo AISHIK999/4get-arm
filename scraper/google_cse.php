@@ -725,18 +725,27 @@ class google_cse{
 				// calculate rounded ratio
 				if($found_size){
 					
-					$aspect_ratio = $width / $height;
-					
-					if($aspect_ratio >= 1.5){
-						
-						$thumb["ratio"] = "16:9";
-					}
-					elseif($aspect_ratio >= 0.8){
+					if(
+						$width === 0 ||
+						$height === 0
+					){
 						
 						$thumb["ratio"] = "1:1";
 					}else{
 						
-						$thumb["ratio"] = "9:16";
+						$aspect_ratio = $width / $height;
+						
+						if($aspect_ratio >= 1.5){
+							
+							$thumb["ratio"] = "16:9";
+						}
+						elseif($aspect_ratio >= 0.8){
+							
+							$thumb["ratio"] = "1:1";
+						}else{
+							
+							$thumb["ratio"] = "9:16";
+						}
 					}
 				}
 			}

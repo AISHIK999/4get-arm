@@ -163,6 +163,8 @@ class autocomplete{
 				// if it respects the openSearch protocol
 				$json = json_decode($this->get($this->scrapers[$scraper], $_GET["s"]), true);
 				
+				if(!isset($json[1])){ $json[1] = []; }
+				
 				echo json_encode(
 					[
 						$_GET["s"],
