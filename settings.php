@@ -68,6 +68,10 @@ $settings = [
 						"text" => "Brave"
 					],
 					[
+						"value" => "bing",
+						"text" => "Bing"
+					],
+					[
 						"value" => "ddg",
 						"text" => "DuckDuckGo"
 					],
@@ -80,16 +84,24 @@ $settings = [
 						"text" => "Google"
 					],
 					[
+						"value" => "yahoo",
+						"text" => "Yahoo"
+					],
+					[
 						"value" => "startpage",
 						"text" => "Startpage"
 					],
 					[
-						"value" => "kagi",
-						"text" => "Kagi"
+						"value" => "qwant",
+						"text" => "Qwant"
 					],
 					[
-						"value" => "yep",
-						"text" => "Yep"
+						"value" => "ecosia",
+						"text" => "Ecosia"
+					],
+					[
+						"value" => "kagi",
+						"text" => "Kagi"
 					],
 					[
 						"value" => "marginalia",
@@ -102,6 +114,10 @@ $settings = [
 					[
 						"value" => "sc",
 						"text" => "SoundCloud"
+					],
+					[
+						"value" => "purili",
+						"text" => "Purili"
 					]
 				]
 			],

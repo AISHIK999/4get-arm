@@ -11,14 +11,19 @@ class autocomplete{
 		
 		$this->scrapers = [
 			"brave" => "https://search.brave.com/api/suggest?q={searchTerms}",
+			"bing" => "https://www.bing.com/osjson.aspx?query={searchTerms}",
 			"ddg" => "https://duckduckgo.com/ac/?q={searchTerms}&type=list",
-			"yandex" => "https://suggest.yandex.com/suggest-ff.cgi?part={searchTerms}&uil=en&v=3&sn=5&lr=21276&yu=4861394161661655015",
-			"google" => "https://www.google.com/complete/search?client=mobile-gws-lite&q={searchTerms}",
+			"ecosia" => "https://ac.ecosia.org/autocomplete?q={searchTerms}&type=list",
+			"yandex" => "https://suggest.yandex.com/suggest-ff.cgi?part={searchTerms}&uil=en&v=3",
+			"google" => "https://www.google.com/complete/search?client=chrome&q={searchTerms}",
 			"qwant" => "https://api.qwant.com/v3/suggest/?q={searchTerms}&client=opensearch",
-			"marginalia" => "https://search.marginalia.nu/suggest/?partial={searchTerms}",
+			"marginalia" => "https://marginalia-search.com/suggest/?partial={searchTerms}",
 			"yt" => "https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&q={searchTerms}",
 			"sc" => "",
-			"kagi" => "https://kagi.com/api/autosuggest?q={searchTerms}"
+			"kagi" => "https://kagisuggest.com/api/autosuggest?q={searchTerms}",
+			"startpage" => "https://www.startpage.com/osuggestions?q={searchTerms}",
+			"yahoo" => "https://search.yahoo.com/sugg/gossip/gossip-us-ura/?output=sd1&command={searchTerms}",
+			"purili" => "https://puri.li/api/suggest?q={searchTerms}"
 		];
 		
 		/*
@@ -26,17 +31,20 @@ class autocomplete{
 		*/
 		if(!isset($_GET["s"])){
 			
-			$this->do404("Missing search(s) parameter");
+			// Missing search(s) parameter
+			$this->doempty();
 		}
 		
 		if(is_string($_GET["s"]) === false){
 			
-			$this->do404("Invalid search(s) parameter");
+			// Invalid search(s) parameter
+			$this->doempty();
 		}
 		
 		if(strlen($_GET["s"]) > 500){
 			
-			$this->do404("Search(s) exceeds the 500 char length");
+			// Search(s) exceeds the 500 char length
+			$this->doempty();
 		}
 		
 		/*
@@ -71,9 +79,8 @@ class autocomplete{
 		// return results
 		switch($scraper){
 			
-			case "google":
 			case "yt":
-				// handle google cause they want to be a special snowflake :(
+				// handle youtube cause it wants to be a special snowflake :(
 				$js = $this->get($this->scrapers[$scraper], $_GET["s"]);
 				
 				preg_match(
@@ -140,11 +147,11 @@ class autocomplete{
 				break;
 			
 			case "marginalia":
+			case "purili":
 				$json = $this->get($this->scrapers[$scraper], $_GET["s"]);
 				
 				$json = json_decode($json, true);
 				if($json === null){
-					
 					
 					$this->doempty();
 				}
@@ -158,11 +165,48 @@ class autocomplete{
 				);
 				break;
 			
+			case "yahoo":
+				$json = $this->get($this->scrapers[$scraper], $_GET["s"]);
+				
+				$json = json_decode($json, true);
+				if(
+					$json === null ||
+					!isset($json["r"][0]["k"])
+				){
+					
+					$this->doempty();
+				}
+				
+				$payload = [];
+				
+				foreach($json["r"] as $term){
+					
+					if(isset($term["k"])){
+						
+						$payload[] = $term["k"];
+					}
+				}
+				
+				echo json_encode(
+					[
+						$_GET["s"],
+						$payload
+					],
+					JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_IGNORE
+				);
+				break;
+			
 			default:
 				// if it respects the openSearch protocol
 				$json = json_decode($this->get($this->scrapers[$scraper], $_GET["s"]), true);
 				
-				if(!isset($json[1])){ $json[1] = []; }
+				if(
+					!isset($json[1]) ||
+					!is_array($json[1])
+				){
+					
+					$json[1] = [];
+				}
 				
 				echo json_encode(
 					[
@@ -186,10 +230,10 @@ class autocomplete{
 			
 			curl_setopt($curlproc, CURLOPT_ENCODING, ""); // default encoding
 			curl_setopt($curlproc, CURLOPT_HTTPHEADER,
-				["User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0",
+				["User-Agent: " . config::USER_AGENT,
 				"Accept: application/json, text/javascript, */*; q=0.01",
 				"Accept-Language: en-US,en;q=0.5",
-				"Accept-Encoding: gzip",
+				"Accept-Encoding: gzip, deflate, br, zstd",
 				"DNT: 1",
 				"Connection: keep-alive",
 				"Sec-Fetch-Dest: empty",
@@ -215,17 +259,8 @@ class autocomplete{
 		
 		}catch(Exception $error){
 			
-			do404("Curl error: " . $error->getMessage());
+			doempty();
 		}
-	}
-	
-	private function do404($error){
-		
-		echo json_encode(
-			["error" => $error],
-			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_IGNORE
-		);
-		die();
 	}
 	
 	private function doempty(){
