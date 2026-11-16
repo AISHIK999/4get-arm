@@ -1,6 +1,6 @@
-FROM lwthiker/curl-impersonate:0.6.1-ff-alpine AS curl-impersonate
+FROM c0ns0l3/curl-impersonate:latest AS curl-impersonate
 
-FROM alpine:3.24
+FROM alpine:latest
 WORKDIR /var/www/html/4get
 
 RUN apk update && apk upgrade

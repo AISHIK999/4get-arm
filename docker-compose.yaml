@@ -3,7 +3,7 @@ version: "3.7"
 
 services:
   fourget:
-    image: luuul/4get:latest
+    image: aishik999/4get-arm:latest
     restart: unless-stopped
     environment:
       - FOURGET_PROTO=http
