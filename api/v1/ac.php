@@ -23,8 +23,15 @@ class autocomplete{
 			"kagi" => "https://kagisuggest.com/api/autosuggest?q={searchTerms}",
 			"startpage" => "https://www.startpage.com/osuggestions?q={searchTerms}",
 			"yahoo" => "https://search.yahoo.com/sugg/gossip/gossip-us-ura/?output=sd1&command={searchTerms}",
-			"purili" => "https://puri.li/api/suggest?q={searchTerms}"
+			"purili" => "https://puri.li/api/suggest?q={searchTerms}",
+			"coccoc" => "https://coccoc.com/composer/autocomplete?q={searchTerms}",
+			"naver" => "https://ac.search.naver.com/nx/ac?q={searchTerms}&st=100"
 		];
+		
+		// add duplicates
+		$this->scrapers["google_api"] = &$this->scrapers["google"];
+		$this->scrapers["google_cse"] = &$this->scrapers["google"];
+		$this->scrapers["yahoo_japan"] = &$this->scrapers["yahoo"];
 		
 		/*
 			Sanitize input
@@ -191,6 +198,55 @@ class autocomplete{
 					[
 						$_GET["s"],
 						$payload
+					],
+					JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_IGNORE
+				);
+				break;
+			
+			case "naver":
+				$json = $this->get($this->scrapers[$scraper], $_GET["s"]);
+				
+				$json = json_decode($json, true);
+				if(
+					$json === null ||
+					!isset($json["items"][0][0])
+				){
+					
+					$this->doempty();
+				}
+				
+				$payload = [];
+				
+				foreach($json["items"][0] as $term){
+					
+					$payload[] = $term[0];
+				}
+				
+				echo json_encode(
+					[
+						$_GET["s"],
+						$payload
+					],
+					JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_IGNORE
+				);
+				break;
+			
+			case "coccoc":
+				$json = $this->get($this->scrapers[$scraper], $_GET["s"]);
+				
+				$json = json_decode($json, true);
+				if(
+					$json === null ||
+					!isset($json["suggestions"])
+				){
+					
+					$this->doempty();
+				}
+				
+				echo json_encode(
+					[
+						$_GET["s"],
+						$json["suggestions"]
 					],
 					JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_IGNORE
 				);
