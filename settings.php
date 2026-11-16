@@ -116,6 +116,14 @@ $settings = [
 						"text" => "SoundCloud"
 					],
 					[
+						"value" => "coccoc",
+						"text" => "Coccoc"
+					],
+					[
+						"value" => "naver",
+						"text" => "Naver"
+					],
+					[
 						"value" => "purili",
 						"text" => "Purili"
 					]
